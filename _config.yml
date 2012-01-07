@@ -8,11 +8,11 @@ var:
   categories_path : /categories.html
   tags_path : /tags.html
 
-production_url : http://username.github.com # or your custom domain name
-title : My Blog =)
+production_url : http://bazhenov.github.com # or your custom domain name
+title : Суровая реальность
 
 author :
-  name : Name Lastname
-  email : blah@email.test
-  github : username
-  twitter : username
+  name : Denis Bazhenov
+  email : dotsid@gmail.com
+  github : bazhenov
+  twitter : denis_bazhenov
