@@ -10,6 +10,7 @@ var:
 
 production_url : http://bazhenov.github.com # or your custom domain name
 title : Суровая реальность
+markdown : kramdown
 
 author :
   name : Denis Bazhenov
