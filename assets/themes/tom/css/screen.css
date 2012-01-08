@@ -197,6 +197,11 @@ ul.posts {
   #post pre.terminal code {
     background-color: #333;
   }
+  
+.highlight {
+    border: 1px solid #ddd;
+    background-color: #eee;
+}
 
 #related {
   margin-top: 2em;
