@@ -23,7 +23,18 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-size: 100%;
+  font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28px;
+  font-weight: normal;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 18px;
 }
 
 h1 {
@@ -36,10 +47,12 @@ p {
 
 a {
   color: #00a;
+  text-decoration: none;
 }
 
 a:hover {
   color: black;
+  text-decoration: underline;
 }
 
 a:visited {
@@ -81,7 +94,7 @@ ul.posts {
 .site {
   font-size: 110%;
   text-align: justify;
-  width: 40em;
+  width: 50em;
   margin: 3em auto 2em auto;
   line-height: 1.5em;
 }
@@ -149,14 +162,13 @@ ul.posts {
 /*****************************************************************************/
 
 #post {
-
+	font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
 }
 
   /* standard */
 
   #post pre {
-    border: 1px solid #ddd;
-    background-color: #eef;
     padding: 0 .4em;
   }
 
@@ -166,14 +178,12 @@ ul.posts {
   }
 
   #post code {
-    border: 1px solid #ddd;
-    background-color: #eef;
-    font-size: 85%;
     padding: 0 .2em;
   }
 
     #post pre code {
       border: none;
+      font-size: 95%;
     }
 
   /* terminal */
