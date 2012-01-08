@@ -171,6 +171,15 @@ ul.posts {
   #post pre {
     padding: 0 .4em;
   }
+  
+  #post .image {
+    text-align: center;
+  }
+  
+  #post .image img {
+    border: 1px solid #ddd;
+    padding: 6px;
+  }
 
   #post ul,
   #post ol {
@@ -198,9 +207,13 @@ ul.posts {
     background-color: #333;
   }
   
-.highlight {
+#post .highlight {
     border: 1px solid #ddd;
     background-color: #eee;
+}
+
+#post .footnotes li p {
+    margin: 0;
 }
 
 #related {
