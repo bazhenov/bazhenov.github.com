@@ -8,32 +8,30 @@ layout: post
 ![Результаты голосования][ref-poll-results]
 {:.image}
 
-Видимо, все те, кто привыкли к [оператору Элвиса][ref-elvis-op] и [safe-navigate][ref-self-navigate] в groovy, пришли на devoxxx и устроили флеш моб. Вобщем приветствуйте. Proposal[^proposal] определяет 2 новых оператора в языке: null-safe и null-default. Работает так же как и в groovy. Просто и понятно.
+Видимо, все те, кто привыкли к [оператору Элвиса][ref-elvis-op] и [safe-navigate][ref-self-navigate] в groovy, пришли на devoxxx и устроили флеш моб. Вобщем приветствуйте. Proposal[^proposal] определяет 2 новых оператора в языке: `null-safe` и `null-default`. Работает так же как и в groovy. Просто и понятно.
 
 ## Null-safe operator
-{% highlight java %}
-String a ... ;
-String b;
+	String a ... ;
+	String b;
 
-// сегодня
-b = a != null
-  ? a.substring(10, 2);
-  : null;
+	// сегодня
+	b = a != null
+	  ? a.substring(10, 2);
+	  : null;
 
-// завтра
-String b = a?.substring(10, 2);
-{% endhighlight %}
+	// завтра
+	String b = a?.substring(10, 2);
+{:.code}
 
 ## Null-default operator
-{% highlight java %}
-// сегодня
-if ( name == null ) {
-  name = "Anonymous";
-}
+	// сегодня
+	if ( name == null ) {
+	  name = "Anonymous";
+	}
 
-// завтра
-name = name ?: "Anonymous";
-{% endhighlight %}
+	// завтра
+	name = name ?: "Anonymous";
+{:.code}
 
 Лично я ничего против не имею. Давно пора.
 

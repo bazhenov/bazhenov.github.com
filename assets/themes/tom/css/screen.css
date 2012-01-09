@@ -23,7 +23,6 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 28px;
   font-weight: normal;
 }
@@ -31,14 +30,12 @@ h1, h2, h3, h4, h5, h6 {
 h2 {
   font-size: 20px;
   font-weight: bold;
+  margin-top: 1.5em;
 }
 
 h3 {
   font-size: 18px;
-}
-
-h1 {
-  margin-bottom: 1em;
+  margin-top: 1em;
 }
 
 p {
@@ -76,7 +73,7 @@ ul.posts {
 }
 
   ul.posts li {
-    line-height: 1.75em;
+     line-height: 1.75em;
   }
 
   ul.posts span {
@@ -162,15 +159,12 @@ ul.posts {
 /*****************************************************************************/
 
 #post {
-	font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", Helvetica, Arial, sans-serif;
+/*	font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", Helvetica, Arial, sans-serif; */
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif
 	font-size: 14px;
 }
 
   /* standard */
-
-  #post pre {
-    padding: 0 .4em;
-  }
   
   #post .image {
     text-align: center;
@@ -178,42 +172,48 @@ ul.posts {
   
   #post .image img {
     border: 1px solid #ddd;
-    padding: 6px;
+    padding: 8px;
   }
 
   #post ul,
   #post ol {
-    margin-left: 1.35em;
+    margin-left: 2.35em;
   }
 
   #post code {
     padding: 0 .2em;
   }
 
-    #post pre code {
-      border: none;
-      font-size: 95%;
-    }
-
   /* terminal */
 
   #post pre.terminal {
-    border: 1px solid black;
-    background-color: #333;
     color: white;
   }
 
   #post pre.terminal code {
     background-color: #333;
+    color: #ccc;
   }
   
-#post .highlight {
-    border: 1px solid #ddd;
-    background-color: #eee;
+#post pre.code {
+  border: 1px solid #ddd;
+}
+
+#post pre code {
+  border: none;
+  font-size: 95%;
+  padding: 0.5em 1em;
 }
 
 #post .footnotes li p {
     margin: 0;
+}
+
+#post blockquote {
+    padding-left: 70px;
+    background: url("/images/quote.gif") no-repeat top left;
+    min-height: 50px;
+    margin: 2em 0;
 }
 
 #related {
