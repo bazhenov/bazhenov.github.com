@@ -194,6 +194,11 @@ ul.posts {
     background-color: #333;
     color: #ccc;
   }
+
+#post abbr {
+  border-bottom: 1px dashed;
+  cursor: help;
+}
   
 #post pre.code {
   border: 1px solid #ddd;
