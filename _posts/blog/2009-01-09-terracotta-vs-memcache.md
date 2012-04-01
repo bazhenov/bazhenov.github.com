@@ -1,5 +1,5 @@
 ---
-title: Terracotta v.s. Memcache
+title: Terracotta vs. Memcache
 layout: post
 tags: [cache, java, memcache, terracotta]
 ---

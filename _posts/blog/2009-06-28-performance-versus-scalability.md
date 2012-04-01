@@ -1,5 +1,5 @@
 ---
-title: Perfomance v.s. scalability
+title: Perfomance vs. scalability
 layout: post
 tags: [concurrency, perfomance, scalability]
 ---
