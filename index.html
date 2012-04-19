@@ -1,0 +1,37 @@
+---
+layout: page
+title: Суровая реальность
+header: {{site.title}}
+---
+<div class="content">
+
+<!--
+<div id="icons">
+	<a href="http://twitter.com/" class="twitter"></a>
+	<a href="http://twitter.com/" class="google"></a>
+	<a href="http://twitter.com/" class="email"></a>
+</div>
+-->
+
+	<h2>Последние публикации</h2>
+	
+  {% for post in site.posts limit:3 %}
+		<div class="postOverview">
+			<a href="{{post.url}}" class="postLink">{{ post.title }}</a>
+			<div class="meta">
+				<span class="date">{{ post.date | date_to_string }}</span>
+			</div>
+			<p>
+				{{ post.content | summarize }}
+				<a href="{{post.url}}" class="readLink">Читать полностью &raquo;</a>
+			</p>
+    </div>
+  {% endfor %}
+  
+  <h2>Архив</h2>
+  {% for post in site.posts %}
+  	<div class="archive">
+  		<a href="{{post.url}}" class="postLink">{{ post.title }}</a><span class="date">{{ post.date | date_to_string }}</span>
+ 		</div>
+ 	{% endfor %}
+</div>

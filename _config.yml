@@ -1,6 +1,6 @@
 # This is the default format. 
 # For more see: https://github.com/mojombo/jekyll/wiki/Permalinks
-permalink: /:categories/:year/:month/:day/:title 
+permalink: /blog/:year/:month/:day/:title.html
 auto: true
 pygments: true
 var:
@@ -8,7 +8,7 @@ var:
   categories_path : /categories.html
   tags_path : /tags.html
 
-production_url : http://bazhenov.github.com # or your custom domain name
+production_url : http://bazhenov.me # or your custom domain name
 title : Суровая реальность
 markdown : kramdown
 

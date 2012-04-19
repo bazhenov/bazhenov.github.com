@@ -1,0 +1,118 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+  color: #333;
+  margin: 0
+}
+
+header {
+  background-color: black;
+  width: 100%;
+  padding: 0 auto;
+  color: white;
+  line-height: 2.5em;
+}
+
+header .content {
+  margin: 0 auto;
+  width: 70%;
+}
+
+header .title {
+  color: white;
+  text-decoration: none
+}
+
+h1, h2, h3, h4 {
+  font-weight: 400;  
+}
+
+.post .date {
+  color: #999;
+  display: block;
+}
+
+.content      { width: 70%; margin: 0 auto; }
+.post         { font-size: 16px; }
+.post p       { font-weight: 400; line-height: 1.6 }
+.post .bar    { background-color: #ededed; padding: 12px 10px 10px 10px }
+.post .bar .twitter-follow-button {float: right}
+
+.post p.image { text-align: center }
+
+.postOverview {
+  width: 70%;
+  padding-bottom: 30px
+}
+
+.postOverview .postLink {
+  font-size: 20px;
+  font-weight: 300;
+  text-decoration: none;
+  color: #333;
+  padding-bottom: 0.3em;
+  display: block;
+}
+
+.postOverview .postLink:hover {
+  color: #944;
+}
+
+.postOverview .meta {
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  line-height: 2em;
+  margin-bottom: 0.3em;
+}
+
+.postOverview .readLink {
+  font-size: 14px;
+  font-weight: 300
+}
+
+.postOverview .date {
+  color: #999;
+  font-size: 80%;
+  display: block;
+}
+
+.postOverview p {
+  margin: 0; padding: 0;
+  font-weight: 300 !important;
+  font-size: 14px !important;
+  text-align: justify;
+}
+
+.archive {
+  width: 70%
+}
+
+.archive a {
+  color: black;
+  text-decoration: none;
+  font-weight: 300
+}
+
+.archive .date {
+  font-family: 'Lucida Sans Typewriter', Monaco, 'Courier', 'Courier New', monospace;
+  font-size: 12px;
+  color: gray;
+  display: block;
+  float: right;
+}
+
+#icons a {
+  background-image: url("/images/socialmedia.png");
+  background-repeat: no-repeat;
+  height:32px;
+  width:32px;
+  display:block;
+  float:left;
+  margin-right: 0.5em;
+}
+
+#icons a.linkedin {background-position:0px 0px}
+#icons a.twitter  {background-position:0px -32px}
+#icons a.google   {background-position:0px -64px}
+#icons a.github   {background-position:0px -96px}
+#icons a.flickr   {background-position:0px -128px}
+#icons a.email    {background-position:0px -160px}
