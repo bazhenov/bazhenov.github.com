@@ -25,4 +25,4 @@ tags: [threading, scalability, concurrency, amdahl's law]
 [ref-slides]: http://cf05.ac.upc.es/micro38/01_keynote2.pdf
 [ref-heterogeneous-computing]: http://en.wikipedia.org/wiki/Heterogeneous_computing
 [ref-smp]: http://en.wikipedia.org/wiki/SMP
-[^ref-amdahls-law]: [Конец эры закона Мура](/2009/01/13/moore's-law-a-la-finita/)
+[^ref-amdahls-law]: [Конец эры закона Мура](/blog/2009/01/13/moores-law-a-la-finita.html)

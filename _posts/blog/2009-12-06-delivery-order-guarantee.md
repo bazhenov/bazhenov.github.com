@@ -50,6 +50,6 @@ tags: [messaging, theory]
 
 Если вы web-программист, то я вас поздравляю. Судьба сделала вам подарок. В других отраслях программистам приходится прилагать титанические усилия для распараллеливания задач. У вас же большая часть процессов протекает и так параллельно. Все что вам надо, — смирится с мыслью, что порядок обработки запросов в системе не детерминистичен. С этим бессмысленно бороться, _этим надо уметь пользоваться_.
 
-[ref-opt-lock-application]: /2009/11/04/optimistic-locking-application/
+[ref-opt-lock-application]: /blog/2009/11/04/optimistic-locking-application.html
 [ref-jmm]: http://en.wikipedia.org/wiki/Java_Memory_Model
 [ref-chaotic-perspectives]: http://www.addsimplicity.com/adding_simplicity_an_engi/2007/05/chaotic_perspec.html

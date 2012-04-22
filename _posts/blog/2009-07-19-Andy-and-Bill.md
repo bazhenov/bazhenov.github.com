@@ -27,7 +27,7 @@ tags: [concurrency, threading, performance]
 
 [^quote]: [Andy Giveth and Bill Taketh Away](http://geeklikemetoo.blogspot.com/2007/11/andy-giveth-and-bill-taketh-away.html)
 [^pricing]: [Amazon Elastic MapReduce: Pricing](http://aws.amazon.com/elasticmapreduce/#pricing)
-[^amdahls-law]: [Конец эры закона Мура](/2009/01/13/moore's-law-a-la-finita/)
+[^amdahls-law]: [Конец эры закона Мура](/blog/2009/01/13/moore's-law-a-la-finita.html)
 [^free-lunch]: [The Free Lunch Is Over: A Fundamental Turn Toward Concurrency in Software](http://www.gotw.ca/publications/concurrency-ddj.htm)
 
 [ref-core-i7]: http://en.wikipedia.org/wiki/Intel_Core_i7

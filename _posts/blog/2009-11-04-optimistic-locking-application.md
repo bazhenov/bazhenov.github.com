@@ -40,5 +40,5 @@ tags: [messaging]
 
 Вот такое вот прикладное применение оптимистической блокировки. Буду рад услышать ваши комментарии по этому поводу. Может кто-то использует что-то подобное?
 
-[ref-opt-lock]: /2009/10/23/optimistic-locking/
+[ref-opt-lock]: /blog/2009/10/23/optimistic-locking.html
 [ref-prod-cons-problem]: http://en.wikipedia.org/wiki/Producer-consumer_problem
