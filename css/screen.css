@@ -21,6 +21,8 @@ h1, h2, h3, h4 { font-weight: 400; }
 .post .bar .twitter-follow-button {float: right}
 .post p.image { text-align: center }
 
+.center       { margin: 0 auto; height: 100%; text-align: center }
+
 .postOverview {
   width: 70%;
   padding-bottom: 30px
