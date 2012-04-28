@@ -1,31 +1,46 @@
-body { font-family: 'Open Sans', sans-serif; color: #333; margin: 0 }
+body      { font-family: 'Open Sans', sans-serif; color: #333; margin: 0 }
 
-header { background-color: black; width: 100%; padding: 0 auto; color: white; line-height: 2.5em; }
-header .content { margin: 0 auto; width: 70%; }
-header .title { color: white; text-decoration: none }
+header,footer    { background-color: black; width: 100%; padding: 0 auto; color: white; line-height: 2.5em; }
+footer           { margin-top: 40px }
+header .content,
+footer .content  { margin: 0 auto; width: 70%; }
+footer .content  { text-align: right }
+header a,
+footer a         { color: white; text-decoration: none }
+footer a         { font-weight: 400; font-size: 14px }
 
-.mainBar { background-color: #ddd; height: 280px; width: 100% }
-.mainBar .about { width: 70%; margin: 0 auto; padding-top: 30px; }
-.mainBar p { width: 60%; font-size: 14px; font-weight: 300 }
-.mainBar h1 { font-weight: 300; font-size: 36px; margin: 0 }
+.mainBar         { background-color: #ddd; height: 220px; width: 100%; color: black;
+                   background-image: url("/images/main.jpg"); padding: 30px 0 }
+.mainBar .about  { width: 70%; margin: 0 auto; padding: 10px 20px 20px 20px;
+                  background-color: white; opacity: 0.8; }
+.mainBar p       { width: 80%; font-size: 14px; font-weight: 300; opacity: 1 }
+.mainBar h1      { font-weight: 300; font-size: 36px; margin: 0; opacity: 1 }
 
-h1, h2, h3, h4 { font-weight: 400; }
+h1, h2, h4 { font-weight: 400; }
+h3             { font-weight: 600 }
 
 .post .date { color: #999; display: block; }
 
 .content      { width: 70%; margin: 0 auto; }
 
-.post         { font-size: 16px; }
+.post                   { font-size: 16px; }
 .post p, .post li       { font-weight: 400; line-height: 1.4 }
-.post li      { margin-bottom: 10px }
-.post .bar    { background-color: #ededed; padding: 12px 10px 10px 10px }
+.post li                { margin-bottom: 10px }
+.post .bar              { background-color: #ededed; padding: 12px 10px 10px 10px }
 .post .bar .twitter-follow-button {float: right}
-.post .image      { text-align: center }
-.post .image img  { max-width: 100% }
+.post .image            { text-align: center }
+.post .image img        { max-width: 100% }
 .post .photo img  { box-shadow: 1px 1px 10px rgba(0, 0, 0, .1); border: 1px solid #EEE; background: white
                     -moz-box-shadow: 1px 1px 10px rgba(0, 0, 0, .1);
                     -webkit-box-shadow: 1px 1px 10px rgba(0, 0, 0, .1);
                     padding: 10px; background-color: white }
+                    
+.post blockquote      { background: url("/images/quote.gif") no-repeat 0 0;
+                        margin: 0; padding-left: 60px; min-height: 40px;
+                        font-size: 14px }
+                    
+.post pre                { font-size: 14px; }
+.post pre.shell code     { background-color: black !important; color: #ddd !important }
 
 .center       { margin: 0 auto; height: 100%; text-align: center }
 
@@ -93,8 +108,8 @@ h1, h2, h3, h4 { font-weight: 400; }
 #icons a {
   background-image: url("/images/socialmedia.png");
   background-repeat: no-repeat;
-  height:32px;
-  width:32px;
+  height: 32px;
+  width: 32px;
   display:block;
   float:left;
   margin-right: 0.5em;

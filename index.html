@@ -3,15 +3,25 @@ layout: page
 title: Суровая реальность
 header: {{site.title}}
 ---
-<div class="content">
-
-<!--
-<div id="icons">
-	<a href="http://twitter.com/" class="twitter"></a>
-	<a href="http://twitter.com/" class="google"></a>
-	<a href="http://twitter.com/" class="email"></a>
+<div class="mainBar">
+	<div class="about">
+		<h1>Денис Баженов</h1>
+		<p>
+			Разработчик программного обеспечения. В данный момент специализируюсь в области
+			извлечения информации, а также в области поисковых технологий. В этом блоге я веду заметки связанные
+			с моей профессиональной деятельностью.
+			<div id="icons">
+				<a href="http://twitter.com/{{ site.author.twitter }}" class="twitter"></a>
+				<a href="https://plus.google.com/113212801740110086350" class="google"></a>
+				<a href="mailto:{{ site.author.email }}" class="email"></a>
+				<a href="http://github.com/{{ site.author.github }}" class="github"></a>
+				<a href="http://flickr.com/{{ site.author.flickr }}" class="flickr"></a>
+			</div>
+		</p>
+		<div style="clear: both;"></div>
+	</div>
 </div>
--->
+<div class="content">
 
 	<h2>Последние публикации</h2>
 	
@@ -29,7 +39,7 @@ header: {{site.title}}
   {% endfor %}
   
   <h2>Архив</h2>
-  {% for post in site.posts %}
+  {% for post in site.posts offset:3 %}
   	<div class="archive">
   		<a href="{{post.url}}" class="postLink">{{ post.title }}</a><span class="date">{{ post.date | date_to_string }}</span>
  		</div>
