@@ -21,9 +21,7 @@ Looks familiar, right? Yes, it's some sort of [Google's 20% culture][ref-google-
 Nevertheless, so called FedEx days was born (like FedEx Ground day-definite delivery, I believe):
 
 > Overall, I'd say we did pretty damn well. People built some kick ass projects, we all learnt about new technologies, and everyone seemed to have a good time.
-
 > [...]
-
 > Will we repeat the exercise? Definitely. I think it was great thing to do - developers got to play, exercise their minds a little, build some fun stuff and learn about new technologies.
 
 There are a [lot][ref-fedex-r1] [of][ref-fedex-r2] [really][ref-fedex-r3] [fun][ref-fedex-r4] [things][ref-fedex-r5] provided by Atlassian FedExes. Which makes me believe in the words if Daniel Pink:
