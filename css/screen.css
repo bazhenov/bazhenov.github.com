@@ -22,9 +22,12 @@ h3             { font-weight: 600 }
 .post .meta         { border-bottom: 1px solid #eee; padding-bottom: 1em;
                       font-size: 14px }
 .post .meta .date   { color: #777 }
-.post .meta .tags   { margin-left: 1em }
-.post .meta .tags a { color: #777; text-decoration: none; background-color: #eee;
-                      padding: 0.1em 0.8em; border-radius: 5px; font-size: 12px }
+.tags               { margin-left: 1em }
+.tags a             { color: #777; text-decoration: none; background-color: #eee;
+                      padding: 0.1em 0.8em; border-radius: 5px; white-space: nowrap }
+.post .meta .tags a { font-size: 12px }
+.tagsPage           { line-height: 2em; text-align: justify }
+
 
 .content      { width: 70%; margin: 0 auto; }
 

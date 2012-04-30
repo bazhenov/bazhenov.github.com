@@ -1,7 +1,7 @@
 ---
 title: Future Evolution of High-Performance Microprocessors
 layout: post
-tags: [threading, scalability, concurrency, amdahl's law]
+tags: threading, scalability, concurrency, performance
 ---
 На просторах сети нашел довольно [интерестное видео][ref-video] о тенденциях развития микропроцессоров. Norm Jouppi из Hewlett-Packard рассказывает о текущих проблемах и о том, что из себя будут представлять микропроцессоры лет эдак через 5-10.
 

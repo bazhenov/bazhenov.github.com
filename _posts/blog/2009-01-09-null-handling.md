@@ -1,6 +1,6 @@
 ---
 title: Enhanced null handling в Java
-tags: [devoxxx, java, language]
+tags: java language
 layout: post
 ---
 Как показало голосование по вопросу java 7 language changes[^poll], null-handling в java - это самый большой "pain in the ass" из всех, через которые Java заставляет проходить программистов. С другой стороны то-же голосование на devoxxx по вопросу самого популярного языка под JVM, показало, что это Groovy.

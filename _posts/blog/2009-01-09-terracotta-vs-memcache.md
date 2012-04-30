@@ -1,7 +1,7 @@
 ---
 title: Terracotta vs. Memcache
 layout: post
-tags: [cache, java, memcache, terracotta]
+tags: cache java
 ---
 В последнее время начали сравнивать `terracotta` и `memcache`. Мне это сравнение кажется некорректным. Бытует мнение что `terracotta` — это distributed cache[^distributed-cache]. Это все равно что называть автомобиль "четырехколесным мопедом", только потому, что он может ездить и у него четыре колеса.
 
