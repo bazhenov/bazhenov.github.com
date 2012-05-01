@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>IoC контейнеры</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>IoC контейнеры</h1>
+	<div class="meta">
+		<span class="date">21 December 2009</span>
+		<span class="tags">
+			
+				<a href="/tags.html#ioc">ioc</a>
+			
+				<a href="/tags.html#php">php</a>
+			
+				<a href="/tags.html#solid">solid</a>
+			
+				<a href="/tags.html#ooad">ooad</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>Если вы пишете на объектно-ориентированном языке, то вы должны быть знакомы с &ldquo;джентльменским набором&rdquo; принципов, которые очень полезны при написании кода. К таким принципам относятся: <a href="http://www.objectmentor.com/resources/articles/srp.pdf">single responsibility principle</a>, <a href="http://www.objectmentor.com/resources/articles/ocp.pdf">open-closed principle</a>, <a href="http://www.objectmentor.com/resources/articles/isp.pdf">interface segregation principle</a> и другие. Общий эффект их использования заключается в том, что количество сущностей (классов и интерфейсов) в системе стремительно растет. В этом есть как положительные, так и отрицательные стороны.</p>
+
+<p>Один из положительных моментов заключается в том, что у каждой сущности появляется строго выделенная роль, для работы которой требуется меньше кода. Такую роль проще протестировать, ее поведение проще понять, а следственно и изменить.</p>
+
+<p>Но есть в росте количества сущностей и свой негативный момент. Они не могу работать в полной изоляции, поэтому растет количество связей между сущностями. В большом проекте задача управления этими связями может доставить немало головной боли.</p>
+
+<h2 id="section">Два представления конфигурации</h2>
+
+<p>В правильно построенной объектно-ориентированной системе нет конфигурации. Довольно революционное заявление, верно? Суть в том, что с точки зрения самого кода несущего полезную нагрузку конфигурации не должно существовать. Одни сущности требуют в качестве зависимостей другие (опираясь на интерфейс). Где, кто и как будет инициализировать зависимости, — вопрос не имеющий к пользовательскому коду никакого отношения.</p>
+
+<blockquote>
+  <p>Я репозиторий пользователей, дайте мне в конструктор подключение к базе данных, и я смогу искать для вас пользователей по идентификатору и логину.</p>
+</blockquote>
+
+<p>Именно так должны вести себя все сущности. Другими словами, они не должны сами заниматься поиском и разрешением своих зависимостей.</p>
+
+<p>Можно сказать иначе. С точки зрения самой системы во время выполнения, ее <em>конфигурация задается графом объектов</em>. У нас есть граф объектов по которому туда сюда бегают сообщения. Конечное поведение системы зависит от того как именно сконфигурирован этот граф.</p>
+
+<p>Это очень удобное описание системы с точки зрения компьютера, но не с точки зрения человека. Человеку нужен какой-то текстовый файл, в котором можно было бы подправить настройки подключения к БД, цвет шрифта, timeout подключения к внешнему сервису и т.д.</p>
+
+<p>Давайте остановимся на минутку и подумаем что это значит. Мы имеем два способа которые описывают поведение системы: граф объектов и конфигурационные файлы.</p>
+
+<p>Проблема в том, что для компьютера конфигурационные файлы не имеют смысла, — компьютер не знает что с ними делать. Поэтому нам постоянно приходится писать код конвертирующий одно представление в другое. Нам приходится писать код превращающий конфигурационный файл в граф объектов, который делает всю нужную нам работу.</p>
+
+<p>Это вам ничего не напоминает? Object-relational impedance, но только в области конфигурирования.</p>
+
+<h2 id="ioc-">IoC контейнеры</h2>
+
+<p>Возможно вы уже задались вопросом, если системе нужен граф объектов, то может стоит описывать конфигурацию в виде графа объектов? Тогда можно было бы один раз написать транслятор превращающий конфигурацию в тот самый runtime граф, который необходим для работы системы.</p>
+
+<p>Такими трансляторами и являются IoC контейнеры.</p>
+
+<p>Здесь я рассматриваю только те IoC контейнеры, которые позволяют описывать конфигурацию отдельно от самого кода. Библиотеки, называющиеся IoC контейнерами, и не выполняющие вышеуказанное требование, таковыми не являются, так как не выполняют самой главной задачи IoC контейнера, — изоляции production кода от механизма локализации и удовлетворения зависимостей.</p>
+
+<p>У себя в проекте мы написали свой IoC контейнер. Фактически это порт <a href="http://static.springsource.org/spring/docs/2.5.x/reference/beans.html">Spring Beans</a> на PHP. Согласен, звучит странно. Но spring beans, по моему мнению, идеологически верен, так как он не требует менять код для своего использования.</p>
+
+<p>Конфигурация в нашем случае описывается примерно следующим образом:</p>
+
+<pre class="code"><code>&lt;?xml version="1.0" encoding="utf8"?&gt;
+&lt;beans xmlns="http://farpost.com/slr/injector"&gt;
+  &lt;bean id="masterConnection" class="MySqlConection"&gt;
+    &lt;property name="host" value="hostname" /&gt;
+    &lt;property name="user" value="john" /&gt;
+    &lt;property name="password" value="secret" /&gt;
+    &lt;property name="db" value="orders" /&gt;
+  &lt;/bean&gt;
+
+  &lt;bean id="userRepository" class="SqlUserRepository"&gt;
+    &lt;constructor-arg ref="masterConnection" /&gt;
+  &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+
+<p>Фактически, это эквивалентно следующему коду:</p>
+
+<pre class="code"><code>$masterConnection = new MySqlConnection();
+$masterConnection-&gt;setHost("hostname");
+$masterConnection-&gt;setUser("john");
+$masterConnection-&gt;setPassword("secret");
+$masterConnection-&gt;setDb("orders");
+
+$userRepository = new SqlUserRepository($masterConnection);
+</code></pre>
+
+<p>Многословно? Да, наверное. Но это дешевле чем каждый раз писать код создающий объекты на основании конфигурации, когда у вас сотни таких объектов.</p>
+
+<p>Существует несколько способов, как можно сделать вышеприведенный XML гораздо более лаконичным. Некоторые из них мы уже опробовали и они работают вполне хорошо, некоторые мы только хотим опробовать. Здесь я не буду углубляться в детали. Если вам интерестно, дайте мне знать, быть может это стоит отдельной заметки.</p>
+
+<p>Использование IoC контейнеров дает следующие выгоды:</p>
+
+<ul>
+  <li>единый формат описания конфигурации вне зависимости от подсистемы;</li>
+  <li>автоматический lazy для всех объектов;</li>
+  <li>декларативное управление зависимостями, — не требуется менять код для изменения поведения системы;</li>
+  <li>гибкое управление зависимостями, — в отличии от singleton и toolkit/registry разным клиентам можно подпихивать разные имплементации.</li>
+</ul>
+
+<p>Последний пункт имеет далекоидущие последствия. Очень часто бывает что разным клиентам нужны разные имплементации одного и того же интерфейса. Например, в большинстве случаев клиенты используют различного рода data provider&rsquo;ы обернутые в кеширующие декораторы. Тем не менее, некоторые клиенты в силу специфики задач могут генерировать большое количество cache miss&rsquo;ов. Становится разумным просто отключить кеш для этих клиентов. Если ссылка на data provider хранится в singleton&rsquo;е или реестре (registry), то подменить ее для конкретных клиентов становится просто невозможно.</p>
+
+<p>Конечно, теперь конфигурация становится сложнее. Но в любой сложной системе конфигурация будет самой сложной ее частью. Я думаю смело можно сказать, что сложность большинства систем определяется сложностью их конфигурации. От этой сложности никуда не деться. Но мы можем обеспечить себя инструментами позволяющими справляться с этой сложностью. IoC контейнер это, по моему мнению, один из таких инструментов.</p>
+
+<h2 id="section-1">Стоит ли?</h2>
+
+<p>Решать вам. Идея применения IoC контейнера в скриптовых языках, может показаться абсурдом. Тем не менее, существует рубикон перевалив через который становится понятно, чтос точки зрения сложности эксплуатации разницы между скриптовыми языкам и всеми остальными не существует.</p>
+
+<p>Поэтому ответ на вопрос &ldquo;стоит ли?&rdquo; заключается в вопросе &ldquo;<em>перевалили ли вы через этот рубикон?</em>&rdquo;.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2009/12/21/ioc-containers.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

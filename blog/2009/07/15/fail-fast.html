@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Fail Fast</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>Fail Fast</h1>
+	<div class="meta">
+		<span class="date">15 July 2009</span>
+		<span class="tags">
+			
+				<a href="/tags.html#scalability">scalability</a>
+			
+				<a href="/tags.html#messaging">messaging</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<pre><code>$data = file_get_contents($location);
+</code></pre>
+
+<p>Что не так с этим кодом? На первый взгяд все хорошо. Вряд ли он может нам чем-нибудь навредить.</p>
+
+<p>Хорошо, предположим, что у вас есть 3 web frontend&rsquo;а, каждый из которых может обслуживать 60 параллельных запросов (итого 180 конкурентных запросов). На минутку предположим, что вышеприведенный код — это единственный код, который выполняется при обработке запроса. Если location указывает на локальный ресурс (на локальной файловой системе), то вряд ли что-то может пойти не так. Latency чтения с локальной файловой системы достаточно низкий для того, чтобы не беспокоится о возможных проблемах (если файлы достаточно маленькие).</p>
+
+<p>А что если location указывает на удаленный ресурс? Например, на какой-нибудь ресурс доступный по протоколу <code>HTTP</code>. Предположим, что ресурс недоступен. Как поведет себя ваше приложение?</p>
+
+<p>В лучшем случае, вы моментально получите управление назад, сможете определить ошибочную ситуацию и каким-либо образом восстановить поток исполнения. Но так бывает далеко не всегда. В случае если недоступна физический машина (а не приложение на этой машине), или если на сервере некорректно настроен firewall, то вы не получите управление назад. Клиент отсылает <a href="http://en.wikipedia.org/wiki/Tcp_handshake#Connection_establishment">TCP SYN</a> запрос и&hellip; тишина. Некому вам сказать, что ресурс недоступен, и все что вам остается — это ждать.</p>
+
+<p>Возможно у вас возник вопрос: &ldquo;А как это меня касается? Я же не могу оживить удаленный ресурс&rdquo;. Два момента.</p>
+
+<p>Во-первых, пользователи не любят ждать. Особенно они не любят когда после ожидания им говорят: &ldquo;извините, мы не смогли обработать ваш запрос&rdquo;. Зачем было ждать ЭТО? Во-вторых, путем довольно <a href="http://en.wikipedia.org/wiki/Little%27s_law">нехитрых расчетов</a> можно вычислить, что если скорость поступления запросов равна 30 запросам в секунду, а запрос обрабатывается дольше 6 секунд, то при 180 обработчиках у вас переполнится очередь входящий запросов и вы перестанете отвечать на эти самые запросы. А пользователи, как известно, не любят ждать. Числа, может быть и ничего не говорящие, но смысл в том, что они конечны, а следственно конечен и тот timeout превышение которого для вас может закончится отказом в обслуживании для всех новых запросов.</p>
+
+<p>В современном мире распределенных приложений, в котором даже яичницу приготовить сложнее, чем отправить <code>SOAP</code> запрос, — подобная ситуация с зависимостью между различными приложениями не редка.</p>
+
+<p>Поэтому реализуя системы которые имеют синхронные зависимости от 3rd party ресурсов необходимо соблюдать ряд правил:</p>
+
+<ul>
+  <li>если обращение к внешней системе никак не влияет на user experience пользователя и выполняет чисто служебные функции (например, логгирование статистики), то отличным вариантом будет замена синхронного вызова, на асинхронный (например, при помощи <a href="http://activemq.apache.org/">ActiveMQ</a> и <a href="http://stomp.codehaus.org/">STOMP</a>);</li>
+  <li>если асинхронная обработка невозможна, то необходимо корректным образом настроить connection и read timeout&rsquo;ы. Это позволит ограничить то время, которое клиент будет ждать ответа от сервера и исключить возможность отказа в обслуживании;</li>
+  <li>если сервер на котором располагается ресурс находится под вашим управлением, необходимо проверить, что в iptables нет правил, которые осуществляют <code>DROP</code> пакетов. <code>DROP</code> правила, в отличии от <code>REJECT</code>, откидывают входящий пакет, без соответствующего <code>ICMP</code>-ответа клиенту о недоступности ресурса, что и провоцирует такие ситуации.</li>
+</ul>
+
+<p>Помните, для того чтобы исправить ошибку, надо сначала обнаружить ошибку.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2009/07/15/fail-fast.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

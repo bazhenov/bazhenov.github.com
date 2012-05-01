@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Interrupted Exception</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>Interrupted Exception</h1>
+	<div class="meta">
+		<span class="date">04 September 2009</span>
+		<span class="tags">
+			
+				<a href="/tags.html#java">java</a>
+			
+				<a href="/tags.html#concurrency">concurrency</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>Недавно еще раз встретился с некорректной обработкой <a href="http://java.sun.com/javase/6/docs/api/java/lang/InterruptedException.html">InterruptedException</a> в java. InterruptedException — это checked exception генерируемый многими методами стандартной библиотеки, которые блокируют поток исполнения. К таким относятся: <a href="http://java.sun.com/javase/6/docs/api/java/util/concurrent/locks/Lock.html#lockInterruptibly()">interruptible версии lock&rsquo;ов</a>, метод <a href="http://java.sun.com/javase/6/docs/api/java/lang/Thread.html#sleep(long)">Thread.sleep()</a>, некоторые <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/BlockingQueue.html#take()">операции над блокирующими очередями</a>, некоторые <a href="http://java.sun.com/javase/6/docs/api/java/nio/channels/SocketChannel.html#open(java.net.SocketAddress)">операции над каналами</a> и другие.</p>
+
+<p>По своей сути, <code>InterruptedException</code> сигнализирует о том, что поток просят завершить его работу. При этом вас не просят <em>немедленно</em> завершить свою работу. Вас просят <em>корректно</em> завершить работу. На это может понадобится некоторое время.</p>
+
+<p>Прерывание потока осуществляется при помощи метода <a href="http://java.sun.com/javase/6/docs/api/java/lang/Thread.html#interrupt()">Thread.interrupt()</a>. Существует два способа которыми JVM уведомляет поток о том, что его прерывают. Первый — это собственно <code>InterruptedException</code>. Второй — это флаг потока <code>INTERRUPT</code>, который может быть получен при помощи метода <code>Thread.isInterrupted()</code>. Игнорирование второго метода сигнализирования о прерывании и является типичной ошибкой.</p>
+
+<p>Важно понимать, что interrupt адресуется не только вам (коду, который выполняется в потоке), но и владельцу потока. Другими словами, не только вы в этом потоке заинтересованы в том, чтобы определить что наступило прерывание.</p>
+
+<pre class="code"><code>try {
+  Object o = queue.take();
+} catch ( InterruptedException e ) {}
+</code></pre>
+
+<p>Данный код неверен, потому что он &ldquo;давит&rdquo; сигнал прерывания. Если этот код выполняется в thread pool&rsquo;е, то на этом таске worker (который вызвал вас) должен был бы завершить исполнение задач, так как поток получил прерывание. Но этого не произойдет потому что сигнал прерывания был перехвачен вышеприведенным кодом. Как правило, это выражается в том, что после посылки <code>kill</code> сигнала java машине у нее остаются висеть потоки worker&rsquo;ов из-за чего JVM не может завершить свою работу. В данном случае единственный выход — <code>kill -9</code>.</p>
+
+<p>Следующий код так же некорректен, потому что мы &ldquo;маскируем&rdquo; interrupt в исключительную ситуацию другого типа. Тем самым он не дает возможности вызывающей стороне зафиксировать ситуацию прерывания.</p>
+
+<pre class="code"><code>try { 
+  Object o = queue.take();
+} catch ( InterruptedException e ) {
+  throw new RuntimeException(e);
+}
+</code></pre>
+
+<p>Корректный код будет выглядеть следующим образом.</p>
+
+<pre class="code"><code>try {
+  Object o = queue.take();
+} catch ( InterruptedException e ) {
+  Thread.currentThread().interrupt();
+}
+</code></pre>
+
+<p>Здесь мы ловим <code>InterruptedException</code> и выставляем флаг потока сигнализирующий о прерывании.</p>
+
+<p>Политика прерывания метода является частью его контракта. Если вы декларируете что <code>InterruptedException</code> не может произойти во время выполнения метода, но сами при этом вызываете методы генерирующие эту исключительную ситуацию, то вы должны корректно конвертировать <code>InterruptedException</code> во флаг потока о прерывании. То же самое относится и к вызывающей стороне. Если вы вызываете метод, который по контракту генерирует <code>InterruptedException</code>, то вы должны ожидать что метод будет уведомлять вас о прерывании посредством исключительной ситуации. Если нет, то посредством флага.</p>
+
+<p>Внимательный читатель мог задать себе вопрос: &ldquo;А зачем два способа сигнализации? Разве нельзя обойтись одним?&rdquo;.</p>
+
+<h2 id="threadisinterrupted">Зачем нужен <code>Thread.isInterrupted()</code>?</h2>
+<p><code>InterruptedException</code> бывает неудобен по причине того, что это checked exception. Это значит что компилятор заставляет вас или обработать его по месту, или указать в своем контракте. В случае, если вы не можете указать <code>InterruptedException</code> в своем контракте (например, вы имплементируете интерфейс где в контракте <code>InterruptedException</code> не указан), флаг потока остается единственным способом передать вызывающей стороне информацию о прерывании.</p>
+
+<h2 id="interruptedexception">Зачем нужен <code>InterruptedException</code>?</h2>
+<p><code>InterruptedException</code> позволяет прервать поток уже выполняющий блокирующий вызов. В случае, если метод уже выполняется, то существует только один способ прервать его выполнение без возврата какого-либо значения и не нарушая при этом его контракт, — сгенерировать исключительную ситуацию. В этом случае возвращаемое значение метода просто неопределено.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2009/09/04/interrupted-exception.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>
