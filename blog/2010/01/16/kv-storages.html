@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>KV-хранилища</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>KV-хранилища</h1>
+	<div class="meta">
+		<span class="date">16 January 2010</span>
+		<span class="tags">
+			
+				<a href="/tags.html#nosql">nosql</a>
+			
+				<a href="/tags.html#scalability">scalability</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>В последнее время в web-программировании появился очередной тренд — Key-Value базы данных. Существует просто великое множество KV-решений, — одно лучше другого. Но так ли они важны и какая от них польза? Разрешите мне немного порассуждать о происхождении KV-хранилищ.</p>
+
+<h2 id="section">Нет дыма без огня</h2>
+
+<p>Недовольство реляционными базами данных начало появляться давно. Оказалось что на некоторых use case&rsquo;ах они не такие быстрые как хотелось бы. Они слишком сложные для того чтобы большинство программистов понимало как они работают, а следственно и то, как их использовать. Идея изоляции программиста от физических деталей хранения данных с треском провалилась. Если вы не знаете нюансов вашей РСУБД, то эффективно использовать ее на большом dataset&rsquo;е или при высокой конкурентной нагрузке у вас не получится.</p>
+
+<p>Помните чему вас учили в университете? Первая нормальная форма, вторая, тертья, Бойса-Кодда и т.д. Бурный рост интернет-аудитории с одной стороны и функциональности web-приложений с другой привел к тому, что пришлось пересмотреть паттерны использования реляционных СУБД. Сейчас, для того чтобы получить от реляционной БД приемлемый уровень пропускной способности, необходимо денормализовывать данные<sup id="fnref:denormalization"><a href="#fn:denormalization" rel="footnote">1</a></sup>, отказываться от распределенных транзакций и проверки целостности по внешним ключам<sup id="fnref:ebay-practicies"><a href="#fn:ebay-practicies" rel="footnote">2</a></sup>.</p>
+
+<p>Но не стоит спихивать эти проблемы на не дальновидность или не профессионализм разработчиков реляционных СУБД. Насколько хорошо вы себе представляете как работает реляционная СУБД? Давайте проведем quick test. Ответьте на следующие вопросы:</p>
+
+<ul>
+  <li>вы знаете что такое план выполнения запроса и как БД его строит?</li>
+  <li>вы знаете как БД использует несколько индексов для фильтрации в случае, если нет index&rsquo;а покрывающего все условия фильтрации?</li>
+  <li>вы знаете как БД использует индексы для сортировки, группировки и join&rsquo;ов?</li>
+  <li>вы знаете сильные и слабые стороны hash и btree индексов?</li>
+  <li>вы знаете разницу между nested loop join, merge join и hash join?</li>
+</ul>
+
+<p>Если вы утвердительно ответили хотя бы на половину вопросов, то вы знаете, что какая бы продвинутая БД у вас не была, сложные join&rsquo;ы, сложные критерии фильтрации и группировки требуют много времени, какие бы индексы вы ни создавали. Сделать эффективный индекс (индекс позволяющий не делать лишней работы и определить результат только по этому индексу) можно только если у вас невысокая вариативность выборок и вы знаете все виды возможных запросов.</p>
+
+<p>Но реляционные базы данных очень хорошо справляются с простыми запросами. Например, извлечение по первичному ключу. Вместе с тем, оказалось, что многие задачи можно свести к тому, чтобы они решались преимущественно такими простыми запросами. В этом случае, вы можете добиться от вашей БД большего&hellip; значительно большего.</p>
+
+<h2 id="kv-storage">KV-storage</h2>
+
+<p>Однажды приведя свою систему к тому состоянию, когда большинство выборок в ней производится по первичному ключу, вы можете задаться вопросом: а на кой черт мне здесь реляционная СУБД? Действительно, все эти статистические выкладки по cardinality индексов, эвристики заменяющие множество lookup&rsquo;ов на один sequential read нужны были только тогда когда мы не знали какой запрос прийдет от клиента. Теперь мы знаем — это lookup по id. А раз мы знаем, то мы можем написать хранилище не делающее ничего лишнего — KV-storage.</p>
+
+<p>Вот так они и появились. KV-хранилища — это не &ldquo;серебрянная пуля&rdquo; и не &ldquo;RDBMS killer&rdquo;. <em>Это следствие эволюции взглядов на паттерны доступа к данным</em>. KV-хранилища быстрые лишь потому, что они предоставляют только один способ доступа к данным — <a href="http://en.wikipedia.org/wiki/Hash_table">lookup по id</a>. Они быстрые потому, что не обременены, как РСУБД, необходимостью тратить лишнее время на определение оптимального плана выполнения запроса, чтобы сэкономить гораздо больше времени во время выполнения этого запроса.</p>
+
+<h2 id="nosql">Фронт NoSQL</h2>
+
+<p>Но современные постреляционные базы данных (если позволите так их назвать) ушли гораздо дальше чем просто lookup по id. Сейчас начинают набирать популярность документо-ориентированные базы данных (CouchDB, MongoDB), которые предоставляют более сложные способы извлечения и модификации данных. Некоторые KV-хранилища умеют нативно работать с коллекциями. Но эти возможности все равно меньше чем у реляционных баз данных.</p>
+
+<p>Весь фронт <a href="http://en.wikipedia.org/wiki/NoSQL">NoSQL</a> держится на том, что большинству web-приложений не нужны все возможности реляционной БД. Ну или скажем так, они могут обойтись без всех возможностей реляционной БД в угоду производительности.</p>
+
+<h2 id="kv-">Масштабируемость KV-решений</h2>
+
+<p>Очень распространенный стереотип заключается в том, что KV-хранилища очень легко масштабируются. По отношению к некоторым продуктам это утверждение есть ни что иное как подмена понятий.</p>
+
+<p>Задумайтесь, что дает вам, например, <a href="http://memcachedb.org/">memcachedb</a> для того чтобы легко масштабироваться? Кто-то из вас может сказать: &ldquo;Легко. Берем остаток от деления хеша первичного ключа на количество серверов и&hellip;&rdquo;. Ну ладно ладно, я понял. Кто-то может вспомнить про <a href="http://www.spiteful.com/2008/03/17/programmers-toolbox-part-3-consistent-hashing/">consistent hashing</a>. Отлично. Но дело в том, что это не хранилище дает вам эту возможность partitioning&rsquo;а, а тот паттерн доступа к данным которым вы пользуетесь. С таким же успехом, я могу легко вместо memcachedb использовать MySQL и утверждать что &ldquo;MySQL легко масштабируется&rdquo;.</p>
+
+<p>Справедливости ради, надо сказать что некоторые решения (<a href="http://incubator.apache.org/cassandra/">Cassandra</a>, <a href="http://project-voldemort.com/">Project Voldemort</a>, <a href="http://code.google.com/p/scalaris/">Scalaris</a>) сами по себе предоставляют решения для автоматического partitioning&rsquo;а ключей по нодам кластера. В отношении этих решений утверждение о масштабируемости все же верно.</p>
+
+<h2 id="section-1">Выводы</h2>
+
+<p>Суровая реальность научила нас тому, что для того чтобы быстро получать доступ к данным их необходимо хранить в удобном для оперирования над ними виде. Данные и их структура первичны в случае если вы хотите получить максимум производительности. Этому существует немало подтверждений <sup id="fnref:pitfals"><a href="#fn:pitfals" rel="footnote">3</a></sup> <sup id="fnref:cache-oblivious"><a href="#fn:cache-oblivious" rel="footnote">4</a></sup> (впрочем, пока эти подтверждения находятся в областях не связанных напрямую с web-программированием, поэтому они могут показаться вам безосновательными).</p>
+
+<p>Мой совет web-программистам заключается в том, чтобы они пересматривали паттерны доступа к данным в своих приложениях, и по возможности сводили их к более простым. Это может вам обеспечить необходимый уровень производительности, а позже и масштабируемости.</p>
+
+<p>К KV-хранилищам я бы советовал относится более осторожно. 100K запросов в секунду выглядит конечно заманчиво, но помните, — любая реляционка на подобных запросах ведет себя довольно шустро. Внедрение же еще одного продукта в проект увеличивает его себестоимость владения.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:denormalization">
+      <p><a href="http://www.infoq.com/news/2007/08/denormalization">Data normalization, is it really that good?</a><a href="#fnref:denormalization" rel="reference">&#8617;</a></p>
+    </li>
+    <li id="fn:ebay-practicies">
+      <p><a href="http://www.infoq.com/articles/ebay-scalability-best-practices">Scalability Best Practices: Lessons from eBay</a><a href="#fnref:ebay-practicies" rel="reference">&#8617;</a></p>
+    </li>
+    <li id="fn:pitfals">
+      <p><a href="http://research.scee.net/files/presentations/gcapaustralia09/Pitfalls_of_Object_Oriented_Programming_GCAP_09.pdf">Pitfalls of Object Oriented Programming</a><a href="#fnref:pitfals" rel="reference">&#8617;</a></p>
+    </li>
+    <li id="fn:cache-oblivious">
+      <p><a href="http://www.catonmat.net/blog/mit-introduction-to-algorithms-part-fourteen/">MIT&rsquo;s Introduction to Algorithms, Lectures 22 and 23: Cache Oblivious Algorithms</a><a href="#fnref:cache-oblivious" rel="reference">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2010/01/16/kv-storages.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

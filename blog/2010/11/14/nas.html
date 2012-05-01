@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Как я собирал NAS</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>Как я собирал NAS</h1>
+	<div class="meta">
+		<span class="date">14 November 2010</span>
+		<span class="tags">
+			
+				<a href="/tags.html#hardware">hardware</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>Коллеги давно просили меня описать процесс сборки и настройки своего NAS-сервера. Этим постом я искупаю свою вину. К тому же тема действительно актуальная и, мне кажется, многим будет интересно с какими проблемами я столкнулся, какое железо и софт использовал.</p>
+
+<!-- excerpt -->
+
+<p>NAS у меня исполняет несколько обязанностей:</p>
+
+<ul>
+  <li>файловое хранилище &ldquo;жирного&rdquo; контента (фильмы, etc);</li>
+  <li>сервер для Apple TimeMachine (бекапы);</li>
+  <li>качает и раздает торренты;</li>
+  <li>&ldquo;самопальный&rdquo; мониторинг сетевой активности с использованием <a href="http://www.mrtg.org/rrdtool/">rrdtool</a>;</li>
+  <li>локальный git-репозиторий.</li>
+</ul>
+
+<p>Мой опыт использования NAS начался с <a href="http://www.qnap.com/pro_detail_feature.asp?p_id=92">QNAP TS-109 PRO II</a>.</p>
+
+<p class="image photo"><img src="/images/nas/qnap-ts-109.jpg" alt="QNAP TS-109 PRO II" /></p>
+
+<p>Довольно удачная однодисковая железка, которая прослужила мне верой и правдой более года. У нее несколько минусов:</p>
+
+<ul>
+  <li>собственно всего один диск;</li>
+  <li>нестандартный встроенный linux;</li>
+  <li>ARM-based процессор.</li>
+</ul>
+
+<p>Один диск меня не устраивал по причине отсутствия резервирования. Второй и третий пункт меня напрягали, так как сам я довольно уверенно пользуюсь linux и embedded версия ОС предлагаемая QNAP вкупе с ARM процессором не устраивала меня по ряду причин: сборки не для всех пакетов есть под ARM, а те которые есть, редко обновляются и иногда содержат странные баги (у меня появился довольно изрядный опыт &ldquo;войны&rdquo; с rtorrent&rsquo;ом). Конечно, можно было бы собирать софт из исходников, но это осложнено следующими факторами:</p>
+
+<ul>
+  <li>установка компилятора и development библиотек тоже довольно нетривиальна (видимо проблема курицы и яйца);</li>
+  <li>будучи программистом с серьезным отношением к тестированию я отношусь к той категории людей которые считают, что если ты сам компилируешь пакет, ты должен его сам и тестировать. А мне этого совсем не хотелось.</li>
+</ul>
+
+<p>Таким, довольно эволюционным путем, примерно через полтора года я пришел к мысли что пора менять storage. На этот момент на рынке было несколько device&rsquo;ов, которые привлекли мое внимание:</p>
+
+<ul>
+  <li><a href="http://www.qnap.com/pro_detail_feature.asp?p_id=122">QNAP TS-219P</a>;</li>
+  <li><a href="http://www.synology.com/enu/products/DS210+/index.php">Synology DiskStation DS210+</a>;</li>
+  <li><a href="http://www.qnap.com/pro_detail_feature.asp?p_id=143">QNAP TS-259 Pro</a>;</li>
+  <li><a href="http://www.dont.ru/market.id13184.html">Acer easyStore H340</a>.</li>
+</ul>
+
+<p>Моя вера в x86 на этом поприще росла с каждой новостью связанной с Intel Atom. Поэтому два первых девайса, опять таки построенные на базе ARM процессора, отсеялись сами собой. Два последних представляют уже больший интерес, но анализируя их спецификации я пришел к мысли что я бы мог сам собрать более подходящую мне железку.</p>
+
+<h2 id="hardware">Hardware</h2>
+
+<p>Я начал подискивать подходящий miniITX корпус. Мягко говоря это не просто, особенно во Владивостоке. Большинство корпусов в этом форм факторе нацелены на создание nettop&rsquo;ов: имеют максимум 2 корзины под HDD, кучу лишних фентифлюшек вроде headphones output на фасаде и т.д. Мне же хотелось собрать железку не имеющую ничего лишнего и при этом &ldquo;на вырост&rdquo;, чтобы через пару лет не пришлось менять снова.</p>
+
+<p>В конце концов я нашел корпус, который меня полностью удовлетворил — <a href="http://usa.chenbro.com/corporatesite/products_detail.php?sku=79">Chenbro ES3469</a>.</p>
+
+<p class="image photo"><img src="/images/nas/chenbro.jpg" alt="Chenbro ES3469" /></p>
+
+<p>Этот корпус специально создавался под NAS, поэтому обладает довольно характерными особенностями:</p>
+
+<ul>
+  <li>четыре корзины для 3.5&rdquo; HDD с поддержкой горячей замены и индивидуальной индикацией питания и data activity;</li>
+  <li>один внутренний слот для 2.5&rdquo; HDD (очень удобно так как все четыре жестких можно отдать под хранение данных, а ОС поставить на отдельный пятый жесткий);</li>
+  <li>внешний блок питания, что позволяет сэкономить место внутри и избавится от одного лишнего вентилятора (внешний БП без активного охлаждения);</li>
+  <li>довольно &ldquo;богатая&rdquo; индикация на передней панели.</li>
+</ul>
+
+<p>Сам корпус сделан довольно качественно, внутри разделен на два отсека. В одном отсеке находятся жесткие диски с двумя вентиляторами работающими на выдув, во втором материнская плата и вся коммутация.</p>
+
+<p>Немного огорчило меня то, что одна из корзин сразу не заработала. Сначала я грешил на backplane, но слава богу дело было в неисправном SATA кабеле, который легко поддается замене. Замена правда осуществляется не самым простым образом, — для того чтобы добраться до отсека с корзинами и до backplane&rsquo;ов, надо буквально говоря разобрать весь корпус, что не очень удобно. Что уж тут поделать, издержки форм фактора.</p>
+
+<p>Следующим шагом стал выбор материнской платы. С ней тоже все оказалось не просто. Надо было найти Atom-based miniITX материнскую плату с полностью <em>пассивным охлаждением</em> и минимум <em>5 SATA портами</em>! Немного странные требования для форм фактора miniTX, не находите? Такая все же нашлась — <a href="http://www.supermicro.com/products/motherboard/ATOM/ICH9/X7SPA.cfm?typ=H">Supermicro X7SPA-H</a>:</p>
+
+<ul>
+  <li>двухядерник Intel Atom D510 1.6Ghz с поддержкой HT;</li>
+  <li>6 SATA портов;</li>
+  <li>два SO-DIMM DDR2 667MHz модуля, максимум 4Gb.</li>
+  <li>две гигабитные сетевые карты;</li>
+  <li>полностью пассивное охлаждение;</li>
+  <li>довольно простая видеокарта Intel GMA3150, что в моем случае является плюсом, будет меньше кушать и греться;</li>
+  <li>поддержка power on after failure, что для девайсов такого класса очень полезно.</li>
+</ul>
+
+<p>Вобщем, эта материнская плата подошла в моем случае просто идеально. Причем, материнская плата и корпус, что называется, соответствуют друг другу. Например, у обоих есть поддержка индикации power fail и chassis intrusion.</p>
+
+<p>Правда, тут произошел казус. Сразу материнка не завелась: питание есть, вентилятор на корпусе вращается, а power LED не горит и стандартного писка о прохождении POST check&rsquo;а нету. Отключил всю периферию, проверил что нигде ничего не замыкает, проверил память, — один черт, не заводится. Сбросил CMOS, — не заводится. Причем, если достать RAM, то матерится о ее отсутствии на всю квартиру. В конце концов, на третий день, когда вера в то что материнка жива окончательно иссякла, она при самых странных обстоятельствах (во время очередной операции &ldquo;выткни-воткни оперативку&rdquo;) завелась. То ли чудо, то ли фокус&hellip; То ли я два или три десятка раз подряд неверно вставлял оперативную память.</p>
+
+<p>Дальше стало проще. В качестве жестких я выбрал Western Digital линейки <a href="http://www.wdc.com/ru/products/Products.asp?DriveID=866">Caviar Green</a>, так как они хорошо себя зарекомендовали еще со времен моего первого NAS&rsquo;а — тихие и холодные. Сейчас у меня стоят два: <code>WD10EADS</code> и <code>WD10EARS</code>. Насколько я понимаю, отличаются они только объемом кеша 32/64Mb.</p>
+
+<p class="image photo"><img src="/images/nas/wd.jpg" alt="WD10EADS/WD10EARS" /></p>
+
+<p>Так как я старался собрать максимально тихий device, один из вентиляторов в отсеке с жесткими я отключил, а на второй поставил zalman&rsquo;овский регулятор скорости вращения. Эмпирическим путем была подобрана скорость, которая дает тихую работу. Температура при этом держится в районе 40-42 градусов, что меня вполне устраивает.</p>
+
+<p class="image"><img src="/images/nas/hdd-temp.png" alt="HDD Temperature" /></p>
+
+<h2 id="software">Software</h2>
+
+<p>Теперь немного об используемом программном обеспечении. Я &ldquo;на короткой ноге&rdquo; с Ubuntu, поэтому я выбрал именно этот дистрибутив. Так же, наслушавшись страшных историй о том как восстанавливают данные с RAID-зеркал, я сразу принял решение использовать файловую систему с поддержкой избыточности вместо аппаратного RAID&rsquo;а.</p>
+
+<p>Собственно, сейчас таких файловых системы две: BTRFS и ZFS. Первая находится на стадии беты и не предназначена для production использования. Вторая довольно стабильная и широко используемая, но в linux реализована в рамках проекта FUSE из-за лицензионных ограничений (изначально ее разработала Sun для ОС Solaris). По совокупности факторов я решил использовать ZFS.</p>
+
+<p>ZFS вещь довольно интересная. Она позволяет собрать из списка блочных девайсов виртуальный том с заданными настройками избыточности. У нее есть ряд преимуществ перед аппаратным RAID&rsquo;ом:</p>
+
+<ul>
+  <li>в зеркале могут участвовать абсолютно разные жесткие (разного размера);</li>
+  <li>выход из строя блочного девайса не запрещает клиентам читать и писать на том, до тех пор пока есть хотя бы одна живая реплика;</li>
+  <li>rebuild тома (scrub в терминах ZFS) тоже не блокирует клиентов, они по прежнему могут читать и писать;</li>
+  <li>настройки избыточности можно задавать отдельно для директорий. То есть вы можете хранить все в двух копиях, а особо важные для вас папки в трех (для этого том должен состоять как минимум из трех физических дисков).
+Все фичи кроме последней я вынуждено &ldquo;протестировал&rdquo; в ходе эксплуатации. Так что, да, это действительно работает. Для проверки последней у меня просто не было мотивации, у меня нет настолько важных данных.</li>
+</ul>
+
+<p>Создание ZFS тома делается очень просто:</p>
+
+<pre class="shell"><code>$ zpool create tank raidz1 /dev/sda /dev/sdb
+</code></pre>
+
+<p>После создания, том будет автоматически примонтирован в <code>/tank</code>. Теперь можно заливать на него информацию. Просмотр статуса по виртуальным томам делается следующими командами:</p>
+
+<pre class="shell"><code>$ zpool status
+$ zpool iostat -v
+</code></pre>
+
+<p>Перебалансировка и починка тома осуществляется при помощи команды:</p>
+
+<pre class="shell"><code>$ zpool scrub tank
+</code></pre>
+
+<p>В интернете есть множество информации о ZFS. Если хотите использовать ZFS, советую обратится обратится к <a href="http://docs.sun.com/app/docs/doc/819-5461">официальному мануалу</a>.</p>
+
+<p>Надо понимать что такая гибкость не дается бесплатно. ZFS прожорлив по памяти, поэтому советую оснастить машину гигабайтом, а лучше двумя гигабайтами оперативной памяти. Я так и сделал, благо она дешевая.</p>
+
+<p>С ZFS у меня произошел только один негатвиный инцедент. Во время начальной заливки данных на том, oomkiller&rsquo;у не понравилось что драйвер ZFS ест много памяти, и он его убил :). Это издержки того что ZFS работает в user space. После reboot&rsquo;а все стало нормально, ничего чинить не пришлось. Больше такого у меня не повторялось.</p>
+
+<p>Так же, я использую NAS как сервер для Apple Time Machine, поэтому мне надо было настроить его так, чтобы мой mac mini воспринимал его как AFP сервер. В интернете есть полно мануалов, <a href="http://www.kremalicious.com/2008/06/ubuntu-as-mac-file-server-and-time-machine-volume/">одним из которых я и пользовался</a>.</p>
+
+<p>Вот пожалуй и все что касается софта.</p>
+
+<h2 id="section">В итоге</h2>
+
+<p>Atom все же поменял мое представление о том, какой должен быть домашний файловый сервер. На базе атома вполне можно собрать тихий и холодный storage, и спихнуть на него &ldquo;домашнюю работу&rdquo;. При этом это все это будет работать под управлением стандартного дистрибутива вашей любимой ОС (хоть windows). А сама железка мне обошлась даже немого дешевле чем Acer easyStore H340.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2010/11/14/nas.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

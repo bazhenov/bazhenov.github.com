@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Terracotta vs. Memcache</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>Terracotta vs. Memcache</h1>
+	<div class="meta">
+		<span class="date">09 January 2009</span>
+		<span class="tags">
+			
+				<a href="/tags.html#cache">cache</a>
+			
+				<a href="/tags.html#java">java</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>В последнее время начали сравнивать <code>terracotta</code> и <code>memcache</code>. Мне это сравнение кажется некорректным. Бытует мнение что <code>terracotta</code> — это distributed cache<sup id="fnref:distributed-cache"><a href="#fn:distributed-cache" rel="footnote">1</a></sup>. Это все равно что называть автомобиль &ldquo;четырехколесным мопедом&rdquo;, только потому, что он может ездить и у него четыре колеса.</p>
+
+<p><code>Terracotta</code> часто определяют как Network Attached Memory. И это правда, но не вся. Технически никто не мешает вам использовать <code>terracotta</code> как distributed (или, как его еще иногда называют, clustered) cache. Но тут возникает проблема с <abbr title="High Availability">HA</abbr>. В кластере Terracotta всегда есть координатор, который управляет потоком данных. По словам Ari Zilka<sup id="fnref:ari-zilka-interview"><a href="#fn:ari-zilka-interview" rel="footnote">2</a></sup> (одного из основателей Terracota Inc.), именно по этой причине terracotta очень хорошо масштабируется, так как благодаря наличию координатора нет необходимости использовать multicast передачу данных. Однако, наличие координатора означает single point of failure. При использовании memcache <abbr title="Single Point of Failure">SPOF</abbr> нету, но вам необходимо самому распределять данные по нодам.</p>
+
+<p>Используя terracota вы можете взять <code>LinkedBlockingQueue&lt;Runnable&gt;</code>, пометить его как shared и обрабатывать очередь задач на всех нодах кластера. Вместе с корректной имплементацией распределенных локов мы имеем отличную платформу для распределенных вычислений и возможно даже хранения данных.</p>
+
+<p>С кешем все иначе. Его природа имеет несколько особенностей:</p>
+
+<ul>
+  <li>потерю кеша приложение должно способно пережить (не требуется <abbr title="High Availability">HA</abbr>);</li>
+  <li>при работе с кешем можно обойтись без атомарных его обновлений (не требуются атомарные примитивы и локи).</li>
+</ul>
+
+<p>С первым все должно быть понятно. Если приложение не смогло пережить потерю кеша, значит там хранился оригинал каких-либо данных, а следовательно это уже не кеш. Со вторым немного сложнее. Так как значение в кеше зависит только от внешних данных (данных не хранящихся в кеше), значит невозможны операции когда новое значение кеша зависит от его предыдущего значения. А значит не нужны атомарные обновления.</p>
+
+<p><code>Memсache</code> отлично подходит для таких сценариев. Ну а если вы решили использовать <code>memcache</code> как storage, а не как кеш, то вы обречены на собственную реализацию атомарного обновления данных<sup id="fnref:ref-php-sessions-memcache"><a href="#fn:ref-php-sessions-memcache" rel="footnote">3</a></sup>, как минимум.</p>
+
+<p>Таким образом, <code>memcache</code> и <code>terracotta</code> — это совсем разные вещи. Первое — это просто Network Attached Memory сервер. И без дополнительного кодирования его можно использовать только для кеширования данных. Второе — полноценная платформа для кластеризации вычислений. Как говорится, know your enemy.</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:distributed-cache">
+      <p><a href="http://debasishg.blogspot.com/2008/09/memcached-and-terracotta-alternatives.html">Memcached and Terracotta : Alternatives or Complementary?</a><a href="#fnref:distributed-cache" rel="reference">&#8617;</a></p>
+    </li>
+    <li id="fn:ari-zilka-interview">
+      <p><a href="http://www.infoq.com/interviews/ari-zilka-terracotta">Ari Zilka on Terracotta, Clustering and Open Source</a><a href="#fnref:ari-zilka-interview" rel="reference">&#8617;</a></p>
+    </li>
+    <li id="fn:ref-php-sessions-memcache">
+      <p><a href="http://habrahabr.ru/blogs/php/38261/">Особенности хранения сессий PHP в memcached</a><a href="#fnref:ref-php-sessions-memcache" rel="reference">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2009/01/09/terracotta-vs-memcache.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

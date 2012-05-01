@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Гарантия доставки сообщений и ее последствия</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+</head>
+<body>
+
+	<div class="site">
+
+		<header>
+			<div class="content">
+				<a href="/">Суровая реальность</a>
+			</div>
+		</header>
+
+		<div class="post content">
+	<h1>Гарантия доставки сообщений и ее последствия</h1>
+	<div class="meta">
+		<span class="date">06 December 2009</span>
+		<span class="tags">
+			
+				<a href="/tags.html#messaging">messaging</a>
+			
+				<a href="/tags.html#theory">theory</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>В <a href="/blog/2009/11/04/optimistic-locking-application.html">прошлой заметке</a>, я затронул тему порядка доставки сообщений MQ-системами. Отсутствие гарантий в отношении этого порядка вызвало некоторое возмущение со стороны читателей, поэтому я решил раскрыть эту тему более полно.</p>
+
+<p>Почему же многие очереди сообщений не гарантирую порядок? И так ли он вообще важен — этот порядок доставки?</p>
+
+<h2 id="section">Почему многие системы очередей не гарантируют порядок доставки?</h2>
+<p>Здесь потребуется договорится об обозначениях.</p>
+
+<blockquote>
+  <p>Для любых двух событий <code>A</code> и <code>B</code> запись <code>A→B</code> означает, что событие <code>A</code> происходит перед событием <code>B</code>. Людям знакомым с <a href="http://en.wikipedia.org/wiki/Java_Memory_Model">Java Memory Model</a> эта запись должна быть известна как отношение happens-before.</p>
+</blockquote>
+
+<p>Давайте представим себе очередь сообщений, которая гарантирует вышеупомянутый порядок и двух подписчиков читающих сообщения из этой очереди.</p>
+
+<p class="image"><img src="/images/delivery-order-guarantee/fig1.png" alt="Figure 1" /></p>
+
+<p>Исходя из этого мы можем определить порядок доставки сообщений следующим образом. Для двух любых сообщений <code>m1</code> и <code>m2</code> для которых выполняется условие <code>receive(m1)→receive(m2)</code> (то есть брокер получил сначала сообщение <code>m1</code> потом <code>m2</code>), если гарантируется что <code>dispatch(m1)→dispatch(m2)</code>, значит очередь сообщений гарантирует порядок доставки.</p>
+
+<p>Тем не менее гарантия в отношении порядка доставки мало что дает. Даже если сообщения доставлены в порядке (in-order), consumer’ы могут обработать сообщения в порядке отличном от порядка доставки (out-of-order).</p>
+
+<p class="image"><img src="/images/delivery-order-guarantee/fig2.png" alt="Figure 2" /></p>
+
+<p>Как любит говорить один мой коллега: &ldquo;Тому есть тысяча причин&rdquo;. Машины на которых работают consumer’ы могут быть разной конфигурации: у них могут быть разные процессоры, разный объем памяти, разная по производительности подсистема I/O. Но даже если они идентичны, у вас нет контроля над детерминизмом cpu и I/O scheduler’ов. Любая машина может отказать или начать медленно работать из-за большого количества pagefault’ов и т.д. Все это говорит о том, что порядок доставки сообщений не имеет ничего общего с порядком их обработки. А ведь именно порядок обработки, а не доставки должен интересовать нас в первую очередь.</p>
+
+<p>Порядок обработки сообщений мы можем определить следующим образом. Для двух любых сообщений <code>m1</code> и <code>m2</code> для которых выполняется условие <code>receive(m1)→receive(m2)</code>, если гарантируется что <code>ack(m1)→ack(m2)</code>, значит очередь сообщений гарантирует порядок обработки.</p>
+
+<p>Но соблюсти это правило очередь сообщений может только одним способом. Путем форсирования порядка <code>ack(m1)→dispatch(m2)</code>. Другими словами, брокер не должен отправлять следующее сообщение пока предыдущее не будет обработано. Это подразумевает следующую картину.</p>
+
+<p class="image"><img src="/images/delivery-order-guarantee/fig3.png" alt="Figure 3" /></p>
+
+<p>Не тяжело догадаться, что в любой момент времени в обработке будет находится только одно сообщение. В этом случае, пропускная способность кластера из десяти машин будет равна пропускной способности одной машины. Можете забыть про горизонтальное масштабирование.</p>
+
+<p>Получается что порядок доставки сам по себе ничего не значит, — важен порядок обработки, предоставление гарантий в отношении которого убивает на корню пропускную способность.</p>
+
+<h2 id="section-1">А важен ли порядок порядок обработки?</h2>
+<p>Иногда да. Есть ситуации когда порядок обработки очень важен. Предыдущая заметка иллюстрирует один из таких случаев. Но вы должны понимать, что любой порядок в web-приложении является имитацией. В любом web-приложении клиенты посылают запросы параллельно. Эти запросы параллельно идут по сети, параллельно обрабатываются frontend’ами, параллельно идут на backend’ы и так же параллельно ответы идут обратно к пользователям.</p>
+
+<p>Место где порядок обработки начинает проявляться — это реляционная база данных. Если два потока в транзакции модифицируют одни и те же кортежи, база данных останавливает выполнение одного из потоков до тех пор пока другой не завершит свою работу. База данных линеаризует выполнение нескольких потоков таким образом, что в системе <em>появляется порядок обработки</em>. Но вместе с появлением порядка обработки <em>испаряется пропускная способность</em>. К тому же тот порядок который навязывает база данных может не совпадать с порядком поступления запросов на frontend. Для двух любых запросов <code>req1</code> и <code>req2</code> связанных порядком <code>receive(req1)→receive(req2)</code> соблюдение правила <code>transaction(req1)→transaction(req2)</code> не гарантируется.</p>
+
+<p>В свою очередь, это означает что сложность, которая присуща решению продемонстрированному в <a href="/blog/2009/11/04/optimistic-locking-application.html">предыдущей заметке</a>, не является сложностью присущей асинхронным системам обработки сообщений. Это сложность присущая web-приложениям в целом. И даже если бы вы исключили MQ-систему из транка обработки и, скажем, посылали бы сообщения через SOAP или напрямую писали в базу данных, вам все равно пришлось бы реализовывать те же механизмы, чтобы обеспечить сохранность данных.</p>
+
+<blockquote>
+  <p>Любое web-приложение — это конкурентная система в природе которой порядок обработки запросов отсутствует.</p>
+</blockquote>
+
+<p>Некоторых людей такая ситуация не устраивает. Отчасти являясь идеалистами (что особенно характерно для программистов) они не могут ужиться с мыслью, что те или иные процессы протекают стохастично и не имеют порядка в своей природе. Попытки навязать этот порядок обрекают web-приложение на деградацию пропускной способности. Вы можете наблюдать этот синдром повсюду — начиная от многопоточного программировния и использования mutex’ов до баз данных и протоколов XA-транзакций. В свое время Dan Pritchett написал об этом отличное эссе — &ldquo;<a href="http://www.addsimplicity.com/adding_simplicity_an_engi/2007/05/chaotic_perspec.html">Chaotic Perspectives</a>&rdquo;.</p>
+
+<p>Если вы web-программист, то я вас поздравляю. Судьба сделала вам подарок. В других отраслях программистам приходится прилагать титанические усилия для распараллеливания задач. У вас же большая часть процессов протекает и так параллельно. Все что вам надо, — смирится с мыслью, что порядок обработки запросов в системе не детерминистичен. С этим бессмысленно бороться, <em>этим надо уметь пользоваться</em>.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2009/12/06/delivery-order-guarantee.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div class="related">
+		<h2>Related Posts</h2>
+		<ul class="posts">
+			
+				<li>
+					<span>16 Apr 2012</span> &raquo;
+					<a href="/blog/2012/04/16/one-in-a-million.html">Один на миллион</a>
+				</li>
+			
+				<li>
+					<span>26 Feb 2012</span> &raquo;
+					<a href="/blog/2012/02/26/highload.html">О высокой нагрузке</a>
+				</li>
+			
+				<li>
+					<span>10 Jun 2011</span> &raquo;
+					<a href="/blog/2011/06/10/deploy.html">Deploy и прочие неприятности</a>
+				</li>
+			
+		</ul>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+
+</body>
+</html>

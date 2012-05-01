@@ -1,0 +1,5 @@
+#!/bin/bash
+
+P=../bazhenov.github.com
+jekyll --no-auto
+mv _site/* $P/
