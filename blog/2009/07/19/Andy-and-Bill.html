@@ -16,16 +16,6 @@
 	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
 
 	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript"
-	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-
-	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
-	<script>
-	$(document).ready(function() {
-		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
-	});
-	</script>
 </head>
 <body>
 
@@ -168,6 +158,14 @@
 					
 	</div>
 
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
 	<script type="text/javascript">
 		MathJax.Hub.Config({
 			tex2jax: {
