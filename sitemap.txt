@@ -8,6 +8,7 @@ http://bazhenov.me/rss.xml
 http://bazhenov.me/sitemap.txt
 http://bazhenov.me/tags.html
 
+http://bazhenov.me/blog/2012/05/05/harmonic-mean.html
 http://bazhenov.me/blog/2012/04/16/one-in-a-million.html
 http://bazhenov.me/blog/2012/02/26/highload.html
 http://bazhenov.me/blog/2011/06/10/deploy.html
