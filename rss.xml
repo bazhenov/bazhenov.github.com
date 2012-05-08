@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Mon, 07 May 2012 13:29:46 +1100</pubDate>
-    <lastBuildDate>Mon, 07 May 2012 13:29:46 +1100</lastBuildDate>
+    <pubDate>Tue, 08 May 2012 14:37:05 +1100</pubDate>
+    <lastBuildDate>Tue, 08 May 2012 14:37:05 +1100</lastBuildDate>
     
     <item>
       <title>Гармоническое среднее</title>
@@ -15,7 +15,7 @@
       <pubDate>Sat, 05 May 2012 00:00:00 +1100</pubDate>
       <author>dotsid@gmail.com (Denis Bazhenov)</author>
       <guid>http://bazhenov.me/blog/2012/05/05/harmonic-mean</guid>
-      <description>&lt;p&gt;Сегодня я хочу обсудить следующую проблему. Как мониторить CPU usage на многопроцессорной машине? Конечно же мониторить метрики выдываемые &lt;code&gt;mpstat&lt;/code&gt;. Эта программа выдает процент времени который процессор проводит в различныйх состояниях (&lt;code&gt;user&lt;/code&gt;, &lt;code&gt;system&lt;/code&gt;, &lt;code&gt;iowait&lt;/code&gt;, &lt;code&gt;idle&lt;/code&gt; и т.д.).&lt;/p&gt;
+      <description>&lt;p&gt;Сегодня я хочу обсудить следующую проблему. Как мониторить CPU usage на многопроцессорной машине? Конечно же мониторить метрики выдываемые &lt;code&gt;mpstat&lt;/code&gt;. Эта программа выдает процент времени который процессор проводит в различных состояниях (&lt;code&gt;user&lt;/code&gt;, &lt;code&gt;system&lt;/code&gt;, &lt;code&gt;iowait&lt;/code&gt;, &lt;code&gt;idle&lt;/code&gt; и т.д.).&lt;/p&gt;
 
 &lt;!--excerpt--&gt;
 
@@ -39,7 +39,7 @@ Linux 2.6.32-200.13.1.el5uek (search-personal2.vfarm.loc)		05/05/2012 	_x86_64_	
 
 &lt;ul&gt;
   &lt;li&gt;машина загружена симметрично и у каждого ядра есть еще масса свободного времени;&lt;/li&gt;
-  &lt;li&gt;машина загружена не симметрично – одно ядро работает на 100% все остальные курят бамбук.&lt;/li&gt;
+  &lt;li&gt;машина загружена не симметрично – одно ядро работает на 100%, а все остальные курят бамбук.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Конечно же последний случай это явная проблема и система мониторинга должна позволять находить такие ситуации. Но что мониторить чтобы находить ассиметричную нагрузку на различные ядра?&lt;/p&gt;
@@ -72,6 +72,8 @@ Linux 2.6.32-200.13.1.el5uek (search-personal2.vfarm.loc)		05/05/2012 	_x86_64_	
 &lt;p&gt;Это может быть любая активность которая не может быть эффективно распараллелена. Например, банальный &lt;code&gt;grep&lt;/code&gt; по большому объему данных (если он не упрется в I/O), сжатие, потоковое кодирование видео, шифрование, некоторые алгоритмы GC в JVM однопоточные по своей природе.&lt;/p&gt;
 
 &lt;p&gt;Более подробно об этом явлении я уже писал ранее в заметке &amp;ldquo;&lt;a href=&quot;http://bazhenov.me/blog/2009/01/13/moores-law-a-la-finita.html&quot;&gt;Конец эры закона Мура&lt;/a&gt;&amp;rdquo;.&lt;/p&gt;
+
+&lt;p class=&quot;update&quot;&gt;В коментариях мне подсказали что стоит также посмотреть в &lt;code&gt;/proc/interrupts&lt;/code&gt; и в графы &lt;code&gt;%irq&lt;/code&gt; и &lt;code&gt;%soft&lt;/code&gt; вывода &lt;code&gt;mpstat&lt;/code&gt;. На системах с высокой сетевой или дисковой нагрузкой может быть довольно большое число прерываний на одном ядре.&lt;/p&gt;
 
 &lt;h2 id=&quot;section-3&quot;&gt;Что делать в этой ситуации?&lt;/h2&gt;
 &lt;p&gt;Во-первых, надо понять является ли это проблемой. Вполне возможно, что эта ситуация может быть вызвана какой-нибудь background задачей, которая ни коим образом не затрагивает пользователей. Если же данная ситуация влияет на качество сервиса предоставляемого пользователям, то определенно надо более точно локализовать проблему и попытаться разрешить ее.&lt;/p&gt;
