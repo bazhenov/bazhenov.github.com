@@ -1,13 +1,13 @@
 
 http://bazhenov.me/about.html
 http://bazhenov.me/archive.html
-http://bazhenov.me/categories.html
 http://bazhenov.me/index.html
 http://bazhenov.me/pages.html
 http://bazhenov.me/rss.xml
 http://bazhenov.me/sitemap.txt
 http://bazhenov.me/tags.html
 
+http://bazhenov.me/blog/2012/05/12/functional-java.html
 http://bazhenov.me/blog/2012/05/05/harmonic-mean.html
 http://bazhenov.me/blog/2012/04/16/one-in-a-million.html
 http://bazhenov.me/blog/2012/02/26/highload.html
