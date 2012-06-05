@@ -56,7 +56,10 @@ h3               { font-weight: 600 }
 .post .update            { font-size: 14px; border-left: 5px solid #ddd;
                            color: #555; margin-left: 30px; padding-left: 10px; }
 
-.center       { margin: 0 auto; height: 100%; text-align: center }
+.center       { margin: 0 auto; height: 100% }
+
+table td            { padding: 5px; text-align: center }
+table td.label      { text-align: right !important }
 
 .postOverview {
   width: 90%;

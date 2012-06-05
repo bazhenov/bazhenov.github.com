@@ -6,8 +6,164 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Sat, 12 May 2012 11:10:23 +1100</pubDate>
-    <lastBuildDate>Sat, 12 May 2012 11:10:23 +1100</lastBuildDate>
+    <pubDate>Tue, 05 Jun 2012 23:43:41 +1100</pubDate>
+    <lastBuildDate>Tue, 05 Jun 2012 23:43:41 +1100</lastBuildDate>
+    
+    <item>
+      <title>О задачах классификации</title>
+      <link>http://bazhenov.me/blog/2012/06/05/classification.html</link>
+      <pubDate>Tue, 05 Jun 2012 00:00:00 +1100</pubDate>
+      <author>dotsid@gmail.com (Denis Bazhenov)</author>
+      <guid>http://bazhenov.me/blog/2012/06/05/classification</guid>
+      <description>&lt;p&gt;В этом и следующих постах, я хочу на пальцах описать процесс создания простого классификатора текстовых документов, а также рассказать о некоторых нетипичных с обывательской точки зрения подходах используемых при классификации документов.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://ru.wikipedia.org/wiki/Классификация_документов&quot;&gt;Классификатор&lt;/a&gt; – это алгоритм соотносящий некие входные данные с одним или несколькими классами. В отличии от алгоритмов &lt;a href=&quot;http://ru.wikipedia.org/wiki/Кластерный_анализ&quot;&gt;кластеризации&lt;/a&gt; эти классы должны быть определены заранее. &lt;/p&gt;
+
+&lt;p&gt;Возможно, кому-то это определение покажется слишком общими или академическим, поэтому лучше наверное рассмотреть задачу классификации на примерах. А примеров хоть отбавляй.&lt;/p&gt;
+
+&lt;!-- excerpt --&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;Они повсюду&lt;/h2&gt;
+
+&lt;p&gt;Пожалуй самый яркий пример автоматической классификации – это фильтрация спама. Каждый день на мой ящик падает десятки если не сотни спам-писем, которые автоматически отфильтровываются из моего inbox&amp;rsquo;а.&lt;/p&gt;
+
+&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/spam.png&quot; alt=&quot;Mail Spam&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Современные коммерческие системы способны успешно фильтровать спам с точностью превышающей 99%&lt;sup id=&quot;fnref:google-spam-filter-performance&quot;&gt;&lt;a href=&quot;#fn:google-spam-filter-performance&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. Другим довольно типичным примером классификации служит автоматическое определение тематики того или иного текста. Некоторые новостные аггрераторы используют подобный подход для группировки новостей в направления: экономика, политика, общественная жизнь и т.д.&lt;/p&gt;
+
+&lt;p&gt;Зачастую классификация является фундаментом на котором строятся алгоритмы решения более сложных задач.
+Например, классификация используется при создании рекомендательных систем и в частности при реализации &lt;a href=&quot;http://ru.wikipedia.org/wiki/Коллаборативная_фильтрация&quot;&gt;коллаборативной фильтрации&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/recommendation.png&quot; alt=&quot;Amazon recommendations&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Safari Reader Mode является еще одним примером где используются алгоритмы классификации для достижения конечной цели. Суть этого режима работы браузера заключается в том что он позволяет автоматически убрать со страницы всю шелуху не имеющую отношения к сути контента страницы&lt;sup id=&quot;fnref:boilerplate-paper&quot;&gt;&lt;a href=&quot;#fn:boilerplate-paper&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+
+&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/reader-mode.png&quot; alt=&quot;Safari Reader Mode&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Так же классификация используется в задачах face detection&amp;rsquo;а и face recognition&amp;rsquo;а.&lt;/p&gt;
+
+&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/face-detection.png&quot; alt=&quot;Face Detection in Aperture&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Классификация используется как инструмент для решения множества других задач:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;снятие омонимии при обработке натуральных языков;&lt;/li&gt;
+  &lt;li&gt;в поисковых системах – для ограничения области поиска в целях повышения точности (вертикальный поиск);&lt;/li&gt;
+  &lt;li&gt;автоматическое определение языка на котором написан текст;&lt;/li&gt;
+  &lt;li&gt;анализ тональности (определение эмоциональной окраски текста).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Этот список можно продолжать еще долго. Например, в медицине алгоритмы классификации используются для реконструирования 3D модели головного мозга по серии МРТ снимков&lt;sup id=&quot;fnref:mri-3d&quot;&gt;&lt;a href=&quot;#fn:mri-3d&quot; rel=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;, а также для диагностики пациентов страдающих синдромом Альцгеймера&lt;sup id=&quot;fnref:alzheimer&quot;&gt;&lt;a href=&quot;#fn:alzheimer&quot; rel=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;Традиционные подходы&lt;/h2&gt;
+
+&lt;h3 id=&quot;rule-based-classification&quot;&gt;Rule based classification&lt;/h3&gt;
+
+&lt;p&gt;Если говорить о задаче классификации текстов, то пожалуй ее традиционным решением является классификация основная на правилах (rule based classification). Вы имплементируете правила определения класса документа по его тексту в виде &lt;code&gt;if-then-else&lt;/code&gt; выражений (код на Scala).&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;def classify(text: String) =
+	if (text.contains(&quot;виагра&quot;) || text.contains(&quot;бухгалтер&quot;)) &quot;SPAM&quot; else &quot;NOT SPAM&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Этот подход может быть хорошим вариантом если вы работаете с небольшой коллекцией документов которую вы способны охватить и тщательно проанализировать. Просто потому что вы четко контролируете правила по которым классификатор принимает решения. Но есть у этого подхода и очевидные минусы:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;для того чтобы выбрать значимые для классификации слова необходимо обладать экспертными знаниями в предметной области. Есть ли у вас например соображения по поводу ключевых слов которые хорошо отличают документы посвященные финансовой тематике от документов экономической? У меня очень смутные;&lt;/li&gt;
+  &lt;li&gt;отнюдь не всегда факт наличия или отсутствия какого-либо одного слова является решающим фактором для принятия решения.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Поподробней остановлюсь на последнем пункте. Если вернуться к задаче определения спама и немного подумать о том какие слова являются хорошими классификационными признаками (classifying feature), то станет понятно что нет такого слова наличие которого гарантировало бы что сообщение является спамом. Возможно, в пределах компании производящей &lt;a href=&quot;http://ru.wikipedia.org/wiki/Силденафил&quot;&gt;силденафил&lt;/a&gt; в промышленных масштабах слово &amp;ldquo;виагра&amp;rdquo; не является показательным признаком спам-сообщения, кто знает.&lt;/p&gt;
+
+&lt;p&gt;В общем, суть такова: &lt;em&gt;любое из известных спам-слов пусть редко но встречается в повседневной жизни.&lt;/em&gt; Поэтому, принимать окончательно решение основываясь на факте наличия или отсутствия какого-либо одного слова идея контрпродуктивная. Мы можем усложнять правила добавляя вложенные &lt;code&gt;if&lt;/code&gt;&amp;lsquo;ы. Но довольно быстро вы поймете что возможности человека в формулировании таких правил очень ограничены, потому что &lt;em&gt;сложность правил растет экспоненциально с количеством выбранных для классификации слов&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;weight-based-classification&quot;&gt;Weight based classification&lt;/h3&gt;
+
+&lt;p&gt;Мы можем пойти другим путем. Мы можем для каждого слова выбрать некий вес, который будет означать насколько вероятно что сообщение с этим словом является спамом (0 – никогда не является спамом, 1 – всегда спам).&lt;/p&gt;
+
+&lt;table class=&quot;center&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&amp;nbsp;&lt;/th&gt;
+      &lt;th&gt;spam&lt;/th&gt;
+      &lt;th&gt;not spam&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;бухгалтер&lt;/td&gt;
+      &lt;td&gt;0.99&lt;/td&gt;
+      &lt;td&gt;0.01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;виагра&lt;/td&gt;
+      &lt;td&gt;0.99&lt;/td&gt;
+      &lt;td&gt;0.01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;выгодное&lt;/td&gt;
+      &lt;td&gt;0.70&lt;/td&gt;
+      &lt;td&gt;0.30&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;github&lt;/td&gt;
+      &lt;td&gt;0.01&lt;/td&gt;
+      &lt;td&gt;0.99&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;В этой таблице перечислены гипотетические веса для четырех слов. Сумма значений в строке должна быть равна единице. Тогда наша классификация может выглядеть следующим образом:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;def classify(text: String) = {
+	val weights = Map(&quot;бухгалтер&quot;-&amp;gt;0.9, &quot;виагра&quot;-&amp;gt;0.99, &quot;выгодное&quot;-&amp;gt;0.7, &quot;github&quot;-&amp;gt;0.01)
+	val words = text.split(' ').filter(weights.contains(_))
+	val P_spam = words.map(weights(_)).reduce(_ * _)
+	val P_not_spam = words.map(1 - weights(_)).reduce(_ * _)
+	if (P_spam &amp;gt; P_not_spam) &quot;SPAM&quot; else &quot;NOT SPAM&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Мы берем каждое слово и определяем суммарный вес документа отдельно для класса &amp;ldquo;спам&amp;rdquo; и класса &amp;ldquo;не спам&amp;rdquo;. Суммарный вес определяется как произведение весов всех известных слов документа. Слова для которых у нас нет веса мы пропускаем при классификации. Какой суммарный вес оказался больше тот класс и побеждает.&lt;/p&gt;
+
+&lt;p&gt;Это более разумный подход, так как он более гибок и принимает решение на основании всех известных слов в тексте. Так же его гораздо проще сопровождать чем полотна &lt;code&gt;if&lt;/code&gt;&amp;lsquo;ов. &lt;/p&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;Метод машинного обучения&lt;/h2&gt;
+
+&lt;p&gt;А теперь очень важное замечание. &lt;em&gt;Если у нас будет некий способ автоматически подобрать оптимальные веса слов, то данный подход можно считать методом &lt;a href=&quot;http://ru.wikipedia.org/wiki/Машинное_обучение&quot;&gt;машинного обучения&lt;/a&gt;&lt;/em&gt;. Сильно упрощенный, возможно даже гипертрофированный, но по своей сути это именно метод машинного обучения.&lt;/p&gt;
+
+&lt;p&gt;Если быть более точным, то описанный мною метод является зародышем &lt;a href=&quot;http://ru.wikipedia.org/wiki/Наивный_байесовский_классификатор&quot;&gt;наивного байесовского классификатора&lt;/a&gt;. Но не позволяйте названию обмануть вас, NBC (Naïve Bayes Classifier) если не самый, то один из самых часто используемых классификаторов. Тому есть ряд причин:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;он прост в имплементации и тестировании;&lt;/li&gt;
+  &lt;li&gt;процесс обучения довольно эффективен по сравнению с другими более сложными классификаторами;&lt;/li&gt;
+  &lt;li&gt;на небольших корпусах документов разница между NBC и другими гораздо более сложными алгоритмами классификации зачастую несущественна, а иногда NBC может оказаться и более точным&lt;sup id=&quot;fnref:on-bayes-optimality&quot;&gt;&lt;a href=&quot;#fn:on-bayes-optimality&quot; rel=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;В последующих заметках я более детально опишу вопросы связанные с созданием и тестированием подобного классификатора. Подписывайтесь на &lt;a href=&quot;http://bazhenov.me/rss.xml&quot;&gt;RSS&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;Ссылки по теме&lt;/h2&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:google-spam-filter-performance&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://googlesystem.blogspot.com/2007/10/how-gmail-blocks-spam.html&quot;&gt;How Gmail Blocks Spam&lt;/a&gt;&lt;a href=&quot;#fnref:google-spam-filter-performance&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:boilerplate-paper&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://www.l3s.de/~kohlschuetter/publications/wsdm187-kohlschuetter.pdf&quot;&gt;Boilerplate Detection using Shallow Text Features&lt;/a&gt;&lt;a href=&quot;#fnref:boilerplate-paper&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:mri-3d&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;amp;arnumber=1352574&amp;amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel5%2F9356%2F29717%2F01352574.pdf%3Farnumber%3D1352574&quot;&gt;Automatic classification of MRI images for three-dimensional volume reconstruction by using general regression neural networks&lt;/a&gt;&lt;a href=&quot;#fnref:mri-3d&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:alzheimer&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://www.ncbi.nlm.nih.gov/pubmed/20542124&quot;&gt;Automatic classification of patients with Alzheimer&amp;rsquo;s disease from structural MRI: a comparison of ten methods using the ADNI database&lt;/a&gt;&lt;a href=&quot;#fnref:alzheimer&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:on-bayes-optimality&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://www.cc.gatech.edu/fac/Charles.Isbell/classes/reading/papers/bayes-opt.pdf&quot;&gt;On the Optimality of the Simple Bayesian Classifier under Zero-One Loss&lt;/a&gt;&lt;a href=&quot;#fnref:on-bayes-optimality&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Особенности функциональщины в Java</title>
@@ -369,116 +525,6 @@ Linux 2.6.32-200.13.1.el5uek (search-personal2.vfarm.loc)		05/05/2012 	_x86_64_	
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Deploy и прочие неприятности</title>
-      <link>http://bazhenov.me/blog/2011/06/10/deploy.html</link>
-      <pubDate>Fri, 10 Jun 2011 00:00:00 +1100</pubDate>
-      <author>dotsid@gmail.com (Denis Bazhenov)</author>
-      <guid>http://bazhenov.me/blog/2011/06/10/deploy</guid>
-      <description>&lt;p&gt;В продолжение &lt;a href=&quot;http://bazhenov.me/blog/2011/04/09/build.html&quot;&gt;предыдущего поста&lt;/a&gt; хочу немного рассказать о том как у нас происходит deploy. В прошлый раз мы закончили на том что артефакт доставлен на production и готов к развертыванию. Начинается самое интересное, процесс деплоя.&lt;/p&gt;
-
-&lt;!--excerpt--&gt;
-
-&lt;p&gt;Но для начала надо немного описать платформу на которую мы деплоим наши приложения. В качестве servlet-container&amp;rsquo;а мы используем &lt;a href=&quot;http://jetty.codehaus.org/jetty/&quot;&gt;Jetty&lt;/a&gt;. Есть два основных типа приложений, которые мы пишем и сопровождаем: web-приложения, которые имеют некий web-интерфейс (это может быть как UI, так и REST интерфейс), а также background сервисы, которые как правило работают асинхронно (мы активно используем &lt;a href=&quot;http://activemq.apache.org/&quot;&gt;ActiveMQ&lt;/a&gt;). И здесь нужно подметить первую особенность, мы используем Jetty для обоих типов приложений. Это может показатся странным, так как для background-сервисов мы получаем явный overhead связанный с запуском и работой servlet-container&amp;rsquo;а. Но этот overhead просто мизерный по сравнению с тем какие плюсы мы получаем. А именно:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;единые утилиты управления lifecycle&amp;rsquo;ом приложения вне зависимости от его типа (старт, останов, перезапуск);&lt;/li&gt;
-  &lt;li&gt;стандартные способы задания конфигурации приложения вне зависимости от его типа;&lt;/li&gt;
-  &lt;li&gt;стандартные форматы распространения приложения вне зависимости от его типа (в нашем случае &lt;code&gt;.war&lt;/code&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Вобщем, стандартизация на лицо.&lt;/p&gt;
-
-&lt;p&gt;У нас своя сборка Jetty в которой кроме самого Jetty, есть еще несколько часто используемых нами библиотек (например: &lt;code&gt;slf4j&lt;/code&gt;, &lt;code&gt;logback&lt;/code&gt;, &lt;code&gt;mysql&lt;/code&gt; драйвер, библиотеки connection pooling&amp;rsquo;а и некоторые другие). Сборка представлена в виде rpm пакета, что позволяет очень быстро подготавливать новую машину: &lt;code&gt;yum install jdk jetty&lt;/code&gt;, готово.&lt;/p&gt;
-
-&lt;p&gt;Вас может удивило почему мы ставим на production машины JDK, а не JRE. Это связано с наличием в JDK очень полезных для диагностики утилит, таких как: &lt;code&gt;jmap&lt;/code&gt;, &lt;code&gt;jstack&lt;/code&gt;, &lt;code&gt;jvisualvm&lt;/code&gt; и других. Это выгодно отличает платформу Java от множества других, &amp;ndash; масса утилит для диагностики, которые в большинстве случаев позволяют довольно быстро понять что не так с приложением.&lt;/p&gt;
-
-&lt;p&gt;Деплой приложения состоит из следующих шагов:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;распространение бинарника с приложением, а также конфигурации на целевые машины;&lt;/li&gt;
-  &lt;li&gt;перезапуск servlet container&amp;rsquo;а;&lt;/li&gt;
-  &lt;li&gt;deployment тестирование.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Естественно второй и третий шаг выполняются для всех машин по очереди.&lt;/p&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;Распространение артефакта и конфигурации&lt;/h2&gt;
-&lt;p&gt;Тут все просто, &lt;code&gt;scp&lt;/code&gt; доставляет файлы на каждую машину по очереди и ложит каждый в нужное место. Доставляются артефакты, а также конфигурационные файлы.&lt;/p&gt;
-
-&lt;h3 id=&quot;servlet-container&quot;&gt;Перезапуск servlet container&amp;rsquo;а&lt;/h3&gt;
-&lt;p&gt;Мы не используем hot redeploy, так как он вызывает ряд проблем. В частности, небезизвестную &lt;a href=&quot;http://www.jroller.com/agileanswers/entry/preventing_java_s_java_lang&quot;&gt;OutOfMemoryError: PermGen&lt;/a&gt;. Для перезапуска используются скрипты входящие в стандартную поставку Jetty с некоторыми несущественными дополнениями.&lt;/p&gt;
-
-&lt;h3 id=&quot;deployment-&quot;&gt;Deployment тестирование&lt;/h3&gt;
-&lt;p&gt;Этот момент стоит описать поподробнее. После того как Jetty запустился было бы неплохо проверить что приложение способно выполнять основные функции. Тот кто деплоит приложение может опечататься в конфигурации, системные администраторы могут забыть &amp;ldquo;пропилить дырку&amp;rdquo; в firewall&amp;rsquo;е для необходимого приложению сервиса, мало ли что еще может произойти.&lt;/p&gt;
-
-&lt;p&gt;Задача deployment тестирования проверить что у приложения есть доступ ко всем необходимым сервисам для того чтобы оно выполняло свою работу. Это могут быть базы данных, очереди сообщений, сетевые файловые системы и другое middleware ПО. К счастью для нас, Spring Beans контейнер практически все делает за нас. Если во время инициализации контейнера (частью которого являются подключения к БД и т.д.) происходит ошибка, об этом легко узнать послав &lt;code&gt;GET&lt;/code&gt; запрос на любой url, который обрабатывается непосредственно spring&amp;rsquo;ом. У нас есть соглашение что url &lt;code&gt;/status&lt;/code&gt; не занимается приложением и служит для deployment тестирования. Этот url также сообщает какая версия приложения запушена в данный момент. Таким образом, deploy скрипт после того как перезапускает servlet container начинает опрашивать приложение. Если приложение возвращает 200-й статус код, то можно переходить к обновлению следующей машины. Если нет, то процесс деплоя считается неуспешным и прерывается. Тот кто делает deploy может инициировать процедуру отката. Откат мы делаем руками, так как процент &amp;ldquo;битых&amp;rdquo; релизов у нас не велик и смысла автоматизировать эту процедуру пока что смысла нет.&lt;/p&gt;
-
-&lt;h3 id=&quot;rollout--&quot;&gt;Rollout распределенных приложений&lt;/h3&gt;
-&lt;p&gt;Когда приложение запущено в нескольких экземплярах (на нескольких машинах), то после запуска приложения на одном ноде имеет смысл немного подождать прежде чем переходить к следующей машине. Здесь играют свою роль как особенности приложения, так и особенности платформы. Java, как русские &amp;ndash; &amp;ldquo;долго запрягает, но быстро едет&amp;rdquo; (начальная загрузка байт кода, создание пула соединений, JIT компилятор etc). Нас такой tradeoff вполне устраивает, поэтому наш deploy скрипт может быть сконфигурирован таким образом, чтобы давать только что запущенному ноду &amp;ldquo;разогреться&amp;rdquo; перед тем как принять на себя нагрузку его еще не обновленных коллег. Как правило, 3-5 секунд достаточно.&lt;/p&gt;
-
-&lt;p&gt;Деплой на несколько машин (особенно учитывая их &amp;ldquo;разогрев&amp;rdquo;) порождает интересную проблему. Во время обновления кластера, на нем работает &lt;em&gt;две версии приложения&lt;/em&gt;. Некоторых людей этот факт ставит в ступор. Они не могут ужиться с тем, что у приложения в любой момент времени нет строго определенной версии.&lt;/p&gt;
-
-&lt;p&gt;Суровая реальность заключается в том, что требование работать одновременно в &amp;ldquo;нескольких версиях&amp;rdquo; порождается природой web-приложений. Мы стремимся к тому чтобы наше система всегда была online. Это имеет одно очень важное последствие для процесса deploy&amp;rsquo;я:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Мы всегда должны иметь возможность откатиться на предыдущую версию системы, так как пусть редко, но бывает что ошибка все же проходит сквозь все рубежи тестирования и попадает на production. Причем rollback должен осуществлятся не медленнее чем rollout.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;Это приводит нас к следующему заключению: &lt;em&gt;следующая версия системы всегда должна быть обратно-совместима с предыдущей&lt;/em&gt;. Это касается не только кода, но и схемы БД, данных в кеше и т.д.&lt;/p&gt;
-
-&lt;p&gt;Оказывается, что когда новая версия системы обратно совместима с текущей, нет ничего страшного в том чтобы некоторое время они поработали вместе.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;На практике&lt;/h2&gt;
-&lt;p&gt;Итак, как это все происходит на практике. Разработчик заходит через &lt;code&gt;ssh&lt;/code&gt; на машину-координатор, куда автоматически доставляются артефакты приложений. У каждого приложения есть отдельная директория содержимое которой выглядит примерно следующим образом:&lt;/p&gt;
-
-&lt;pre class=&quot;shell&quot;&gt;&lt;code&gt;-rw-rw-r-- 1 tech tech      101 Jun 24 16:42 .config
--rw-rw-r-- 1 tech tech     1134 Jun  9 13:05 config.properties
--rw-r--r-- 1 tech tech      163 May 16 16:11 .jettyrc
--rw-r--r-- 1 tech tech 30298960 Jun  3 19:41 search-web-frontend-1.0.118.war
--rw-r--r-- 1 tech tech 30299011 Jun  3 21:25 search-web-frontend-1.0.119.war
--rw-r--r-- 1 tech tech 30298949 Jun 13 21:51 search-web-frontend-1.0.120.war
--rw-r--r-- 1 tech tech 30297647 Jun 14 12:38 search-web-frontend-1.0.121.war
--rw-r--r-- 1 tech tech 30297689 Jun 15 11:50 search-web-frontend-1.0.122.war
--rw-r--r-- 1 tech tech 30298356 Jun 15 12:13 search-web-frontend-1.0.123.war
--rw-r--r-- 1 tech tech 30298678 Jun 15 12:32 search-web-frontend-1.0.124.war
--rw-r--r-- 1 tech tech 30732203 Jun 23 11:45 search-web-frontend-1.0.125.war
--rw-r--r-- 1 tech tech 30732204 Jun 23 11:55 search-web-frontend-1.0.126.war
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Здесь есть несколько файлов о которых стоит рассказать поподробнее. Файл &lt;code&gt;.config&lt;/code&gt; это обыкновенный &lt;code&gt;ini&lt;/code&gt;-файл хранящий имена всех машин на которых установлено приложение, а также некоторые другие настройки развертывания. &lt;code&gt;config.properties&lt;/code&gt; — это &lt;code&gt;properties&lt;/code&gt;-файл, который содержит настройки приложения. &lt;code&gt;.jettyrc&lt;/code&gt; содержит startup опции виртуальной машины на которой стартует Jetty.&lt;/p&gt;
-
-&lt;p&gt;За довольно длительное время мы перепробовали различные способы работы с конфигурационными файлами приложений. Мы хранили их в development системе контроля версий. Мы создавали для них отдельный репозиторий в зоне production. Текущая схема нам нравится больше всего. Она позволяет автоматически бекапить все конфигурационные файлы приложений, что безусловно необходимо, а также не связываться с излишей сложностью VCS систем для управления &amp;ldquo;двумя файлами из 10 строчек каждый&amp;rdquo;.&lt;/p&gt;
-
-&lt;p&gt;Если запустить команду deploy без аргументов, то она выведет текущее состояние нодов:&lt;/p&gt;
-
-&lt;pre class=&quot;shell&quot;&gt;&lt;code&gt;$ deploy 
-http://search-service1:8080 - Ok com.farpost.search:search-web-frontend 1.0.126
-http://search-service2:8080 - Ok com.farpost.search:search-web-frontend 1.0.126
-http://search-service3:8080 - Ok com.farpost.search:search-web-frontend 1.0.126
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Благодаря &lt;a href=&quot;http://maven.apache.org/&quot;&gt;maven&lt;/a&gt; во все наши сборки автоматически попадает информация о версии, а также номере билда.&lt;/p&gt;
-
-&lt;p&gt;Если же передать команде deploy имя артефакта, то начнется его развертывание на production машинах.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-2&quot;&gt;Дальнейшие соображения&lt;/h2&gt;
-&lt;p&gt;Текущий процесс нас вполне устраивает, тем не менее у нас есть идеи как сделать его еще лучше.&lt;/p&gt;
-
-&lt;h3 id=&quot;runtime---&quot;&gt;Runtime обновление конфигурации логгирования&lt;/h3&gt;
-&lt;p&gt;Мы используем &lt;a href=&quot;http://logback.qos.ch/&quot;&gt;logback&lt;/a&gt; в качестве библиотеки логгирования. Существенным ее плюсом является то что она позволяет &lt;a href=&quot;http://logback.qos.ch/manual/configuration.html#autoScan&quot;&gt;менять конфигурацию логгирования на лету&lt;/a&gt;. Достаточно просто поменять XML файл с конфигурацией. Было бы неплохо иметь возможность распространять конфигурацию логгирования на машины без перезагрузки самого приложения.&lt;/p&gt;
-
-&lt;h3 id=&quot;section-3&quot;&gt;Дифференцирование конфигурации различных нодов&lt;/h3&gt;
-&lt;p&gt;В распределенной системе разные ноды могут иметь идентичную сборку, но разную конфигурацию, обуславливающую требуемую разность в их поведении. Сейчас у нас пока что нет возможности задать разную конфигурацию для разных нодов. Учитывая что конфигурация задается в виде &lt;code&gt;properties&lt;/code&gt; файлов, сделать такого рода дифференциорание не сложно.&lt;/p&gt;
-
-&lt;h3 id=&quot;partial-deploy&quot;&gt;Partial deploy&lt;/h3&gt;
-&lt;p&gt;Иногда бывает необходимо обновить не весь кластер, а только один нод из кластера. В будущем, я думаю мы сделаем такую возможность.&lt;/p&gt;
-
-&lt;p&gt;Вот пожалуй и все. А как деплоите приложения вы? ;)&lt;/p&gt;
-
 </description>
     </item>
     
