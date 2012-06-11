@@ -58,6 +58,8 @@ h3               { font-weight: 600 }
 
 .center       { margin: 0 auto; height: 100% }
 
+.description  { text-align: center; font-size: 0.8em; color: #999 }
+
 .post table td            { padding: 5px; text-align: center }
 .post table td.label      { text-align: right !important }
 
