@@ -6,15 +6,15 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Sat, 21 Jul 2012 22:03:12 +1100</pubDate>
-    <lastBuildDate>Sat, 21 Jul 2012 22:03:12 +1100</lastBuildDate>
+    <pubDate>Sun, 22 Jul 2012 00:34:37 +1100</pubDate>
+    <lastBuildDate>Sun, 22 Jul 2012 00:34:37 +1100</lastBuildDate>
     
     <item>
-      <title>Оценка классификатора</title>
-      <link>http://bazhenov.me/blog/2012/08/19/classification-performance-evaluation.html</link>
-      <pubDate>Sun, 19 Aug 2012 00:00:00 +1100</pubDate>
+      <title>Оценка классификатора (точность, полнота, F-мера)</title>
+      <link>http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html</link>
+      <pubDate>Sat, 21 Jul 2012 00:00:00 +1100</pubDate>
       <author>dotsid@gmail.com (Denis Bazhenov)</author>
-      <guid>http://bazhenov.me/blog/2012/08/19/classification-performance-evaluation</guid>
+      <guid>http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation</guid>
       <description>&lt;p&gt;Продолжая тему реализации &lt;a href=&quot;http://bazhenov.me/blog/2012/06/11/naive-bayes.html&quot;&gt;автоматической классификации&lt;/a&gt; необходимо обсудить следующий очень важный вопрос. Как оценивать качество алгоритма? Допустим, вы хотите внести изменения в алгоритм. Откуда вы знаете что эти изменения сделают алгоритм лучше? Конечно же надо проверять алгоритм на реальных данных.&lt;/p&gt;
 
 &lt;!--excerpt--&gt;

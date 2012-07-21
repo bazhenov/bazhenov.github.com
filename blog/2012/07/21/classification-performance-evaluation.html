@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Суровая реальность: Оценка классификатора (точность, полнота, F-мера)</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+</head>
+<body>
+
+	<div class="site">
+		
+			<header>
+				<div class="content">
+					<a href="/">Суровая реальность</a>
+				</div>
+			</header>
+		
+
+		<div class="post content">
+	<h1>Оценка классификатора (точность, полнота, F-мера)</h1>
+	<div class="meta">
+		<span class="date">21 July 2012</span>
+		<span class="tags">
+			
+				<a href="/tags.html#information retrieval">information retrieval</a>
+			
+				<a href="/tags.html#classification">classification</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>Продолжая тему реализации <a href="/blog/2012/06/11/naive-bayes.html">автоматической классификации</a> необходимо обсудить следующий очень важный вопрос. Как оценивать качество алгоритма? Допустим, вы хотите внести изменения в алгоритм. Откуда вы знаете что эти изменения сделают алгоритм лучше? Конечно же надо проверять алгоритм на реальных данных.</p>
+
+<!--excerpt-->
+
+<h2 id="section">Тестовая выборка</h2>
+
+<p>Основой проверки является тестовая выборка в которой проставлено соответствие между документами и их классами. В зависимости от ваших конкретных условий получение подобной выборки может быть затруднено, так как зачастую ее составляют люди. Но иногда ее можно получить без большого объема ручной работы, если проявить изобретательность. Каких-то конеретных рецептов, к сожалению, не существует.</p>
+
+<p>Когда у вас появилась тестовая выборка достаточно натравить классификатор на документы и соотнести его решение с заведомо известным правильным решением. Но для того чтобы принимать решение хуже или лучше справляется с работой новая версия алгоритма <em>нам необходима численная метрика его качества</em>.</p>
+
+<h2 id="section-1">Численная оценка качества алгоритма</h2>
+
+<h3 id="accuracy">Accuracy</h3>
+
+<p>В простейшем случае такой метрикой может быть доля документов по которым классификатор принял правильное решение.</p>
+
+<script type="math/tex; mode=display">Accuracy = \frac{P}{N}</script>
+
+<p>где, <script type="math/tex">P</script> – количество документов по которым классификатор принял правильное решение, а <script type="math/tex">N</script> – размер обучающей выборки. Очевидное решение, на котором для начала можно остановиться.</p>
+
+<p>Тем не менее, у этой метрики есть одна особенность которую необходимо учитывать. Она присваивает всем документам одинаковый вес, что может быть не корректно в случае если распределение документов в обучающей выборке сильно смещено в сторону какого-то одного или нескольких классов. В этом случае у классификатора есть больше информации по этим классам и соответственно в рамках этих классов он будет принимать более адекватные решения. На практике это приводит к тому, что вы имеете accuracy, скажем, 80%, но при этом в рамках какого-то конкретного класса классификатор работает из рук вон плохо не определяя правильно даже треть документов.</p>
+
+<p>Один выход из этой ситуации заключается в том чтобы обучать классификатор на специально подготовленном, сбалансированном корпусе документов. Минус этого решения в том что вы отбираете у классификатора информацию об отностельной частоте документов. Эта информация при прочих равных может оказаться очень кстати для принятия правильного решения.</p>
+
+<p>Другой выход заключается в изменении подхода к формальной оценке качества.</p>
+
+<h3 id="section-2">Точность и полнота</h3>
+
+<p>Точность (precision) и полнота (recall) являются метриками которые используются при оценке большей части алгоритмов извлечения информации. Иногда они используются сами по себе, иногда в качестве базиса для производных метрик, таких как F-мера или R-Precision. Суть точности и полноты очень проста.</p>
+
+<p>Точность системы в пределах класса – это доля документов действительно принадлежащих данному классу относительно всех документов которые система отнесла к этому классу. Полнота системы – это доля найденных классфикатором документов принадлежащих классу относительно всех документов этого класса в тестовой выборке.</p>
+
+<p>Эти значения легко рассчитать на основании таблицы контингентности, которая составляется для каждого класса отдельно.</p>
+
+<p class="image"><img src="/images/classification-performance-evaluation/contingency-table.png" alt="Таблица контингентности" /></p>
+
+<p>В таблице содержится информация сколько раз система приняла верное и сколько раз неверное решение по документам заданного класса. А именно:</p>
+
+<ul>
+  <li><script type="math/tex">TP</script> — истино-положительное решение;</li>
+  <li><script type="math/tex">TN</script> — истино-отрицательное решение;</li>
+  <li><script type="math/tex">FP</script> — ложно-положительное решение;</li>
+  <li><script type="math/tex">FN</script> — ложно-отрицательное решение.</li>
+</ul>
+
+<p>Тогда, точность и полнота определяются следующим образом:</p>
+
+<script type="math/tex; mode=display"> Precision = \frac{TP}{TP+FP} </script>
+
+<script type="math/tex; mode=display"> Recall = \frac{TP}{TP+FN} </script>
+
+<blockquote>
+  <p>Рассмотрим пример. Допустим, у вас есть тестовая выборка в которой 10 сообщений, из них 4 – спам. Обработав все сообщения классификатор пометил 2 сообщения как спам, причем одно действительно является спамом, а второе было помечено в тестовой выборке как нормальное. Мы имеем одно истино-положительное решение, три ложно-отрицательных и одно ложно-положительное. Тогда для класса &ldquo;спам&rdquo; точность классификатора составляет <script type="math/tex">\frac{1}{2}</script> (50% положительных решений правильные), а полнота <script type="math/tex">\frac{1}{4}</script> (классификатор нашел 25% всех спам-сообщений).</p>
+</blockquote>
+
+<h2 id="confusion-matrix">Confusion Matrix</h2>
+
+<p>На практике значения точности и полноты гораздо более удобней рассчитывать с использованием матрицы неточностей (confusion matrix). В случае если количество классов относительно невелико (не более 100-150 классов), этот подход позволяет довольно наглядно представить результаты работы классификатора.</p>
+
+<p>Матрица неточностей – это матрица размера N на N, где N — это количество классов. Столбцы этой матрицы резервируются за экспертными решениями, а строки за решениями классификатора. Когда мы классифицируем документ из тестовой выборки мы инкрементируем число стоящее на пересечении строки класса который вернул классификатор и столбца класса к которому действительно относится документ.</p>
+
+<p class="image"><img src="/images/classification-performance-evaluation/confusion-matrix.png" alt="Матрица неточностей" /></p>
+
+<p class="description">Матрица неточностей (26 классов, результирующая точность – 0.8, результирующая полнота – 0.91)</p>
+
+<p>Как видно из примера, большинство документов классификатор определяет верно. Диагональные элементы матрицы явно выражены. Тем не менее в рамках некоторых классов (3, 5, 8, 22) классификатор показывает низкую точность.</p>
+
+<p>Имея такую матрицу точность и полнота для каждого класса рассчитывается очень просто. Точность равняется отношению соответствующего диагонального элемента матрицы и суммы всей строки класса. Полнота – отношению диагонального элемента матрицы и суммы всего столбца класса. Формально:</p>
+
+<script type="math/tex; mode=display">Precision_c = \frac{A_{c,c}}{\sum_{i=1}^n A_{c,i}}</script>
+
+<script type="math/tex; mode=display">Recall_c = \frac{A_{c,c}}{\sum_{i=1}^n A_{i,c}}</script>
+
+<p>Результирующая точность классификатора рассчитывается как арифметическое среднее его точности по всем классам. То же самое с полнотой. Технически этот подход называется macro-averaging.</p>
+
+<h2 id="f-">F-мера</h2>
+
+<p>Понятно что чем выше точность и полнота, тем лучше. Но в реальной жизни максимальная точность и полнота не достижимы одновременно и приходится искать некий баланс. Поэтому, хотелось бы иметь некую метрику которая объединяла бы в себе информацию о точности и полноте нашего алгоритма. В этом случае нам будет проще принимать решение о том какую реализацию запускать в production (у кого больше тот и круче). Именно такой метрикой является F-мера<sup id="fnref:f-measure"><a href="#fn:f-measure" rel="footnote">1</a></sup>.</p>
+
+<p>F-мера представляет собой <a href="/blog/2012/05/05/harmonic-mean.html">гармоническое среднее</a> между точностью и полнотой. Она стремится к нулю, если точность или полнота стремится к нулю.</p>
+
+<script type="math/tex; mode=display">F = 2 \frac{Precision \times Recall}{Precision + Recall}</script>
+
+<p>Данная формула придает одинаковый вес точности и полноте, поэтому F-мера будет падать одинаково при уменьшении и точности и полноты. Возможно рассчитать F-меру придав различный вес точности и полноте, если вы осознанно отдаете приоритет одной из этих метрик при разработке алгоритма.</p>
+
+<script type="math/tex; mode=display">F = \left(\beta^2+1\right)\frac{Precision \times Recall}{\beta^2 Precision + Recall}</script>
+
+<p>где <script type="math/tex">\beta</script> принимает значения в диапазоне <script type="math/tex">0<\beta<1</script> если вы хотите отдать приоритет точности, а при <script type="math/tex">\beta > 1</script> приоритет отдается полноте. При <script type="math/tex">\beta = 1</script> формула сводится к предыдущей и вы получаете сбалансированную F-меру (также ее называют F<sub>1</sub>).</p>
+
+<p class="image"><img src="/images/classification-performance-evaluation/F-1.png" alt="Сбалансированная F-мера" /></p>
+<p class="description">Сбалансированная F-мера</p>
+
+<p class="image"><img src="/images/classification-performance-evaluation/F-1-over-4.png" alt="F-мера с приоритетом точности" /></p>
+<p class="description">F-мера с приоритетом точности (<script type="math/tex">\beta^2 = \frac{1}{4}</script>)</p>
+
+<p class="image"><img src="/images/classification-performance-evaluation/F-2.png" alt="F-мера с приоритетом полноты" /></p>
+<p class="description">F-мера с приоритетом полноты (<script type="math/tex">\beta^2 = 2</script>)</p>
+
+<p>F-мера является хорошим кандидатом на формальную метрику оценки качества классификатора. Она сводит к одному числу две других основополагающих метрики: точность и полноту. Имея в своем распоряжении подобный механизм оценки вам будет гораздо проще принять решение о том являются ли изменения в алгоритме в лучшую сторону или нет.</p>
+
+<h2 id="section-3">Ссылки по теме</h2>
+
+<ol>
+  <li><a href="http://datamin.ubbcluj.ro/wiki/index.php/Evaluation_methods_in_text_categorization">Evaluation methods in text categorization</a></li>
+  <li><a href="http://rushdishams.blogspot.com/2011/08/micro-and-macro-average-of-precision.html">Micro and macro average of precision</a></li>
+  <li><a href="http://ru.wikipedia.org/wiki/Информационный_поиск#.D0.9E.D1.86.D0.B5.D0.BD.D0.BA.D0.B8_.D1.8D.D1.84.D1.84.D0.B5.D0.BA.D1.82.D0.B8.D0.B2.D0.BD.D0.BE.D1.81.D1.82.D0.B8">Информационный поиск: Оценка эффективности — Wikipedia</a></li>
+  <li><a href="http://en.wikipedia.org/wiki/Precision_and_recall">Precision and Recall — Wikipedia</a></li>
+  <li><a href="http://cmp.felk.cvut.cz/~hlavac/TeachPresEn/31PattRecog/13ClassifierPerformance.pdf">Classifier performance evaluation</a></li>
+</ol>
+
+<hr />
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:f-measure">
+      <p>иногда встречаются названия: F-score или мера Ван Ризбергена.<a href="#fnref:f-measure" rel="reference">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=true;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+	
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31484732-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</body>
+</html>
