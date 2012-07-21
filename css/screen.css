@@ -1,5 +1,7 @@
 body      { font-family: 'Open Sans', sans-serif; color: #333; margin: 0 }
 
+hr        { height: 1px; border: 0; background-color: #ddd; }
+
 header,footer    { background-color: black; width: 100%; padding: 0 auto; color: white; line-height: 2.5em; }
 footer           { margin-top: 40px }
 header .content,
