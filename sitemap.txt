@@ -1,6 +1,7 @@
 
 http://bazhenov.me/about.html
 http://bazhenov.me/archive.html
+http://bazhenov.me/draft/bayes-systematic-problems.html
 http://bazhenov.me/index.html
 http://bazhenov.me/pages.html
 http://bazhenov.me/rss.xml
