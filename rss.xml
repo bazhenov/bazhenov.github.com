@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Mon, 23 Jul 2012 21:40:48 +1100</pubDate>
-    <lastBuildDate>Mon, 23 Jul 2012 21:40:48 +1100</lastBuildDate>
+    <pubDate>Mon, 23 Jul 2012 21:46:56 +1100</pubDate>
+    <lastBuildDate>Mon, 23 Jul 2012 21:46:56 +1100</lastBuildDate>
     
     <item>
       <title>Оценка классификатора (точность, полнота, F-мера)</title>
