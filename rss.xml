@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Mon, 23 Jul 2012 21:49:21 +1100</pubDate>
-    <lastBuildDate>Mon, 23 Jul 2012 21:49:21 +1100</lastBuildDate>
+    <pubDate>Fri, 03 Aug 2012 20:39:46 +1100</pubDate>
+    <lastBuildDate>Fri, 03 Aug 2012 20:39:46 +1100</lastBuildDate>
     
     <item>
       <title>Оценка классификатора (точность, полнота, F-мера)</title>
@@ -394,7 +394,28 @@
 
 &lt;p&gt;В данном случае класс HAM выиграл и сообщение не будет помечено как спам.&lt;/p&gt;
 
-&lt;h2 id=&quot;section-6&quot;&gt;В заключении&lt;/h2&gt;
+&lt;h3 id=&quot;section-6&quot;&gt;Формирование вероятностного пространства&lt;/h3&gt;
+
+&lt;p&gt;В простейшем случае вы выбираете класс который получил максимальную оценку. Но если вы например хотите помечать сообщение как спам только если соответствующая вероятность больше 80%, то сравнение логарифмических оценок вам ничего не даст. Оценки которые выдает алгоритм не удовлетворяют двум формальным свойствам которым должны удовлетворять все вероятностные оценки:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;они все должны быть в диапазоне от нуля до единицы;&lt;/li&gt;
+  &lt;li&gt;их сумма должна быть равна единице.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Для того чтобы решить эту задачу, необходимо из логарифмических оценок сформировать вероятностное пространство. А именно: избавиться от логарифмов и нормировать сумму по единице.&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt; P(c \mid d) = \frac{e^{q_c}}{ \sum_{c' \in C}e^{q_{c'}} } &lt;/script&gt;
+
+&lt;p&gt;Здесь &lt;script type=&quot;math/tex&quot;&gt;q_c&lt;/script&gt; — это логарфмическая оценка алгоритма для класса &lt;script type=&quot;math/tex&quot;&gt;c&lt;/script&gt;, а возведение &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; (основание натурального логарфима) в степерь оценки используется для того чтобы избавиться от логарифма (&lt;script type=&quot;math/tex&quot;&gt;a^{\log_a x} = x&lt;/script&gt;). Таким образом, если вы в рассчетах использовали не натуральный логарифм, а десятичный, вам необходимо использовать не &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt;, а 10.&lt;/p&gt;
+
+&lt;p&gt;Для вышеприведенного примера вероятность что сообщение спам равно:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt; \frac{e^{-7.629}}{e^{-7.629} + e^{-6.906}} = 0.327 &lt;/script&gt;
+
+&lt;p&gt;то есть сообщение является спамом с вероятностью 32.7%.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-7&quot;&gt;В заключении&lt;/h2&gt;
 
 &lt;h3 id=&quot;show-me-the-code&quot;&gt;Show me the code&lt;/h3&gt;
 
@@ -403,12 +424,12 @@
 &lt;pre class=&quot;shell&quot;&gt;&lt;code&gt;$ mvn test
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&quot;section-7&quot;&gt;Вопросы оставшиеся за бортом&lt;/h3&gt;
+&lt;h3 id=&quot;section-8&quot;&gt;Вопросы оставшиеся за бортом&lt;/h3&gt;
 
 &lt;p&gt;Сушествует целый ряд вопросов который остался без рассмотрения на текущий момент:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;как тестировать качество алгоритмов классификации;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html&quot;&gt;как тестировать качество алгоритмов классификации&lt;/a&gt;;&lt;/li&gt;
   &lt;li&gt;какими системными проблемами обладает алгоритм наивной байесовской классификации;&lt;/li&gt;
   &lt;li&gt;какие существуют подходы увеличения точности алгоритма.&lt;/li&gt;
 &lt;/ul&gt;
