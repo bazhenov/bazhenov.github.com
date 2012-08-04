@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Sat, 04 Aug 2012 21:33:27 +1100</pubDate>
-    <lastBuildDate>Sat, 04 Aug 2012 21:33:27 +1100</lastBuildDate>
+    <pubDate>Sat, 04 Aug 2012 21:53:07 +1100</pubDate>
+    <lastBuildDate>Sat, 04 Aug 2012 21:53:07 +1100</lastBuildDate>
     
     <item>
       <title>Толерантный автокомплит</title>
@@ -145,7 +145,7 @@
   &lt;li&gt;при построении k-gram из слова/фразы имеет смысл добавить в исходную строку какой-нибудь специальный символ (например, &amp;ldquo;$&amp;rdquo;) на границе слов. Это сделает результаты более точным, за счет дополнительной совпадающей k-граммы на границах.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&quot;section-5&quot;&gt;В заключении&lt;/h2&gt;
+&lt;h2 id=&quot;e&quot;&gt;В заключениe&lt;/h2&gt;
 &lt;p&gt;Мы рассмотрели два основных инструмента которые позволяют находить и исправлять опечатки. Они могут быть использованы как в чистом виде, так и в составе более сложных стратегий автодополнения. Надеюсь, эта информация даст вам общее представление о том как сделать более толерантное к опечаткам автодополнение.&lt;/p&gt;
 
 </description>
