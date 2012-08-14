@@ -11,9 +11,9 @@ header a,
 footer a         { color: white; text-decoration: none }
 footer a         { font-weight: 400; font-size: 14px }
 
-.mainBar         { background-color: #2d2d2b; height: 220px; width: 100%; color: black;
+.mainBar         { background-color: #2d2d2b; width: 100%; color: black;
                    padding: 10px 0 }
-.mainBar .about  { width: 70%; margin: 0 auto; padding: 10px 20px 20px 20px; }
+.mainBar .about  { width: 70%; margin: 0 auto; padding: 10px 20px 20px 20px }
 .mainBar p       { width: 80%; font-size: 14px; font-weight: 300; color: #ddd }
 .mainBar h1      { font-weight: 300; font-size: 36px; margin: 0; color: white }
 .mainBar #icons  { padding-top: 15px }
@@ -31,7 +31,7 @@ h3               { font-weight: 600 }
 .tagsPage           { line-height: 2em; text-align: justify }
 
 
-.content                { width: 70%; margin: 0 auto; }
+.content                { width: 80%; margin: 0 auto; padding: 0 35px; min-width: 1024px }
 
 .post                   { font-size: 16px; }
 .post p, .post li       { font-weight: 400; line-height: 1.4 }
@@ -122,10 +122,10 @@ h3               { font-weight: 600 }
 #icons a {
   background-image: url("/images/socialmedia.png");
   background-repeat: no-repeat;
+  display: block;
   height: 32px;
   width: 32px;
-  display:block;
-  float:left;
+  float: left;
   margin-right: 0.5em;
 }
 
