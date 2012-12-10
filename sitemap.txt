@@ -8,6 +8,7 @@ http://bazhenov.me/rss.xml
 http://bazhenov.me/sitemap.txt
 http://bazhenov.me/tags.html
 
+http://bazhenov.me/blog/2012/12/10/feature-selection.html
 http://bazhenov.me/blog/2012/08/04/autocomplete.html
 http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html
 http://bazhenov.me/blog/2012/06/11/naive-bayes.html

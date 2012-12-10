@@ -6,8 +6,72 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Tue, 14 Aug 2012 22:07:20 +1100</pubDate>
-    <lastBuildDate>Tue, 14 Aug 2012 22:07:20 +1100</lastBuildDate>
+    <pubDate>Mon, 10 Dec 2012 21:10:25 +1100</pubDate>
+    <lastBuildDate>Mon, 10 Dec 2012 21:10:25 +1100</lastBuildDate>
+    
+    <item>
+      <title>Feature selection в алгоритмах классификации</title>
+      <link>http://bazhenov.me/blog/2012/12/10/feature-selection.html</link>
+      <pubDate>Mon, 10 Dec 2012 00:00:00 +1100</pubDate>
+      <author>Denis Bazhenov (dotsid@gmail.com)</author>
+      <guid isPermaLink="true">http://bazhenov.me/blog/2012/12/10/feature-selection.html</guid>
+      <description>&lt;p&gt;Существует один очень простой и эффективный способ улучшения алгоритмов классификации, который называется &lt;a href=&quot;http://en.wikipedia.org/wiki/Feature_selection&quot;&gt;feature selection&lt;/a&gt; (выбор классификационных признаков). Этот метод позволяет при построении модели выбрать только самые показательные признаки (например, слова) и отсеять остальные.&lt;/p&gt;
+
+&lt;p&gt;Что такое показательные признаки? Если мы говорим о задаче классификации текстовых документов, то это слова которые несут информацию о классе к которому относится документ. Например, в контексте автомобильной тематики слово &amp;ldquo;Nissan&amp;rdquo;, скорее всего будет показательным признаком, а вот слово &amp;ldquo;новый&amp;rdquo; вряд ли. Использование для классификации не всех слов, а только показательных дает несколько преимуществ.&lt;/p&gt;
+
+&lt;p&gt;Во-первых, feature selection позволяет существенно уменьшить количество параметров модели (используемых для классификации слов), и как следствие снижает требования к объему памяти требуемой для классификации.&lt;/p&gt;
+
+&lt;p&gt;Во-вторых, feature selection может повысить точность алгоритма за счет удаления из модели слов с низким соотношением сигнал/шум. Представьте, что слово &amp;ldquo;аскетичный&amp;rdquo; встретилось в обучающей выборке 3 раза, – 1 раз в рамках класса &amp;ldquo;Авто&amp;rdquo; и 2 раза в рамках класса &amp;ldquo;Одежда&amp;rdquo;. Формально оно говорит в пользу класса &amp;ldquo;Одежда&amp;rdquo;, но вряд ли это слово можно считать хорошим классификационным признаком. Скорее всего, перевес в сторону одежды это случайность.&lt;/p&gt;
+
+&lt;p&gt;Но &lt;em&gt;сам факт наличия такого слово в обучающей выборке не случайность&lt;/em&gt;. Это следствие &lt;a href=&quot;http://ru.wikipedia.org/wiki/Закон_Ципфа&quot;&gt;закона Зипфа&lt;/a&gt; (Zipf&amp;rsquo;s law), который описывает распределение частот слов в натуральном языке. Простым языком это можно описать следующим образом, если вы возьмете любой достаточно большой корпус документов и посчитаете сколько в нем слов встречающихся ровно 1 раз, 2 раза, 3 раза и т.д., то окажется что большинство слов встречаются 1 раз. Это не должно быть большим сюрпризом, – в повседневной жизни мы используем довольно небольшое количество слов (высокочастотники), а большую часть слов мы практически не используем (низкочастотники).&lt;/p&gt;
+
+&lt;h2 id=&quot;mutual-information&quot;&gt;Mutual Information&lt;/h2&gt;
+
+&lt;p&gt;В этой заметке я опишу один, пожалуй самый простой способ оценки показательности классификационных признаков, – &lt;a href=&quot;http://nlp.stanford.edu/IR-book/html/htmledition/mutual-information-1.html&quot;&gt;метод взаимной информации&lt;/a&gt; (Mutual Information). Идея метода очень проста. Зная как часто слово употребляется в пределах документов класса и за его пределами, мы можем сказать насколько статистически сильно связаны слово и класс.&lt;/p&gt;
+
+&lt;p&gt;Для того чтобы рассчитать численное значение взаимной информации необходимо составить матрицу цитирумости. Матрица цитируемости – это матрица 2x2 которая показывает взаимоотношение конкретного слова с конкретным классов. Возьмем, к примеру слово &amp;ldquo;Toyota&amp;rdquo; и класс &amp;ldquo;Авто&amp;rdquo;.&lt;/p&gt;
+
+&lt;table align=&quot;center&quot;&gt;
+	&lt;tr&gt;
+		&lt;th /&gt;
+		&lt;th&gt;C&lt;sub&gt;Авто&lt;/sub&gt;=1&lt;/th&gt;
+		&lt;th&gt;C&lt;sub&gt;Авто&lt;/sub&gt;=0&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;tr&gt;
+		&lt;th&gt;W&lt;sub&gt;Toyota&lt;/sub&gt;=1&lt;/th&gt;
+		&lt;td&gt;N&lt;sub&gt;11&lt;/sub&gt;=65 342&lt;/td&gt;
+		&lt;td&gt;N&lt;sub&gt;10&lt;/sub&gt;=143&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr&gt;
+		&lt;th&gt;W&lt;sub&gt;Toyota&lt;/sub&gt;=0&lt;/th&gt;
+		&lt;td&gt;N&lt;sub&gt;01&lt;/sub&gt;=45 342&lt;/td&gt;
+		&lt;td&gt;N&lt;sub&gt;00&lt;/sub&gt;=897 657&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Из этой матрицы видно что слово &amp;ldquo;Toyota&amp;rdquo; было встречено в 65 342 документах в контексте класса &amp;ldquo;Авто&amp;rdquo;, а также в 143 документах за переделами класса &amp;ldquo;Авто&amp;rdquo;. Имея на руках такую матрицу мы можем рассчитать взаимную информацию по формуле:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt; MI =
+\frac{N_{11}}{N} \log_2{ \frac{N N_{11}}{N_{1.} N_{.1}} } +
+\frac{N_{01}}{N} \log_2{ \frac{N N_{01}}{N_{0.} N_{.1}} } + 
+\frac{N_{10}}{N} \log_2{ \frac{N N_{10}}{N_{1.} N_{.0}} } +
+\frac{N_{00}}{N} \log_2{ \frac{N N_{00}}{N_{0.} N_{.0}} } &lt;/script&gt;
+
+&lt;p&gt;где, &lt;script type=&quot;math/tex&quot;&gt; N &lt;/script&gt; — сумма всей матрицы, &lt;script type=&quot;math/tex&quot;&gt; N_{0.} = N_{00} + N_{01} &lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt; N_{.1} = N_{01} + N_{11} &lt;/script&gt; и т.д.&lt;/p&gt;
+
+&lt;p&gt;Взаимная информация всегда находится в диапазоне от нуля до единицы. Чем выше значение, тем сильнее связь между наличием/отсутствием слова и наличием/отсутствием класса. Рассчитав взаимную информацию для всех пар слово-класс мы можем оставить для каждого класса первые N слов, объединить эти слова в общий словарь и теперь только их использовать для классификации. Количество слов необходимых для оптимальной классификации зависит от конкретной задачи и его необходимо подбирать эмпирически, постоянно проверяя результаты на тестовой выборке.&lt;/p&gt;
+
+&lt;p&gt;На тех задач на которых я тестировал этот метод, он давал прирост точности от 3 до 10%. В Introduction to Infromation Retrieval указано что на практике возможен прирост в десятки процентов по F&lt;sub&gt;1&lt;/sub&gt;&lt;sup id=&quot;fnref:ref-mi-performance&quot;&gt;&lt;a href=&quot;#fn:ref-mi-performance&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. Все зависит от вашей конкретной задачи, а также классификационного алгоритма.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:ref-mi-performance&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://nlp.stanford.edu/IR-book/html/htmledition/mutual-information-1.html#fig:mccallum&quot;&gt;Introduction to Information Retrieval, 2008 Cambridge University Press&lt;/a&gt;&lt;a href=&quot;#fnref:ref-mi-performance&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Толерантный автокомплит</title>
@@ -734,102 +798,6 @@
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Особенности функциональщины в Java</title>
-      <link>http://bazhenov.me/blog/2012/05/12/functional-java.html</link>
-      <pubDate>Sat, 12 May 2012 00:00:00 +1100</pubDate>
-      <author>Denis Bazhenov (dotsid@gmail.com)</author>
-      <guid isPermaLink="true">http://bazhenov.me/blog/2012/05/12/functional-java.html</guid>
-      <description>&lt;p&gt;Некоторое время назад мне довелось участвовать в одном из подпроектов целью которого было извлечение упоминаний об автомобилях из произвольного текста с использованием экспертной информации. Это задачу в простонародье называют парсингом :). Так или иначе, этот класс задач имеет свою специфику связанную с относительно большим количеством различных операций над коллекциями. Связано это с необходимостью проверки различных гипотез относительно содержимого анализируемого текста. Оперирование над коллекциями это сильная сторона функциональных языков к которым Java конечно же не относится.&lt;/p&gt;
-
-&lt;!-- excerpt --&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;Императивный подход&lt;/h2&gt;
-
-&lt;p&gt;Классический императивный подход к оперированию коллекциями заключается в написании кода выполняющего обход и обработку каждого элемента коллекции. Типичный map в императивном стиле выглядит следующим образом:&lt;/p&gt;
-
-&lt;pre class=&quot;code java&quot;&gt;&lt;code&gt;List&amp;lt;String&amp;gt; result = new ArrayList&amp;lt;String&amp;gt;();
-for (Position p : autocomplete.suggest(q)) {
-	result.add(p.getTitle());
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Не так уж и плохо. Но когда подобную операцию надо выполнять несколько раз в пределах одного метода, &lt;code&gt;for&lt;/code&gt;&amp;lsquo;ы начинают мозолить глаз.&lt;/p&gt;
-
-&lt;h2 id=&quot;guava---&quot;&gt;Guava спешит на помощь&lt;/h2&gt;
-
-&lt;p&gt;Мы используем &lt;a href=&quot;http://code.google.com/p/guava-libraries/&quot;&gt;guava&lt;/a&gt; (бывшая google collections) для упрощения оперирования коллекциями. Guava предоставляет массу функциональных примитивов для работы с коллекциями. Несмотря на излишний синтаксический шум, в Java можно применять элементы функционального программирования. Правда не без ограничений. Давайте посмотрим на вышеприведенный пример переписанный с использованием guava.&lt;/p&gt;
-
-&lt;pre class=&quot;code java&quot;&gt;&lt;code&gt;List&amp;lt;String&amp;gt; result = transform(autocomplete.suggest(q), new Function&amp;lt;Position, String&amp;gt;() {
-  @Override
-  public String apply(final Position input) {
-    return input.getTitle();
-  }
-});
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Если честно, то стало еще хуже. Если раньше у нас был простой и понятный &lt;code&gt;for&lt;/code&gt;-цикл, то сейчас мешанина из ключевых слов и названий типов. На сегодняшний день это пожалуй самое сильное ограничение Java — &lt;em&gt;объявлять предикаты по месту проблематично из-за синтаксиса анонимных классов&lt;/em&gt;. Поэтому мы пошли на следующее ухищрение.&lt;/p&gt;
-
-&lt;h2 id=&quot;map-&quot;&gt;Вынос предикатов и map-функций&lt;/h2&gt;
-
-&lt;p&gt;Если вы писали в функциональном стиле, то может замечали что существенный процент всех функций передаваемых в &lt;code&gt;filter&lt;/code&gt;/&lt;code&gt;map&lt;/code&gt; являются чистыми функциями (без состояния) и не используют замыкание. Поэтому мы решили вынести их в виде статических членов класса к которым они относятся. Это позволяет определить их один раз в рамках класса к которому они привязаны и использовать в любом месте кодовой базы.&lt;/p&gt;
-
-&lt;p&gt;Например, вышеприведенный пример мы переписываем следующим образом:&lt;/p&gt;
-
-&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;class Position {
-
-	public static final Function&amp;lt;Position, String&amp;gt; retrieveName = new Function&amp;lt;Position, String&amp;gt;() {
-		@Override
-		public String apply(final Position input) {
-			return input.getTitle();
-		}
-	};
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Тогда клиент сводится к следующему коду:&lt;/p&gt;
-
-&lt;pre class=&quot;code java&quot;&gt;&lt;code&gt;List&amp;lt;String&amp;gt; result = transform(autocomplete.suggest(q), retrieveName);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;что уже довольно вменяемо. В случае если функция обладает состоянием мы делаем для нее статическую фабрику в классе к которому она относится.&lt;/p&gt;
-
-&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;class Span {
-	
-	public static Function&amp;lt;Span, String&amp;gt; chopFromText(final String text) {
-		checkNotNull(text);
-		return new Function&amp;lt;Span, String&amp;gt;() {
-			@Override
-			public String apply(Span input) {
-				return input.cutFrom(text);
-			}
-		};
-	}
-	
-	public String cutFrom(String string) {
-		return string.substring(start, end);
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;при этом клиент выглядит похожим образом:&lt;/p&gt;
-
-&lt;pre class=&quot;code java&quot;&gt;&lt;code&gt;List&amp;lt;Span&amp;gt; spans = asList(new Span(0, 5), new Span(6, 2), new Span(9, 3));
-List&amp;lt;String&amp;gt; words = transform(spans, chopFromText(&quot;Hello to you!&quot;));
-// words -&amp;gt; [&quot;Hello&quot;, &quot;to&quot;, &quot;you&quot;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Этот подход работает благодаря тому что предикаты и map-функции принимают ровно один аргумент по типу которого можно определить к какому классу относить эту функцию. Таким образом, всякий раз когда вам нужен предикат на тип &lt;code&gt;Position&lt;/code&gt; вы знаете что его надо искать именно в классе &lt;code&gt;Position&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;Постскриптум&lt;/h2&gt;
-
-&lt;p&gt;Вы никогда не получите от Java экспрессивности присущей функциональным и тем более динамическим языкам. Поэтому в некотором отношении это конечно полумера. Но сделать свою жизнь немного проще используя элементы функционального программирования все же можно. И я считаю нужно.&lt;/p&gt;
-
-&lt;p&gt;Ну а Java программистам которые незнакомы с guava, я настоятельно советую обратить внимание на эту библиотеку. Она содержит массу вспомогательных классов и статических методов для решения типовых задач возникающий в ежедневной практике. Ее описание с легкостью может занять целый пост, настолько обширен ее функционал.&lt;/p&gt;
-
 </description>
     </item>
     
