@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Mon, 10 Dec 2012 21:10:25 +1100</pubDate>
-    <lastBuildDate>Mon, 10 Dec 2012 21:10:25 +1100</lastBuildDate>
+    <pubDate>Mon, 10 Dec 2012 21:15:24 +1100</pubDate>
+    <lastBuildDate>Mon, 10 Dec 2012 21:15:24 +1100</lastBuildDate>
     
     <item>
       <title>Feature selection в алгоритмах классификации</title>
@@ -16,6 +16,8 @@
       <author>Denis Bazhenov (dotsid@gmail.com)</author>
       <guid isPermaLink="true">http://bazhenov.me/blog/2012/12/10/feature-selection.html</guid>
       <description>&lt;p&gt;Существует один очень простой и эффективный способ улучшения алгоритмов классификации, который называется &lt;a href=&quot;http://en.wikipedia.org/wiki/Feature_selection&quot;&gt;feature selection&lt;/a&gt; (выбор классификационных признаков). Этот метод позволяет при построении модели выбрать только самые показательные признаки (например, слова) и отсеять остальные.&lt;/p&gt;
+
+&lt;!-- excerpt --&gt;
 
 &lt;p&gt;Что такое показательные признаки? Если мы говорим о задаче классификации текстовых документов, то это слова которые несут информацию о классе к которому относится документ. Например, в контексте автомобильной тематики слово &amp;ldquo;Nissan&amp;rdquo;, скорее всего будет показательным признаком, а вот слово &amp;ldquo;новый&amp;rdquo; вряд ли. Использование для классификации не всех слов, а только показательных дает несколько преимуществ.&lt;/p&gt;
 
