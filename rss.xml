@@ -6,8 +6,42 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Mon, 10 Dec 2012 21:15:24 +1100</pubDate>
-    <lastBuildDate>Mon, 10 Dec 2012 21:15:24 +1100</lastBuildDate>
+    <pubDate>Tue, 11 Dec 2012 12:13:19 +1100</pubDate>
+    <lastBuildDate>Tue, 11 Dec 2012 12:13:19 +1100</lastBuildDate>
+    
+    <item>
+      <title>Linear counter</title>
+      <link>http://bazhenov.me/blog/2012/12/10/linear-counter.html</link>
+      <pubDate>Mon, 10 Dec 2012 00:00:00 +1100</pubDate>
+      <author>Denis Bazhenov (dotsid@gmail.com)</author>
+      <guid isPermaLink="true">http://bazhenov.me/blog/2012/12/10/linear-counter.html</guid>
+      <description>&lt;p&gt;Допустим, вам необходимо рассчитать количество уникальных строк в файле. Причем, файл большой – миллионы или десятки миллионов строк. Типичный shell&amp;rsquo;овский однострочник который позволяет решить эту задачу выглядит следующим образом:&lt;/p&gt;
+
+&lt;pre class=&quot;shell&quot;&gt;&lt;code&gt;sort | uniq | wc -l
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;И все бы хорошо, но есть проблема. И имя ей &lt;code&gt;sort&lt;/code&gt;. Сортировка &lt;script type=&quot;math/tex&quot;&gt;O(n \log n)&lt;/script&gt; по времени и &lt;script type=&quot;math/tex&quot;&gt;O(n)&lt;/script&gt; по памяти, поэтому время её работы очень быстро перерастает все разумные пределы. К тому же сортировка еще и &lt;script type=&quot;math/tex&quot;&gt;O(n)&lt;/script&gt; по памяти, что тоже не радует.&lt;/p&gt;
+
+&lt;p&gt;Можно конечно хранить не сами объекты или строки, а их контрольные суммы. Это снизит требования по памяти, а также асимптотическую оценку по времени до &lt;script type=&quot;math/tex&quot;&gt;O(n)&lt;/script&gt;. Хранение контрольных сумм подразумевает наличие коллизий, поэтому вы можете получить не точную оценку, а приблизительную. Этого во многих случаях достаточно.&lt;/p&gt;
+
+&lt;p&gt;Если вам достаточно приблизительной оценки, а не точного количества уникальных строк, то можно пойти ещё дальше. Существует один очень простой алгоритм который позволяет вычислять оценку количества уникальных объектов в потоке (потенциально бесконечном) с точностью порядка 1% за линейное время используя &lt;em&gt;0.1 бита на один уникальный объект&lt;/em&gt;. Да да, вы не ослышались в одном бите хранится информация о десяти уникальных объектах.&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;Алгоритм линейного счетчика&lt;/h1&gt;
+&lt;p&gt;Ладно, я вас обманул. Невозможно в одном бите хранить информацию о десяти объектах. Но возможно хранить тот факт что мы уже встречали хотя бы одни из десяти объектов привязанных к этому биту. Именно эта идея лежит в основе алгоритма.&lt;/p&gt;
+
+&lt;p&gt;Представьте, что у вас есть битовый вектор из 100 бит, и вы устанавливаете в единицу 100 случайных бит в этом векторе (некоторые биты будут установлены более одного раза). Если вы теперь посчитаете сколько битов установлено в единицу, то окажется что примерно 63. В общем случае будет установлено примерно 63% бит&lt;sup id=&quot;fnref:ref-one-in-a-million&quot;&gt;&lt;a href=&quot;#fn:ref-one-in-a-million&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+
+&lt;p&gt;Верно и обратное. Если мы встречаем битовый вектор длины &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt; в котором примерно 63% бит установлено в единицу, это значит что примерно &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt; бит было установлено в единицу, при условии что биты выбирались равновероятно.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:ref-one-in-a-million&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://bazhenov.me/blog/2012/04/16/one-in-a-million.html&quot;&gt;Один на миллион&lt;/a&gt;&lt;a href=&quot;#fnref:ref-one-in-a-million&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Feature selection в алгоритмах классификации</title>
@@ -25,7 +59,7 @@
 
 &lt;p&gt;Во-вторых, feature selection может повысить точность алгоритма за счет удаления из модели слов с низким соотношением сигнал/шум. Представьте, что слово &amp;ldquo;аскетичный&amp;rdquo; встретилось в обучающей выборке 3 раза, – 1 раз в рамках класса &amp;ldquo;Авто&amp;rdquo; и 2 раза в рамках класса &amp;ldquo;Одежда&amp;rdquo;. Формально оно говорит в пользу класса &amp;ldquo;Одежда&amp;rdquo;, но вряд ли это слово можно считать хорошим классификационным признаком. Скорее всего, перевес в сторону одежды это случайность.&lt;/p&gt;
 
-&lt;p&gt;Но &lt;em&gt;сам факт наличия такого слово в обучающей выборке не случайность&lt;/em&gt;. Это следствие &lt;a href=&quot;http://ru.wikipedia.org/wiki/Закон_Ципфа&quot;&gt;закона Зипфа&lt;/a&gt; (Zipf&amp;rsquo;s law), который описывает распределение частот слов в натуральном языке. Простым языком это можно описать следующим образом, если вы возьмете любой достаточно большой корпус документов и посчитаете сколько в нем слов встречающихся ровно 1 раз, 2 раза, 3 раза и т.д., то окажется что большинство слов встречаются 1 раз. Это не должно быть большим сюрпризом, – в повседневной жизни мы используем довольно небольшое количество слов (высокочастотники), а большую часть слов мы практически не используем (низкочастотники).&lt;/p&gt;
+&lt;p&gt;Но &lt;em&gt;сам факт наличия такого слова в обучающей выборке не случайность&lt;/em&gt;. Это следствие &lt;a href=&quot;http://ru.wikipedia.org/wiki/Закон_Ципфа&quot;&gt;закона Зипфа&lt;/a&gt; (Zipf&amp;rsquo;s law), который описывает распределение частот слов в натуральном языке. Простым языком это можно описать следующим образом, если вы возьмете любой достаточно большой корпус документов и посчитаете сколько в нем слов встречающихся ровно 1 раз, 2 раза, 3 раза и т.д., то окажется что большинство слов встречаются 1 раз. Это не должно быть большим сюрпризом, – в повседневной жизни мы используем довольно небольшое количество слов (высокочастотники), а большую часть слов мы практически не используем (низкочастотники).&lt;/p&gt;
 
 &lt;h2 id=&quot;mutual-information&quot;&gt;Mutual Information&lt;/h2&gt;
 
@@ -598,7 +632,7 @@
 
 &lt;p&gt;Теперь сделаем то же самое для класса HAM:&lt;/p&gt;
 
-&lt;p&gt;$$ \log\frac{1}{3} + \log\frac{2}{8+3} + \log\frac{1}{8+3} + \log\frac{1}{8+3} \approx -6.906 $$&lt;/p&gt;
+&lt;p&gt;$$ \log\frac{1}{3} + \log\frac{2}{8+3} + \log\frac{2}{8+3} + \log\frac{1}{8+3} \approx -6.906 $$&lt;/p&gt;
 
 &lt;p&gt;В данном случае класс HAM выиграл и сообщение не будет помечено как спам.&lt;/p&gt;
 
@@ -644,162 +678,6 @@
 
 &lt;p&gt;Учитывая объем данного поста, эти вопросы я смело оставляю для будущих заметок.&lt;/p&gt;
 
-</description>
-    </item>
-    
-    <item>
-      <title>О задачах классификации</title>
-      <link>http://bazhenov.me/blog/2012/06/05/classification.html</link>
-      <pubDate>Tue, 05 Jun 2012 00:00:00 +1100</pubDate>
-      <author>Denis Bazhenov (dotsid@gmail.com)</author>
-      <guid isPermaLink="true">http://bazhenov.me/blog/2012/06/05/classification.html</guid>
-      <description>&lt;p&gt;В этом и следующих постах, я хочу на пальцах описать процесс создания простого классификатора текстовых документов, а также рассказать о некоторых нетипичных с обывательской точки зрения подходах используемых при классификации документов.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://ru.wikipedia.org/wiki/Классификация_документов&quot;&gt;Классификатор&lt;/a&gt; – это алгоритм соотносящий некие входные данные с одним или несколькими классами. В отличие от алгоритмов &lt;a href=&quot;http://ru.wikipedia.org/wiki/Кластерный_анализ&quot;&gt;кластеризации&lt;/a&gt; эти классы должны быть определены заранее. &lt;/p&gt;
-
-&lt;p&gt;Возможно, кому-то это определение покажется слишком общими или академическим, поэтому лучше наверное рассмотреть задачу классификации на примерах. А примеров хоть отбавляй.&lt;/p&gt;
-
-&lt;!-- excerpt --&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;Они повсюду&lt;/h2&gt;
-
-&lt;p&gt;Пожалуй самый яркий пример автоматической классификации – это фильтрация спама. Каждый день на мой ящик падает десятки если не сотни спам-писем, которые автоматически отфильтровываются из моего inbox&amp;rsquo;а.&lt;/p&gt;
-
-&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/spam.png&quot; alt=&quot;Mail Spam&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Современные коммерческие системы способны успешно фильтровать спам с точностью превышающей 99%&lt;sup id=&quot;fnref:google-spam-filter-performance&quot;&gt;&lt;a href=&quot;#fn:google-spam-filter-performance&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. Другим довольно типичным примером классификации служит автоматическое определение тематики того или иного текста. Некоторые новостные аггрераторы используют подобный подход для группировки новостей в направления: экономика, политика, общественная жизнь и т.д.&lt;/p&gt;
-
-&lt;p&gt;Зачастую классификация является фундаментом на котором строятся алгоритмы решения более сложных задач.
-Например, классификация используется при создании рекомендательных систем и в частности при реализации &lt;a href=&quot;http://ru.wikipedia.org/wiki/Коллаборативная_фильтрация&quot;&gt;коллаборативной фильтрации&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/recommendation.png&quot; alt=&quot;Amazon recommendations&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Safari Reader Mode является еще одним примером где используются алгоритмы классификации для достижения конечной цели. Суть этого режима работы браузера заключается в том что он позволяет автоматически убрать со страницы всю шелуху не имеющую отношения к сути контента страницы&lt;sup id=&quot;fnref:boilerplate-paper&quot;&gt;&lt;a href=&quot;#fn:boilerplate-paper&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
-
-&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/reader-mode.png&quot; alt=&quot;Safari Reader Mode&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Так же классификация используется в задачах face detection&amp;rsquo;а и face recognition&amp;rsquo;а.&lt;/p&gt;
-
-&lt;p class=&quot;image photo&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification/face-detection.png&quot; alt=&quot;Face Detection in Aperture&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Классификация используется как инструмент для решения множества других задач:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;снятие омонимии при обработке натуральных языков;&lt;/li&gt;
-  &lt;li&gt;в поисковых системах – для ограничения области поиска в целях повышения точности (вертикальный поиск);&lt;/li&gt;
-  &lt;li&gt;автоматическое определение языка на котором написан текст;&lt;/li&gt;
-  &lt;li&gt;анализ тональности (определение эмоциональной окраски текста).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Этот список можно продолжать еще долго. Например, в медицине алгоритмы классификации используются для реконструирования 3D модели головного мозга по серии МРТ снимков&lt;sup id=&quot;fnref:mri-3d&quot;&gt;&lt;a href=&quot;#fn:mri-3d&quot; rel=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;, а также для диагностики пациентов страдающих синдромом Альцгеймера&lt;sup id=&quot;fnref:alzheimer&quot;&gt;&lt;a href=&quot;#fn:alzheimer&quot; rel=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;Традиционные подходы&lt;/h2&gt;
-
-&lt;h3 id=&quot;rule-based-classification&quot;&gt;Rule based classification&lt;/h3&gt;
-
-&lt;p&gt;Если говорить о задаче классификации текстов, то пожалуй ее традиционным решением является классификация основная на правилах (rule based classification). Вы имплементируете правила определения класса документа по его тексту в виде &lt;code&gt;if-then-else&lt;/code&gt; выражений (код на Scala).&lt;/p&gt;
-
-&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;def classify(text: String) =
-	if (text.contains(&quot;виагра&quot;) || text.contains(&quot;бухгалтер&quot;)) &quot;SPAM&quot; else &quot;NOT SPAM&quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Этот подход может быть хорошим вариантом если вы работаете с небольшой коллекцией документов которую вы способны охватить и тщательно проанализировать. Просто потому что вы четко контролируете правила по которым классификатор принимает решения. Но есть у этого подхода и очевидные минусы:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;для того чтобы выбрать значимые для классификации слова необходимо обладать экспертными знаниями в предметной области. Есть ли у вас например соображения по поводу ключевых слов которые хорошо отличают документы посвященные финансовой тематике от документов экономической? У меня очень смутные;&lt;/li&gt;
-  &lt;li&gt;отнюдь не всегда факт наличия или отсутствия какого-либо одного слова является решающим фактором для принятия решения.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Поподробней остановлюсь на последнем пункте. Если вернуться к задаче определения спама и немного подумать о том какие слова являются хорошими классификационными признаками (classifying feature), то станет понятно что нет такого слова наличие которого гарантировало бы что сообщение является спамом. Возможно, в пределах компании производящей &lt;a href=&quot;http://ru.wikipedia.org/wiki/Силденафил&quot;&gt;силденафил&lt;/a&gt; в промышленных масштабах слово &amp;ldquo;виагра&amp;rdquo; не является показательным признаком спам-сообщения, кто знает.&lt;/p&gt;
-
-&lt;p&gt;В общем, суть такова: &lt;em&gt;любое из известных спам-слов пусть редко но встречается в повседневной жизни.&lt;/em&gt; Поэтому, принимать окончательно решение основываясь на факте наличия или отсутствия какого-либо одного слова идея контрпродуктивная. Мы можем усложнять правила добавляя вложенные &lt;code&gt;if&lt;/code&gt;&amp;lsquo;ы. Но довольно быстро вы поймете что возможности человека в формулировании таких правил очень ограничены, потому что &lt;em&gt;сложность правил растет экспоненциально с количеством выбранных для классификации слов&lt;/em&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;weight-based-classification&quot;&gt;Weight based classification&lt;/h3&gt;
-
-&lt;p&gt;Мы можем пойти другим путем. Мы можем для каждого слова выбрать некий вес, который будет означать насколько вероятно что сообщение с этим словом является спамом (0 – никогда не является спамом, 1 – всегда спам).&lt;/p&gt;
-
-&lt;table class=&quot;center&quot;&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&amp;nbsp;&lt;/th&gt;
-      &lt;th&gt;spam&lt;/th&gt;
-      &lt;th&gt;not spam&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;бухгалтер&lt;/td&gt;
-      &lt;td&gt;0.99&lt;/td&gt;
-      &lt;td&gt;0.01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;виагра&lt;/td&gt;
-      &lt;td&gt;0.99&lt;/td&gt;
-      &lt;td&gt;0.01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;выгодное&lt;/td&gt;
-      &lt;td&gt;0.70&lt;/td&gt;
-      &lt;td&gt;0.30&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;github&lt;/td&gt;
-      &lt;td&gt;0.01&lt;/td&gt;
-      &lt;td&gt;0.99&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;В этой таблице перечислены гипотетические веса для четырех слов. Сумма значений в строке должна быть равна единице. Тогда наша классификация может выглядеть следующим образом:&lt;/p&gt;
-
-&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;def classify(text: String) = {
-	val weights = Map(&quot;бухгалтер&quot;-&amp;gt;0.9, &quot;виагра&quot;-&amp;gt;0.99, &quot;выгодное&quot;-&amp;gt;0.7, &quot;github&quot;-&amp;gt;0.01)
-	val words = text.split(' ').filter(weights.contains(_))
-	val P_spam = words.map(weights(_)).reduce(_ * _)
-	val P_not_spam = words.map(1 - weights(_)).reduce(_ * _)
-	if (P_spam &amp;gt; P_not_spam) &quot;SPAM&quot; else &quot;NOT SPAM&quot;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Мы берем каждое слово и определяем суммарный вес документа отдельно для класса &amp;ldquo;спам&amp;rdquo; и класса &amp;ldquo;не спам&amp;rdquo;. Суммарный вес определяется как произведение весов всех известных слов документа. Слова для которых у нас нет веса мы пропускаем при классификации. Какой суммарный вес оказался больше тот класс и побеждает.&lt;/p&gt;
-
-&lt;p&gt;Это более разумный подход, так как он более гибок и принимает решение на основании всех известных слов в тексте. Так же его гораздо проще сопровождать чем полотна &lt;code&gt;if&lt;/code&gt;&amp;lsquo;ов. &lt;/p&gt;
-
-&lt;h2 id=&quot;section-2&quot;&gt;Метод машинного обучения&lt;/h2&gt;
-
-&lt;p&gt;А теперь очень важное замечание. &lt;em&gt;Если у нас будет некий способ автоматически подобрать оптимальные веса слов, то данный подход можно считать методом &lt;a href=&quot;http://ru.wikipedia.org/wiki/Машинное_обучение&quot;&gt;машинного обучения&lt;/a&gt;&lt;/em&gt;. Сильно упрощенный, возможно даже гипертрофированный, но по своей сути это именно метод машинного обучения.&lt;/p&gt;
-
-&lt;p&gt;Если быть более точным, то описанный мною метод является зародышем &lt;a href=&quot;http://ru.wikipedia.org/wiki/Наивный_байесовский_классификатор&quot;&gt;наивного байесовского классификатора&lt;/a&gt;. Но не позволяйте названию обмануть вас, NBC (Naïve Bayes Classifier) если не самый, то один из самых часто используемых классификаторов. Тому есть ряд причин:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;он прост в имплементации и тестировании;&lt;/li&gt;
-  &lt;li&gt;процесс обучения довольно эффективен по сравнению с другими более сложными классификаторами;&lt;/li&gt;
-  &lt;li&gt;на небольших корпусах документов разница между NBC и другими гораздо более сложными алгоритмами классификации зачастую несущественна, а иногда NBC может оказаться и более точным&lt;sup id=&quot;fnref:on-bayes-optimality&quot;&gt;&lt;a href=&quot;#fn:on-bayes-optimality&quot; rel=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;В последующих заметках я более детально опишу вопросы связанные с созданием и тестированием подобного классификатора. Подписывайтесь на &lt;a href=&quot;http://bazhenov.me/rss.xml&quot;&gt;RSS&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-3&quot;&gt;Ссылки по теме&lt;/h2&gt;
-
-&lt;div class=&quot;footnotes&quot;&gt;
-  &lt;ol&gt;
-    &lt;li id=&quot;fn:google-spam-filter-performance&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://googlesystem.blogspot.com/2007/10/how-gmail-blocks-spam.html&quot;&gt;How Gmail Blocks Spam&lt;/a&gt;&lt;a href=&quot;#fnref:google-spam-filter-performance&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:boilerplate-paper&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://www.l3s.de/~kohlschuetter/publications/wsdm187-kohlschuetter.pdf&quot;&gt;Boilerplate Detection using Shallow Text Features&lt;/a&gt;&lt;a href=&quot;#fnref:boilerplate-paper&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:mri-3d&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;amp;arnumber=1352574&amp;amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel5%2F9356%2F29717%2F01352574.pdf%3Farnumber%3D1352574&quot;&gt;Automatic classification of MRI images for three-dimensional volume reconstruction by using general regression neural networks&lt;/a&gt;&lt;a href=&quot;#fnref:mri-3d&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:alzheimer&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://www.ncbi.nlm.nih.gov/pubmed/20542124&quot;&gt;Automatic classification of patients with Alzheimer&amp;rsquo;s disease from structural MRI: a comparison of ten methods using the ADNI database&lt;/a&gt;&lt;a href=&quot;#fnref:alzheimer&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:on-bayes-optimality&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://www.cc.gatech.edu/fac/Charles.Isbell/classes/reading/papers/bayes-opt.pdf&quot;&gt;On the Optimality of the Simple Bayesian Classifier under Zero-One Loss&lt;/a&gt;&lt;a href=&quot;#fnref:on-bayes-optimality&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/div&gt;
 </description>
     </item>
     
