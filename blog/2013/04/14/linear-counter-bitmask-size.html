@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>Размер линейного счетчика</title>
+	 <meta name="author" content="Denis Bazhenov" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 
+	 <link rel="openid2.provider" href="https://www.google.com/accounts/o8/ud?source=profiles" > 
+	 <link rel="openid2.local_id" href="http://www.google.com/profiles/dotsid" >
+	 
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+	 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+</head>
+<body>
+
+	<div class="site">
+		
+			<header>
+				<div class="content">
+					<a href="/">Суровая реальность</a>
+				</div>
+			</header>
+		
+
+		<div class="post content">
+	<h1>Размер линейного счетчика</h1>
+	<div class="meta">
+		<span class="date">14 April 2013</span>
+		<span class="tags">
+			
+				<a href="/tags.html#algorithms">algorithms</a>
+			
+				<a href="/tags.html#math">math</a>
+			
+				<a href="/tags.html#probability">probability</a>
+			
+		</span>
+		
+	</div>
+	
+	
+	<p>Для использования <a href="/blog/2012/12/12/linear-counter.html">линейного счетчика</a> необходимо заранее знать приблизительное количество уникальных элементов в потоке. На основании этого количества, а также необходимого вам уровня точности, вычисляется длина битовой маски счетчика.</p>
+
+<!-- excerpt -->
+
+<p>Допустим, вы хотите создать линейный счетчик для оценки количества элементов в потоке, с максимальным количеством уникальных элементов равным 10 миллионам. Какой длины должна быть битовая маска? Ответ на этот вопрос позволяет найти следующее неравенство:</p>
+
+<script type="math/tex; mode=display">m > \max\left(5, \frac{1}{(\epsilon t)^2}\right) \left(e^t - t - 1\right)</script>
+
+<p>Минимальное положительное целое m, для которого выполняется это неравенство, является длиной маски при которой обеспечивается необходимая точность.</p>
+
+<p>В этой формуле:</p>
+
+<ul>
+  <li><script type="math/tex">m</script> — длина битовой маски;</li>
+  <li><script type="math/tex">\epsilon</script> — необходимая точность оценки в виде доли (например, 0.01 для точности 1%);</li>
+  <li><script type="math/tex">t</script> — так называемый, load factor (<script type="math/tex">t=\frac{n}{m}</script>). Отношение количества уникальных элементов в потоке к длине битовой маски.</li>
+</ul>
+
+<p>К сожалению, у этого неравенства нет алгебраического решения, – из него нельзя выразить m. Для прикладного применения ответ можно получить несколькими способами.</p>
+
+<h2 id="section">Таблицы</h2>
+
+<p>В <a href="http://dblab.kaist.ac.kr/Publication/pdf/ACM90_TODS_v15n2.pdf">оригинальной публикации</a> приведены таблицы для точности 1 и 10%. Приведу здесь часть таблицы для полноты повествования.</p>
+
+<table class="center">
+  <thead>
+    <tr>
+      <th>n</th>
+      <th style="text-align: right">1%</th>
+      <th style="text-align: right">10%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>10<sup>2</sup></td>
+      <td style="text-align: right">5034</td>
+      <td style="text-align: right">80</td>
+    </tr>
+    <tr>
+      <td>10<sup>3</sup></td>
+      <td style="text-align: right">5329</td>
+      <td style="text-align: right">268</td>
+    </tr>
+    <tr>
+      <td>10<sup>4</sup></td>
+      <td style="text-align: right">7960</td>
+      <td style="text-align: right">1709</td>
+    </tr>
+    <tr>
+      <td>10<sup>5</sup></td>
+      <td style="text-align: right">26729</td>
+      <td style="text-align: right">12744</td>
+    </tr>
+    <tr>
+      <td>10<sup>6</sup></td>
+      <td style="text-align: right">154171</td>
+      <td style="text-align: right">100880</td>
+    </tr>
+    <tr>
+      <td>10<sup>7</sup></td>
+      <td style="text-align: right">1096582</td>
+      <td style="text-align: right">831809</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Если вам нужна оценка для точности 1 или 10%, её можно узнать путем интерполяцией двух промежуточных значений из таблицы.</p>
+
+<h2 id="section-1">Определение длины маски численным методом</h2>
+
+<p>Если табличный метод не подходит, решение можно получить числено. Пожалуй, самый простой и вместе с тем довольно эффективный способ заключается в слегка модифицированном бинарном поиске.</p>
+
+<p>Использование такого подхода возможно, так как правая часть неравенства хоть и не является дифференцируемой на всём промежутке значений, тем не менее, можно показать, что она монотонно убывает при <script type="math/tex">m\to\infty</script> (так как данная заметка носит прикладной характер, доказательство остается на совести читателя). Это означает, что есть такое вещественное значение <script type="math/tex">m_0</script>, которое делит всю область допустимых значений на две: справа неравенство выполняется, а слева не выполняется. Округлив это значение до ближайшего целого сверху мы получим искомый ответ.</p>
+
+<pre class="code"><code>int computeRequiredBitMaskLength(double n, double eps) {
+	if (eps &gt;= 1 || eps &lt;= 0) {
+		throw new IllegalArgumentException("Epsilon should be in (0, 1) range");
+	}
+	if (n &lt;= 0) {
+		throw new IllegalArgumentException("Cardinality should be positive");
+	}
+	int fromM = 1;
+	int toM = 100000000;
+	int m;
+	double eq;
+	do {
+		m = (toM + fromM) / 2;
+		eq = precisionInequalityRV(n / m, eps);
+		if (m &gt; eq) {
+			toM = m;
+		} else {
+			fromM = m + 1;
+		}
+	} while (toM &gt; fromM);
+	return m &gt; eq ? m : m + 1;
+}
+
+double precisionInequalityRV(double t, double eps) {
+	return max(1.0 / pow(eps * t, 2), 5) * (exp(t) - t - 1);
+}
+</code></pre>
+
+<p>Как и любой другой бинарный поиск, этот выполняется за <script type="math/tex">O(\log d)</script> (где d — размер диапазона по которому происходит поиск). Таким образом, этот подход позволяет находить ответ за несколько десятков итераций даже для больших значений d. Этого более чем достаточно для большинства прикладных задач.</p>
+
+
+
+	<div class="bar">
+		<div class="g-plusone" data-size="medium"></div>
+		<a href="https://twitter.com/share" class="twitter-share-button"
+			data-url="http://bazhenov.me/blog/2013/04/14/linear-counter-bitmask-size.html"
+			data-via="denis_bazhenov" data-lang="en">Tweet</a>
+
+		<a href="https://twitter.com/denis_bazhenov" class="twitter-follow-button"
+			data-show-count="false">Follow</a>
+	</div>
+
+	<div id="disqus_thread"></div>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+<!-- Google +1 button -->
+<script type="text/javascript">
+	(function() {
+		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/plusone.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+	})();
+</script>
+
+<!-- Twitter buttons -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<!-- Disqus -->
+<script type="text/javascript">
+	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+	var disqus_shortname='severe-reality';
+	var disqus_developer=false;
+
+	/* * * DON'T EDIT BELOW THIS LINE * * */
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:dotsid@gmail.com">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+	<script type="text/javascript">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				processEscapes: true
+			}
+		});
+	</script>
+	
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31484732-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</body>
+</html>

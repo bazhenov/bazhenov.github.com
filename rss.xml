@@ -6,8 +6,121 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Fri, 15 Feb 2013 11:06:52 +1100</pubDate>
-    <lastBuildDate>Fri, 15 Feb 2013 11:06:52 +1100</lastBuildDate>
+    <pubDate>Sun, 14 Apr 2013 23:03:11 +1100</pubDate>
+    <lastBuildDate>Sun, 14 Apr 2013 23:03:11 +1100</lastBuildDate>
+    
+    <item>
+      <title>Размер линейного счетчика</title>
+      <link>http://bazhenov.me/blog/2013/04/14/linear-counter-bitmask-size.html</link>
+      <pubDate>Sun, 14 Apr 2013 00:00:00 +1100</pubDate>
+      <author>Denis Bazhenov (dotsid@gmail.com)</author>
+      <guid isPermaLink="true">http://bazhenov.me/blog/2013/04/14/linear-counter-bitmask-size.html</guid>
+      <description>&lt;p&gt;Для использования &lt;a href=&quot;http://bazhenov.me/blog/2012/12/12/linear-counter.html&quot;&gt;линейного счетчика&lt;/a&gt; необходимо заранее знать приблизительное количество уникальных элементов в потоке. На основании этого количества, а также необходимого вам уровня точности, вычисляется длина битовой маски счетчика.&lt;/p&gt;
+
+&lt;!-- excerpt --&gt;
+
+&lt;p&gt;Допустим, вы хотите создать линейный счетчик для оценки количества элементов в потоке, с максимальным количеством уникальных элементов равным 10 миллионам. Какой длины должна быть битовая маска? Ответ на этот вопрос позволяет найти следующее неравенство:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;m &gt; \max\left(5, \frac{1}{(\epsilon t)^2}\right) \left(e^t - t - 1\right)&lt;/script&gt;
+
+&lt;p&gt;Минимальное положительное целое m, для которого выполняется это неравенство, является длиной маски при которой обеспечивается необходимая точность.&lt;/p&gt;
+
+&lt;p&gt;В этой формуле:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;m&lt;/script&gt; — длина битовой маски;&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;\epsilon&lt;/script&gt; — необходимая точность оценки в виде доли (например, 0.01 для точности 1%);&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt; — так называемый, load factor (&lt;script type=&quot;math/tex&quot;&gt;t=\frac{n}{m}&lt;/script&gt;). Отношение количества уникальных элементов в потоке к длине битовой маски.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;К сожалению, у этого неравенства нет алгебраического решения, – из него нельзя выразить m. Для прикладного применения ответ можно получить несколькими способами.&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;Таблицы&lt;/h2&gt;
+
+&lt;p&gt;В &lt;a href=&quot;http://dblab.kaist.ac.kr/Publication/pdf/ACM90_TODS_v15n2.pdf&quot;&gt;оригинальной публикации&lt;/a&gt; приведены таблицы для точности 1 и 10%. Приведу здесь часть таблицы для полноты повествования.&lt;/p&gt;
+
+&lt;table class=&quot;center&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;n&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;1%&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;10%&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;2&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;5034&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;80&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;3&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;5329&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;268&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;4&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;7960&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1709&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;5&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;26729&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;12744&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;6&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;154171&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;100880&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;10&lt;sup&gt;7&lt;/sup&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1096582&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;831809&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Если вам нужна оценка для точности 1 или 10%, её можно узнать путем интерполяцией двух промежуточных значений из таблицы.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;Определение длины маски численным методом&lt;/h2&gt;
+
+&lt;p&gt;Если табличный метод не подходит, решение можно получить числено. Пожалуй, самый простой и вместе с тем довольно эффективный способ заключается в слегка модифицированном бинарном поиске.&lt;/p&gt;
+
+&lt;p&gt;Использование такого подхода возможно, так как правая часть неравенства хоть и не является дифференцируемой на всём промежутке значений, тем не менее, можно показать, что она монотонно убывает при &lt;script type=&quot;math/tex&quot;&gt;m\to\infty&lt;/script&gt; (так как данная заметка носит прикладной характер, доказательство остается на совести читателя). Это означает, что есть такое вещественное значение &lt;script type=&quot;math/tex&quot;&gt;m_0&lt;/script&gt;, которое делит всю область допустимых значений на две: справа неравенство выполняется, а слева не выполняется. Округлив это значение до ближайшего целого сверху мы получим искомый ответ.&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;int computeRequiredBitMaskLength(double n, double eps) {
+	if (eps &amp;gt;= 1 || eps &amp;lt;= 0) {
+		throw new IllegalArgumentException(&quot;Epsilon should be in (0, 1) range&quot;);
+	}
+	if (n &amp;lt;= 0) {
+		throw new IllegalArgumentException(&quot;Cardinality should be positive&quot;);
+	}
+	int fromM = 1;
+	int toM = 100000000;
+	int m;
+	double eq;
+	do {
+		m = (toM + fromM) / 2;
+		eq = precisionInequalityRV(n / m, eps);
+		if (m &amp;gt; eq) {
+			toM = m;
+		} else {
+			fromM = m + 1;
+		}
+	} while (toM &amp;gt; fromM);
+	return m &amp;gt; eq ? m : m + 1;
+}
+
+double precisionInequalityRV(double t, double eps) {
+	return max(1.0 / pow(eps * t, 2), 5) * (exp(t) - t - 1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Как и любой другой бинарный поиск, этот выполняется за &lt;script type=&quot;math/tex&quot;&gt;O(\log d)&lt;/script&gt; (где d — размер диапазона по которому происходит поиск). Таким образом, этот подход позволяет находить ответ за несколько десятков итераций даже для больших значений d. Этого более чем достаточно для большинства прикладных задач.&lt;/p&gt;
+
+</description>
+    </item>
     
     <item>
       <title>Архитектура поисковых систем</title>
@@ -480,134 +593,6 @@
 &lt;h2 id=&quot;e&quot;&gt;В заключениe&lt;/h2&gt;
 &lt;p&gt;Мы рассмотрели два основных инструмента которые позволяют находить и исправлять опечатки. Они могут быть использованы как в чистом виде, так и в составе более сложных стратегий автодополнения. Надеюсь, эта информация даст вам общее представление о том как сделать более толерантное к опечаткам автодополнение.&lt;/p&gt;
 
-</description>
-    </item>
-    
-    <item>
-      <title>Оценка классификатора (точность, полнота, F-мера)</title>
-      <link>http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html</link>
-      <pubDate>Sat, 21 Jul 2012 00:00:00 +1100</pubDate>
-      <author>Denis Bazhenov (dotsid@gmail.com)</author>
-      <guid isPermaLink="true">http://bazhenov.me/blog/2012/07/21/classification-performance-evaluation.html</guid>
-      <description>&lt;p&gt;Продолжая тему реализации &lt;a href=&quot;http://bazhenov.me/blog/2012/06/11/naive-bayes.html&quot;&gt;автоматической классификации&lt;/a&gt; необходимо обсудить следующий очень важный вопрос. Как оценивать качество алгоритма? Допустим, вы хотите внести изменения в алгоритм. Откуда вы знаете что эти изменения сделают алгоритм лучше? Конечно же надо проверять алгоритм на реальных данных.&lt;/p&gt;
-
-&lt;!--excerpt--&gt;
-
-&lt;h2 id=&quot;section&quot;&gt;Тестовая выборка&lt;/h2&gt;
-
-&lt;p&gt;Основой проверки является тестовая выборка в которой проставлено соответствие между документами и их классами. В зависимости от ваших конкретных условий получение подобной выборки может быть затруднено, так как зачастую ее составляют люди. Но иногда ее можно получить без большого объема ручной работы, если проявить изобретательность. Каких-то конеретных рецептов, к сожалению, не существует.&lt;/p&gt;
-
-&lt;p&gt;Когда у вас появилась тестовая выборка достаточно натравить классификатор на документы и соотнести его решение с заведомо известным правильным решением. Но для того чтобы принимать решение хуже или лучше справляется с работой новая версия алгоритма &lt;em&gt;нам необходима численная метрика его качества&lt;/em&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-1&quot;&gt;Численная оценка качества алгоритма&lt;/h2&gt;
-
-&lt;h3 id=&quot;accuracy&quot;&gt;Accuracy&lt;/h3&gt;
-
-&lt;p&gt;В простейшем случае такой метрикой может быть доля документов по которым классификатор принял правильное решение.&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;Accuracy = \frac{P}{N}&lt;/script&gt;
-
-&lt;p&gt;где, &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; – количество документов по которым классификатор принял правильное решение, а &lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt; – размер обучающей выборки. Очевидное решение, на котором для начала можно остановиться.&lt;/p&gt;
-
-&lt;p&gt;Тем не менее, у этой метрики есть одна особенность которую необходимо учитывать. Она присваивает всем документам одинаковый вес, что может быть не корректно в случае если распределение документов в обучающей выборке сильно смещено в сторону какого-то одного или нескольких классов. В этом случае у классификатора есть больше информации по этим классам и соответственно в рамках этих классов он будет принимать более адекватные решения. На практике это приводит к тому, что вы имеете accuracy, скажем, 80%, но при этом в рамках какого-то конкретного класса классификатор работает из рук вон плохо не определяя правильно даже треть документов.&lt;/p&gt;
-
-&lt;p&gt;Один выход из этой ситуации заключается в том чтобы обучать классификатор на специально подготовленном, сбалансированном корпусе документов. Минус этого решения в том что вы отбираете у классификатора информацию об отностельной частоте документов. Эта информация при прочих равных может оказаться очень кстати для принятия правильного решения.&lt;/p&gt;
-
-&lt;p&gt;Другой выход заключается в изменении подхода к формальной оценке качества.&lt;/p&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;Точность и полнота&lt;/h3&gt;
-
-&lt;p&gt;Точность (precision) и полнота (recall) являются метриками которые используются при оценке большей части алгоритмов извлечения информации. Иногда они используются сами по себе, иногда в качестве базиса для производных метрик, таких как F-мера или R-Precision. Суть точности и полноты очень проста.&lt;/p&gt;
-
-&lt;p&gt;Точность системы в пределах класса – это доля документов действительно принадлежащих данному классу относительно всех документов которые система отнесла к этому классу. Полнота системы – это доля найденных классфикатором документов принадлежащих классу относительно всех документов этого класса в тестовой выборке.&lt;/p&gt;
-
-&lt;p&gt;Эти значения легко рассчитать на основании таблицы контингентности, которая составляется для каждого класса отдельно.&lt;/p&gt;
-
-&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification-performance-evaluation/contingency-table.png&quot; alt=&quot;Таблица контингентности&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;В таблице содержится информация сколько раз система приняла верное и сколько раз неверное решение по документам заданного класса. А именно:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;TP&lt;/script&gt; — истино-положительное решение;&lt;/li&gt;
-  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;TN&lt;/script&gt; — истино-отрицательное решение;&lt;/li&gt;
-  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;FP&lt;/script&gt; — ложно-положительное решение;&lt;/li&gt;
-  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;FN&lt;/script&gt; — ложно-отрицательное решение.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Тогда, точность и полнота определяются следующим образом:&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt; Precision = \frac{TP}{TP+FP} &lt;/script&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt; Recall = \frac{TP}{TP+FN} &lt;/script&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Рассмотрим пример. Допустим, у вас есть тестовая выборка в которой 10 сообщений, из них 4 – спам. Обработав все сообщения классификатор пометил 2 сообщения как спам, причем одно действительно является спамом, а второе было помечено в тестовой выборке как нормальное. Мы имеем одно истино-положительное решение, три ложно-отрицательных и одно ложно-положительное. Тогда для класса &amp;ldquo;спам&amp;rdquo; точность классификатора составляет &lt;script type=&quot;math/tex&quot;&gt;\frac{1}{2}&lt;/script&gt; (50% положительных решений правильные), а полнота &lt;script type=&quot;math/tex&quot;&gt;\frac{1}{4}&lt;/script&gt; (классификатор нашел 25% всех спам-сообщений).&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;confusion-matrix&quot;&gt;Confusion Matrix&lt;/h2&gt;
-
-&lt;p&gt;На практике значения точности и полноты гораздо более удобней рассчитывать с использованием матрицы неточностей (confusion matrix). В случае если количество классов относительно невелико (не более 100-150 классов), этот подход позволяет довольно наглядно представить результаты работы классификатора.&lt;/p&gt;
-
-&lt;p&gt;Матрица неточностей – это матрица размера N на N, где N — это количество классов. Столбцы этой матрицы резервируются за экспертными решениями, а строки за решениями классификатора. Когда мы классифицируем документ из тестовой выборки мы инкрементируем число стоящее на пересечении строки класса который вернул классификатор и столбца класса к которому действительно относится документ.&lt;/p&gt;
-
-&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification-performance-evaluation/confusion-matrix.png&quot; alt=&quot;Матрица неточностей&quot; /&gt;&lt;/p&gt;
-
-&lt;p class=&quot;description&quot;&gt;Матрица неточностей (26 классов, результирующая точность – 0.8, результирующая полнота – 0.91)&lt;/p&gt;
-
-&lt;p&gt;Как видно из примера, большинство документов классификатор определяет верно. Диагональные элементы матрицы явно выражены. Тем не менее в рамках некоторых классов (3, 5, 8, 22) классификатор показывает низкую точность.&lt;/p&gt;
-
-&lt;p&gt;Имея такую матрицу точность и полнота для каждого класса рассчитывается очень просто. Точность равняется отношению соответствующего диагонального элемента матрицы и суммы всей строки класса. Полнота – отношению диагонального элемента матрицы и суммы всего столбца класса. Формально:&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;Precision_c = \frac{A_{c,c}}{\sum_{i=1}^n A_{c,i}}&lt;/script&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;Recall_c = \frac{A_{c,c}}{\sum_{i=1}^n A_{i,c}}&lt;/script&gt;
-
-&lt;p&gt;Результирующая точность классификатора рассчитывается как арифметическое среднее его точности по всем классам. То же самое с полнотой. Технически этот подход называется macro-averaging.&lt;/p&gt;
-
-&lt;h2 id=&quot;f-&quot;&gt;F-мера&lt;/h2&gt;
-
-&lt;p&gt;Понятно что чем выше точность и полнота, тем лучше. Но в реальной жизни максимальная точность и полнота не достижимы одновременно и приходится искать некий баланс. Поэтому, хотелось бы иметь некую метрику которая объединяла бы в себе информацию о точности и полноте нашего алгоритма. В этом случае нам будет проще принимать решение о том какую реализацию запускать в production (у кого больше тот и круче). Именно такой метрикой является F-мера&lt;sup id=&quot;fnref:f-measure&quot;&gt;&lt;a href=&quot;#fn:f-measure&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
-
-&lt;p&gt;F-мера представляет собой &lt;a href=&quot;http://bazhenov.me/blog/2012/05/05/harmonic-mean.html&quot;&gt;гармоническое среднее&lt;/a&gt; между точностью и полнотой. Она стремится к нулю, если точность или полнота стремится к нулю.&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;F = 2 \frac{Precision \times Recall}{Precision + Recall}&lt;/script&gt;
-
-&lt;p&gt;Данная формула придает одинаковый вес точности и полноте, поэтому F-мера будет падать одинаково при уменьшении и точности и полноты. Возможно рассчитать F-меру придав различный вес точности и полноте, если вы осознанно отдаете приоритет одной из этих метрик при разработке алгоритма.&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;F = \left(\beta^2+1\right)\frac{Precision \times Recall}{\beta^2 Precision + Recall}&lt;/script&gt;
-
-&lt;p&gt;где &lt;script type=&quot;math/tex&quot;&gt;\beta&lt;/script&gt; принимает значения в диапазоне &lt;script type=&quot;math/tex&quot;&gt;0&lt;\beta&lt;1&lt;/script&gt; если вы хотите отдать приоритет точности, а при &lt;script type=&quot;math/tex&quot;&gt;\beta &gt; 1&lt;/script&gt; приоритет отдается полноте. При &lt;script type=&quot;math/tex&quot;&gt;\beta = 1&lt;/script&gt; формула сводится к предыдущей и вы получаете сбалансированную F-меру (также ее называют F&lt;sub&gt;1&lt;/sub&gt;).&lt;/p&gt;
-
-&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification-performance-evaluation/F-1.png&quot; alt=&quot;Сбалансированная F-мера&quot; /&gt;&lt;/p&gt;
-&lt;p class=&quot;description&quot;&gt;Сбалансированная F-мера&lt;/p&gt;
-
-&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification-performance-evaluation/F-1-over-4.png&quot; alt=&quot;F-мера с приоритетом точности&quot; /&gt;&lt;/p&gt;
-&lt;p class=&quot;description&quot;&gt;F-мера с приоритетом точности (&lt;script type=&quot;math/tex&quot;&gt;\beta^2 = \frac{1}{4}&lt;/script&gt;)&lt;/p&gt;
-
-&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/classification-performance-evaluation/F-2.png&quot; alt=&quot;F-мера с приоритетом полноты&quot; /&gt;&lt;/p&gt;
-&lt;p class=&quot;description&quot;&gt;F-мера с приоритетом полноты (&lt;script type=&quot;math/tex&quot;&gt;\beta^2 = 2&lt;/script&gt;)&lt;/p&gt;
-
-&lt;p&gt;F-мера является хорошим кандидатом на формальную метрику оценки качества классификатора. Она сводит к одному числу две других основополагающих метрики: точность и полноту. Имея в своем распоряжении подобный механизм оценки вам будет гораздо проще принять решение о том являются ли изменения в алгоритме в лучшую сторону или нет.&lt;/p&gt;
-
-&lt;h2 id=&quot;section-3&quot;&gt;Ссылки по теме&lt;/h2&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;http://datamin.ubbcluj.ro/wiki/index.php/Evaluation_methods_in_text_categorization&quot;&gt;Evaluation methods in text categorization&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://rushdishams.blogspot.com/2011/08/micro-and-macro-average-of-precision.html&quot;&gt;Micro and macro average of precision&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://ru.wikipedia.org/wiki/Информационный_поиск#.D0.9E.D1.86.D0.B5.D0.BD.D0.BA.D0.B8_.D1.8D.D1.84.D1.84.D0.B5.D0.BA.D1.82.D0.B8.D0.B2.D0.BD.D0.BE.D1.81.D1.82.D0.B8&quot;&gt;Информационный поиск: Оценка эффективности — Wikipedia&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Precision_and_recall&quot;&gt;Precision and Recall — Wikipedia&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://cmp.felk.cvut.cz/~hlavac/TeachPresEn/31PattRecog/13ClassifierPerformance.pdf&quot;&gt;Classifier performance evaluation&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;hr /&gt;
-
-&lt;div class=&quot;footnotes&quot;&gt;
-  &lt;ol&gt;
-    &lt;li id=&quot;fn:f-measure&quot;&gt;
-      &lt;p&gt;иногда встречаются названия: F-score или мера Ван Ризбергена.&lt;a href=&quot;#fnref:f-measure&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/div&gt;
 </description>
     </item>
     
