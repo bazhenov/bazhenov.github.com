@@ -6,8 +6,8 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Sun, 14 Apr 2013 23:03:11 +1100</pubDate>
-    <lastBuildDate>Sun, 14 Apr 2013 23:03:11 +1100</lastBuildDate>
+    <pubDate>Sun, 14 Apr 2013 23:09:13 +1100</pubDate>
+    <lastBuildDate>Sun, 14 Apr 2013 23:09:13 +1100</lastBuildDate>
     
     <item>
       <title>Размер линейного счетчика</title>
@@ -81,7 +81,7 @@
   &lt;/tbody&gt;
 &lt;/table&gt;
 
-&lt;p&gt;Если вам нужна оценка для точности 1 или 10%, её можно узнать путем интерполяцией двух промежуточных значений из таблицы.&lt;/p&gt;
+&lt;p&gt;Если вам нужна оценка для точности 1 или 10%, её можно узнать интерполяцией двух промежуточных значений из таблицы.&lt;/p&gt;
 
 &lt;h2 id=&quot;section-1&quot;&gt;Определение длины маски численным методом&lt;/h2&gt;
 
