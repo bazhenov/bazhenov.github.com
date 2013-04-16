@@ -55,7 +55,7 @@
 
 <p>Самый простой способ сделать dump — это использовать утилиту jmap из пакета JDK.</p>
 
-<pre class="shell"><code>$ jmap -dump=format=b,file=heap-dump.hprof $PID
+<pre class="shell"><code>$ jmap -dump:format=b,file=heap-dump.hprof $PID
 </code></pre>
 
 <p>Вот теперь, когда вы сделали dump, вы можете смело возвращать систему к жизни и перезапускать JVM, если это требуется.</p>
