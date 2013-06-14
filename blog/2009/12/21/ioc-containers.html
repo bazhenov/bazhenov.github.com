@@ -178,6 +178,16 @@ $userRepository = new SqlUserRepository($masterConnection);
 	})();
 </script>
 
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript">
+	MathJax.Hub.Config({
+		tex2jax: {
+			inlineMath: [['$','$'], ['\\(','\\)']],
+			processEscapes: true
+		}
+	});
+</script>
+
 		<footer>
 			<div class="content">
 				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
@@ -187,8 +197,6 @@ $userRepository = new SqlUserRepository($masterConnection);
 		</footer>
 					
 	</div>
-
-	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 	
 	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
 	<script>
@@ -196,14 +204,7 @@ $userRepository = new SqlUserRepository($masterConnection);
 		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
 	});
 	</script>
-	<script type="text/javascript">
-		MathJax.Hub.Config({
-			tex2jax: {
-				inlineMath: [['$','$'], ['\\(','\\)']],
-				processEscapes: true
-			}
-		});
-	</script>
+	
 	
 <script type="text/javascript">
   var _gaq = _gaq || [];

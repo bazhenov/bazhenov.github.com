@@ -2,10 +2,10 @@ body      { font-family: 'Open Sans', sans-serif; color: #333; margin: 0 }
 
 hr        { height: 1px; border: 0; background-color: #ddd; }
 
-header,footer    { background-color: black; width: 100%; padding: 0 auto; color: white; line-height: 2.5em; }
+header, footer   { background-color: #2d2d2b; width: 100%; padding: 0 auto; color: white; line-height: 2.5em; }
 footer           { margin-top: 40px }
 header .content,
-footer .content  { margin: 0 auto; width: 70%; }
+footer .content  { margin: 0 auto; width: 80%; }
 footer .content  { text-align: right }
 header a,
 footer a         { color: white; text-decoration: none }
@@ -13,7 +13,7 @@ footer a         { font-weight: 400; font-size: 14px }
 
 .mainBar         { background-color: #2d2d2b; width: 100%; color: black;
                    padding: 10px 0 }
-.mainBar .about  { width: 70%; margin: 0 auto; padding: 10px 20px 20px 20px }
+.mainBar .about  { width: 80%; margin: 0 auto; padding: 10px 20px 20px 20px }
 .mainBar p       { width: 80%; font-size: 14px; font-weight: 300; color: #ddd }
 .mainBar h1      { font-weight: 300; font-size: 36px; margin: 0; color: white }
 .mainBar #icons  { padding-top: 15px }
