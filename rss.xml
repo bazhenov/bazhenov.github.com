@@ -6,8 +6,230 @@
     <atom:link href="http://bazhenov.me/rss.xml" rel="self" type="application/rss+xml" />
     <description>Суровая реальность</description>
     <language>ru-ru</language>
-    <pubDate>Fri, 14 Jun 2013 21:08:24 +1100</pubDate>
-    <lastBuildDate>Fri, 14 Jun 2013 21:08:24 +1100</lastBuildDate>
+    <pubDate>Fri, 25 Jul 2014 11:14:31 +1100</pubDate>
+    <lastBuildDate>Fri, 25 Jul 2014 11:14:31 +1100</lastBuildDate>
+    
+    <item>
+      <title>Top 10 фич Java 8 о которых не говорят</title>
+      <link>http://bazhenov.me/blog/2014/07/20/java-8-top10.html</link>
+      <pubDate>Sun, 20 Jul 2014 00:00:00 +1100</pubDate>
+      <author>Denis Bazhenov (dotsid@gmail.com)</author>
+      <guid isPermaLink="true">http://bazhenov.me/blog/2014/07/20/java-8-top10.html</guid>
+      <description>&lt;p&gt;О новых фичах Java 8 &lt;a href=&quot;https://leanpub.com/whatsnewinjava8/read&quot;&gt;было&lt;/a&gt; &lt;a href=&quot;http://www.takipiblog.com/2014/03/18/5-features-in-java-8-that-will-change-how-you-code/&quot;&gt;сказано&lt;/a&gt; &lt;a href=&quot;http://www.techempower.com/blog/2013/03/26/everything-about-java-8/&quot;&gt;уже&lt;/a&gt; &lt;a href=&quot;http://www.javaworld.com/article/2078836/java-se/love-and-hate-for-java-8.html&quot;&gt;довольно&lt;/a&gt; &lt;a href=&quot;http://ttux.net/post/java-8-new-features-release-performance-code/&quot;&gt;много&lt;/a&gt;. В основном обсуждают замыкания, Stream&amp;rsquo;ы, новое API для работы со временем, default-методы в интерфейсах, класс Optional и отсутствие Permanent Generation.&lt;/p&gt;
+
+&lt;p&gt;Но помимо жирных фич, в Java 8 сильно изменилась стандартная библиотека по перифирии. В частности, в уже существующие классы было добавлено много методов существенно упрощающих ежедневные задачи. Об этом мы сегодня и поговорим.&lt;/p&gt;
+
+&lt;!--excerpt--&gt;
+
+&lt;p&gt;Итак, Top 10 самых не обсуждаемых фич Java 8. Поехали.&lt;/p&gt;
+
+&lt;h2 id=&quot;stringjoin&quot;&gt;String.join()&lt;/h2&gt;
+
+&lt;p&gt;Неужто свершилось?! 2014 год на дворе, а в стандартной библиотеке Java появился метод объединяющий набор строк в одну с заданным разделителем.&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;String.join(&quot;, &quot;, &quot;A&quot;, &quot;B&quot;, &quot;C&quot;); // A, B, C
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Но лучше поздно чем никогда. Раньше приходилось или плясать со &lt;code&gt;StringBuilder&lt;/code&gt;&amp;lsquo;ом, ну или, самый разумный вариант, использовать Guava или commons-lang.&lt;/p&gt;
+
+&lt;p&gt;Ещё один вариант использовать &lt;code&gt;Stream&amp;lt;String&amp;gt;&lt;/code&gt; и &lt;code&gt;Collectors.joining()&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;Collection&amp;lt;String&amp;gt; strings = ...;
+strings.stream()
+  .filter(i -&amp;gt; i != null || i.isEmpty())
+  .collect(Collectors.joining(&quot;, &quot;));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;В этом случае, появляется возможность предварительно отфильтровать пустые строки.&lt;/p&gt;
+
+&lt;h2 id=&quot;mapcomputeifabsentgetordefaultmergeputifabsent&quot;&gt;Map.computeIfAbsent()/getOrDefault()/merge()/putIfAbsent()&lt;/h2&gt;
+
+&lt;p&gt;Даю голову на отсечение, если вы пишете на Java, то у вас в проекте есть код похожий на этот:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;Map&amp;lt;String, Integer&amp;gt; data = ...;
+for (String s : strings) {
+  if (!data.containsKey(key))
+    data.put(key, 0);
+  data.put(key, data.get(key) + 1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Суть проста. Есть отображение из строки в счетчик, сколько раз мы встретили эту строку. Надо только не забывать инициализировать позиции &lt;code&gt;Map&lt;/code&gt;&amp;lsquo;а нулем, а то виртуальная машина в вас &lt;code&gt;NullPointerException&lt;/code&gt; кинет.&lt;/p&gt;
+
+&lt;p&gt;В Java 8 эта же задача решается проще:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;for (String s : strings)
+  data.merge(s, 1, (a, b) -&amp;gt; a + b);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Meтод &lt;code&gt;merge&lt;/code&gt; принимает ключ, значение и функцию которая объединяет заданное значение и уже существующее в отображении, если таковое имеется. Если в отображении под заданным ключем значения нет, то ложит туда указанное значение.&lt;/p&gt;
+
+&lt;p&gt;Для любителей однострочников, есть вариант похардкорней:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;strings.forEach(s -&amp;gt; data.merge(s, 1, (a, b) -&amp;gt; a + b));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Аналогичную функциональность, но в другом контексте, дают методы:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;computeIfAbsent()&lt;/code&gt; – возвращает или значение из отображения по ключу, или создает его, если его не было;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;putIfAbsent()&lt;/code&gt; – добавляет значение в отображение, только если его там не было. Этот метод ранее имелся только у &lt;code&gt;ConcurrentMap&lt;/code&gt;, теперь появился и у &lt;code&gt;Map&lt;/code&gt;&amp;lsquo;а;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;getOrDefault()&lt;/code&gt; – название довольно красноречиво. Возвращает значение из отображения или переданное значение по-умолчанию. На мой взгляд, &lt;em&gt;метод довольно не идиоматичен&lt;/em&gt;. Для работы с отсутствующими значениями был добавлен тип &lt;code&gt;Optional&lt;/code&gt;, его и следовало использовать. Поэтому, я бы добавил метод: &lt;code&gt;Optional&amp;lt;V&amp;gt; getOptional(K key)&lt;/code&gt;. Но кто я такой&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;threadlocalwithinitial&quot;&gt;ThreadLocal.withInitial()&lt;/h2&gt;
+
+&lt;p&gt;Тех, кто плотно работает с многопоточностью, ничем не пронять. Они как ветераны Вьетнама, и даже флешбеки по ночам так же мучают. И этой конструкцией их не напугаешь:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;// Java 7 и ранее
+ThreadLocal&amp;lt;ObjectMapper&amp;gt; mapper = new ThreadLocal&amp;lt;&amp;gt;() {
+  @Override
+  protected ObjectMapper initialValue() {
+    return new ObjectMapper();
+  }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Но теперь, за счёт замыканий, стало проще:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;// Java 8
+ThreadLocal&amp;lt;ObjectMapper&amp;gt; mapper = withInitial(() -&amp;gt; new ObjectMapper());
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;fileslinesreadalllinesbufferedreaderlines&quot;&gt;Files.lines()/readAllLines()/BufferedReader.lines()&lt;/h2&gt;
+
+&lt;p&gt;В Java 8 стало возможным гораздо проще выполнить такую простую задачу как прочитать построчно файл. Это ещё одна задача, которая раньше требовала довольно много кода. Теперь так:&lt;/p&gt;
+
+&lt;p class=&quot;incut&quot;&gt;Минутка зануды. Метод возвращающий арифметическое среднее в классах &lt;code&gt;*SummaryStatistics&lt;/code&gt; называется &lt;code&gt;getAverage()&lt;/code&gt;, хотя более точным было бы имя &lt;code&gt;getMean()&lt;/code&gt;. Термин mean описывает именно арифметическое среднее, в то время как термин average относится к понятию среднего значения в целом и может относится к любой &lt;a href=&quot;http://ru.wikipedia.org/wiki/Меры_центральной_тенденции&quot;&gt;мере центральной тенденции&lt;/a&gt; (арифметическое среднее, медиана, геометрическое среднее, мода и т.д.). Примечательно, что даже в документации к методу &lt;code&gt;getAverage()&lt;/code&gt; фигурирует именно понятия mean: &amp;ldquo;Returns the arithmetic mean of values recorded&amp;rdquo;.&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;// на входе файл в формате &quot;одна строка - одно число&quot;
+// расчитываем среднее всех чисел
+int mean = lines(new File(&quot;asd&quot;).toPath())
+  .mapToInt(Integer::parseInt)
+  .summaryStatistics()
+  .getAverage();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Аналогичный метод был добавлен в класс &lt;code&gt;BufferedReader&lt;/code&gt;, поэтому теперь Stream&amp;rsquo;ы доступны поверх любого &lt;code&gt;InputStream&lt;/code&gt;&amp;lsquo;а.&lt;/p&gt;
+
+&lt;h2 id=&quot;comparator&quot;&gt;Парадокс Comparator&amp;rsquo;а&lt;/h2&gt;
+
+&lt;p&gt;Допустим вам надо написать имплементацию &lt;code&gt;Comparator&lt;/code&gt;&amp;lsquo;а для сортировки объектов по-возрастанию. Обычно, компаратор выглядит следующим образом:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;public class ByScoreComparator implements Comparator&amp;lt;User&amp;gt; {
+
+  @Override
+  public int compare(User u1, User u2) {
+    return (int) signum(o2.getAge() - o1.getAge());
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Вопрос лишь в том, что от чего надо отнимать, чтобы получить верный порядок сортировки? Наука говорит, что если вы будете выбирать вариант случайно, то угадаете примерно в половине случаев. В конце концов, варианта всего два: или от &lt;code&gt;u2&lt;/code&gt; отнять &lt;code&gt;u1&lt;/code&gt; или наоборот.&lt;/p&gt;
+
+&lt;p&gt;Парадокс заключается в том, что написать компаратор правильно с первого раза не получается практически никогда. Заканчивается всё всегда одинаково, — флегматичным замечанием: &amp;ldquo;Ах да, я же тут отнял неверно!&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Благо, теперь это и не требуется. Компаратор можно собрать из говна и палок, а точнее из ссылок на методы, которые возвращают &lt;code&gt;Comparable&lt;/code&gt; типы или примитивы по которым мы хотим сортировать.&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;Comparator&amp;lt;User&amp;gt; comparator = Comparator
+  .comparingDouble(User::getAge)
+  .thenComparing(User::getName);
+List&amp;lt;User&amp;gt; hList = ...;
+hList.sort(comparator);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;primitiveiterator&quot;&gt;PrimitiveIterator&lt;/h2&gt;
+
+&lt;p&gt;Одно из ограничений Java предыдущих версий заключалось в том, что в них не было стандартных итераторов над примитивными типами. Только над ссылочными. Теперь таковые появились в виде интерфейса &lt;code&gt;PrimitiveIterator&lt;/code&gt;, а также его наследников: &lt;code&gt;PrimitiveIterator.Of[Int|Long|Double]&lt;/code&gt;. Вместе с функциональными интерфейсами над примитивными типами это дает хорошую основу для работы с коллекциями примитивных типов без autobox&amp;rsquo;а.&lt;/p&gt;
+
+&lt;h2 id=&quot;listreplaceall&quot;&gt;List.replaceAll()&lt;/h2&gt;
+
+&lt;p&gt;Довольно удобный метод, который позволяет модифицировать все элементы списка. Если вы хотите список строк привести к нижнему регистру, раньше надо было писать что-то вроде:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;List&amp;lt;String&amp;gt; list = ...;
+for (int i = 0; i &amp;lt; list.size(); i++)
+  list.set(i, list.get(i).toLowerCase());
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Или более продвинутый вариант:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;ListIterator&amp;lt;String&amp;gt; i = list.listIterator();
+while (i.hasNext())
+  li.set(i.next().toLowerCase());
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Сейчас же можно сделать следующим образом:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;list.replaceAll(String::toLowerCase);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;randomints&quot;&gt;Random.ints()&lt;/h2&gt;
+
+&lt;p&gt;Ещё одна возможность, о которой практически нет упоминаний, — это то что &lt;code&gt;Random&lt;/code&gt; может создавать &lt;code&gt;Stream&lt;/code&gt;&amp;lsquo;ы случайных чисел нужного типа и диапазона:&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;// Выведет 10 случайных числел от 20 до 100
+new Random().ints(10, 20, 100).forEach(System.out::println);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Есть методы для создания &lt;code&gt;double&lt;/code&gt;&amp;lsquo;ов (&lt;code&gt;doubles()&lt;/code&gt;) и &lt;code&gt;long&lt;/code&gt;&amp;lsquo;ов (&lt;code&gt;longs()&lt;/code&gt;).&lt;/p&gt;
+
+&lt;h2 id=&quot;longaccumulatorlongadder&quot;&gt;LongAccumulator/LongAdder&lt;/h2&gt;
+
+&lt;p&gt;Два класса, которые представляют собой более производительные замены для &lt;code&gt;AtomicLong&lt;/code&gt;. Класс &lt;code&gt;LongAdder&lt;/code&gt; позволяет выполнять атомарные арифметические операции над типом &lt;code&gt;long&lt;/code&gt;. &lt;code&gt;LongAccumulator&lt;/code&gt; принимает произвольную функцию аккумуляции результатов. Эта функция принимает текущее значение, аргумент переданный в метод &lt;code&gt;accumulate()&lt;/code&gt; и возвращает результат логического объединения (accumulate) двух значений.&lt;/p&gt;
+
+&lt;pre class=&quot;code&quot;&gt;&lt;code&gt;// ранвосильно new LongAdder()
+LongAccumulator a = new LongAccumulator((a, b) -&amp;gt; a + b, 0);
+a.accumulate(1);
+a.accumulate(2);
+a.accumulate(3);
+a.accumulate(4);
+
+a.longValue(); // 10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p class=&quot;incut&quot;&gt;При получении результата все элементы редуцируются в один общий результат. Вся эта кухня намекает нам, что функция аккумуляции должна быть коммутативна и ассоциативна. В противном случае результат будет зависить от физического порядка выполнения операций, который данный класс не гарантирует.&lt;/p&gt;
+
+&lt;p&gt;При высоком contention&amp;rsquo;е два данных класса будут быстрее &lt;code&gt;AtomicLong&lt;/code&gt;&amp;lsquo;а за счёт того, что операции выполняются не над общим элементом, а над группой элементов по отдельности. Благодаря чему, &amp;ldquo;гусары не подерутся из-за женщин&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Аналогичная пара классов есть для типа &lt;code&gt;Double&lt;/code&gt; (&lt;code&gt;DoubleAdder&lt;/code&gt;, &lt;code&gt;DoubleAccumulator&lt;/code&gt;).&lt;/p&gt;
+
+&lt;h2 id=&quot;java-flight-recorder&quot;&gt;Java Flight Recorder&lt;/h2&gt;
+
+&lt;p&gt;Последнее по порядку, но не по важности, — это новые инструменты диагностики, которые предоставила Oracle в Java 8. А именно, Java Flight Recorder. Технически JFR появился в версии 7u40, но это настолько важный инструмент, что не упомянуть о нем я не могу.&lt;/p&gt;
+
+&lt;p&gt;Fligt Recorder представляет собой инструментарий встроенный в JVM для сбора и диагностики самой виртуальной машины, а также приложений запущенных на ней. Запускается он командой &lt;code&gt;jmc&lt;/code&gt;. У JFR есть несколько интересных особенностей:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;в зависимости от профиля собираемой информации, издержки на работу JFR могут быть очень низкими (менее 1% по утверждению Oracle, при конфигурации по-умолчанию). Это позволяет использовать этот инструмент в &amp;ldquo;боевых условиях&amp;rdquo; и под нагрузкой;&lt;/li&gt;
+  &lt;li&gt;JFR, в отличии от инструментов вроде VisualVM, может вести постоянную запись диагностической информации в ring buffer, и имеет настраиваемые политики dump&amp;rsquo;а информации на диск. Это позволяет настроить виртуальную машину таким образом, чтобы она постоянно вела диагностический лог, а сохраняла его только в случае возникновения проблем (например, при систематической нехватке CPU). Такой подход позволяет получать &amp;ldquo;черные ящики&amp;rdquo; описывающие состояние виртуальной машины и приложения непосредственно в момент проявления проблемы. До JFR единственный способ локализовать проблему был, — поймать её на production&amp;rsquo;е что называется &amp;ldquo;за руку&amp;rdquo;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Какую информацию может собирать JFR? Её очень много, основные моменты, которые я считаю полезными:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;результаты семплинга кода (какие классы и методы заняли больше всего процессорного времени, в каких потоках);&lt;/li&gt;
+  &lt;li&gt;информация по всем GC циклам (сколько памяти было высвобождено, сколько времени заняла каждая сборка мусора);&lt;/li&gt;
+  &lt;li&gt;информация по аллокации памяти (из какого потока, класса и метода было выделено больше всего памяти, под какой тип данных выделяли больше всего памяти, скорость аллокации по времени);&lt;/li&gt;
+  &lt;li&gt;информация по сетевому и дисковому вводу/выводу;&lt;/li&gt;
+  &lt;li&gt;какие Exception&amp;rsquo;ы и Error&amp;rsquo;ы были сгенерированы приложением;&lt;/li&gt;
+  &lt;li&gt;профиль блокировки потоков (какие потоки чаще всего блокируются, на каких локах/мониторах, какие потоки на момент блокировки владеют этими локами/мониторами чаще всего).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/java-8-top10/TLAB-1.png&quot; alt=&quot;Профиль выделения памяти по потокам&quot; /&gt;&lt;/p&gt;
+
+&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/java-8-top10/TLAB-2.png&quot; alt=&quot;Профиль выделения памяти&quot; /&gt;&lt;/p&gt;
+
+&lt;p class=&quot;image&quot;&gt;&lt;img src=&quot;http://bazhenov.me/images/java-8-top10/hot-threads.png&quot; alt=&quot;Потоки потребляющие больше всего CPU&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Список можно было бы продолжить, но в рамках этого поста я не смогу достаточно полно описать JFR. Поэтому, всем заинтересованым лицам настоятельно рекомендую &lt;a href=&quot;https://www.youtube.com/playlist?list=PLKCk3OyNwIzsEVDq6zErLW7HSkY7aqdeT&quot;&gt;потратить время на изучение&lt;/a&gt; этого крайне полезного инструмента.&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;Заключение&lt;/h2&gt;
+
+&lt;p&gt;Реальный список гораздо больше. Если вам интересно что ещё добавили в Java 8, я настоятельно рекомендую поискать по стандартной библиотеке Java следующим regexp&amp;rsquo;ом: &lt;code&gt;@since\s+1.8\s*\n&lt;/code&gt;. Вы найдете более 1000 вхождений. Ни один блог пост этого не покроет.&lt;/p&gt;
+
+&lt;p&gt;Оставляйте в коментариях, какие из фич Java 8 вы используете чаще всего.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Классификация методом максимальной энтропии</title>
@@ -648,72 +870,6 @@ double precisionInequalityRV(double t, double eps) {
   &lt;li&gt;&lt;a href=&quot;http://highlyscalable.wordpress.com/2012/05/01/probabilistic-structures-web-analytics-data-mining/&quot;&gt;Probabilistic Data Structures for Web Analytics and Data Mining&lt;/a&gt; — Ilya Katsov.&lt;/li&gt;
 &lt;/ul&gt;
 
-</description>
-    </item>
-    
-    <item>
-      <title>Feature selection в алгоритмах классификации</title>
-      <link>http://bazhenov.me/blog/2012/12/10/feature-selection.html</link>
-      <pubDate>Mon, 10 Dec 2012 00:00:00 +1100</pubDate>
-      <author>Denis Bazhenov (dotsid@gmail.com)</author>
-      <guid isPermaLink="true">http://bazhenov.me/blog/2012/12/10/feature-selection.html</guid>
-      <description>&lt;p&gt;Существует один очень простой и эффективный способ улучшения алгоритмов классификации, который называется &lt;a href=&quot;http://en.wikipedia.org/wiki/Feature_selection&quot;&gt;feature selection&lt;/a&gt; (выбор классификационных признаков). Этот метод позволяет при построении модели выбрать только самые показательные признаки (например, слова) и отсеять остальные.&lt;/p&gt;
-
-&lt;!-- excerpt --&gt;
-
-&lt;p&gt;Что такое показательные признаки? Если мы говорим о задаче классификации текстовых документов, то это слова которые несут информацию о классе к которому относится документ. Например, в контексте автомобильной тематики слово &amp;ldquo;Nissan&amp;rdquo;, скорее всего будет показательным признаком, а вот слово &amp;ldquo;новый&amp;rdquo; вряд ли. Использование для классификации не всех слов, а только показательных дает несколько преимуществ.&lt;/p&gt;
-
-&lt;p&gt;Во-первых, feature selection позволяет существенно уменьшить количество параметров модели (используемых для классификации слов), и как следствие снижает требования к объему памяти требуемой для классификации.&lt;/p&gt;
-
-&lt;p&gt;Во-вторых, feature selection может повысить точность алгоритма за счет удаления из модели слов с низким соотношением сигнал/шум. Представьте, что слово &amp;ldquo;аскетичный&amp;rdquo; встретилось в обучающей выборке 3 раза, – 1 раз в рамках класса &amp;ldquo;Авто&amp;rdquo; и 2 раза в рамках класса &amp;ldquo;Одежда&amp;rdquo;. Формально оно говорит в пользу класса &amp;ldquo;Одежда&amp;rdquo;, но вряд ли это слово можно считать хорошим классификационным признаком. Скорее всего, перевес в сторону одежды это случайность.&lt;/p&gt;
-
-&lt;p&gt;Но &lt;em&gt;сам факт наличия такого слова в обучающей выборке не случайность&lt;/em&gt;. Это следствие &lt;a href=&quot;http://ru.wikipedia.org/wiki/Закон_Ципфа&quot;&gt;закона Зипфа&lt;/a&gt; (Zipf&amp;rsquo;s law), который описывает распределение частот слов в натуральном языке. Простым языком это можно описать следующим образом, если вы возьмете любой достаточно большой корпус документов и посчитаете сколько в нем слов встречающихся ровно 1 раз, 2 раза, 3 раза и т.д., то окажется что большинство слов встречаются 1 раз. Это не должно быть большим сюрпризом, – в повседневной жизни мы используем довольно небольшое количество слов (высокочастотники), а большую часть слов мы практически не используем (низкочастотники).&lt;/p&gt;
-
-&lt;h2 id=&quot;mutual-information&quot;&gt;Mutual Information&lt;/h2&gt;
-
-&lt;p&gt;В этой заметке я опишу один, пожалуй самый простой способ оценки показательности классификационных признаков, – &lt;a href=&quot;http://nlp.stanford.edu/IR-book/html/htmledition/mutual-information-1.html&quot;&gt;метод взаимной информации&lt;/a&gt; (Mutual Information). Идея метода очень проста. Зная как часто слово употребляется в пределах документов класса и за его пределами, мы можем сказать насколько статистически сильно связаны слово и класс.&lt;/p&gt;
-
-&lt;p&gt;Для того чтобы рассчитать численное значение взаимной информации необходимо составить матрицу цитирумости. Матрица цитируемости – это матрица 2x2 которая показывает взаимоотношение конкретного слова с конкретным классов. Возьмем, к примеру слово &amp;ldquo;Toyota&amp;rdquo; и класс &amp;ldquo;Авто&amp;rdquo;.&lt;/p&gt;
-
-&lt;table align=&quot;center&quot;&gt;
-	&lt;tr&gt;
-		&lt;th /&gt;
-		&lt;th&gt;C&lt;sub&gt;Авто&lt;/sub&gt;=1&lt;/th&gt;
-		&lt;th&gt;C&lt;sub&gt;Авто&lt;/sub&gt;=0&lt;/th&gt;
-	&lt;/tr&gt;
-	&lt;tr&gt;
-		&lt;th&gt;W&lt;sub&gt;Toyota&lt;/sub&gt;=1&lt;/th&gt;
-		&lt;td&gt;N&lt;sub&gt;11&lt;/sub&gt;=65 342&lt;/td&gt;
-		&lt;td&gt;N&lt;sub&gt;10&lt;/sub&gt;=143&lt;/td&gt;
-	&lt;/tr&gt;
-	&lt;tr&gt;
-		&lt;th&gt;W&lt;sub&gt;Toyota&lt;/sub&gt;=0&lt;/th&gt;
-		&lt;td&gt;N&lt;sub&gt;01&lt;/sub&gt;=45 342&lt;/td&gt;
-		&lt;td&gt;N&lt;sub&gt;00&lt;/sub&gt;=897 657&lt;/td&gt;
-	&lt;/tr&gt;
-&lt;/table&gt;
-
-&lt;p&gt;Из этой матрицы видно что слово &amp;ldquo;Toyota&amp;rdquo; было встречено в 65 342 документах в контексте класса &amp;ldquo;Авто&amp;rdquo;, а также в 143 документах за переделами класса &amp;ldquo;Авто&amp;rdquo;. Имея на руках такую матрицу мы можем рассчитать взаимную информацию по формуле:&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt; MI =
-\frac{N_{11}}{N} \log_2{ \frac{N N_{11}}{N_{1.} N_{.1}} } +
-\frac{N_{01}}{N} \log_2{ \frac{N N_{01}}{N_{0.} N_{.1}} } + 
-\frac{N_{10}}{N} \log_2{ \frac{N N_{10}}{N_{1.} N_{.0}} } +
-\frac{N_{00}}{N} \log_2{ \frac{N N_{00}}{N_{0.} N_{.0}} } &lt;/script&gt;
-
-&lt;p&gt;где, &lt;script type=&quot;math/tex&quot;&gt; N &lt;/script&gt; — сумма всей матрицы, &lt;script type=&quot;math/tex&quot;&gt; N_{0.} = N_{00} + N_{01} &lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt; N_{.1} = N_{01} + N_{11} &lt;/script&gt; и т.д.&lt;/p&gt;
-
-&lt;p&gt;Взаимная информация всегда находится в диапазоне от нуля до единицы. Чем выше значение, тем сильнее связь между наличием/отсутствием слова и наличием/отсутствием класса. Рассчитав взаимную информацию для всех пар слово-класс мы можем оставить для каждого класса первые N слов, объединить эти слова в общий словарь и теперь только их использовать для классификации. Количество слов необходимых для оптимальной классификации зависит от конкретной задачи и его необходимо подбирать эмпирически, постоянно проверяя результаты на тестовой выборке.&lt;/p&gt;
-
-&lt;p&gt;На тех задач на которых я тестировал этот метод, он давал прирост точности от 3 до 10%. В Introduction to Infromation Retrieval указано что на практике возможен прирост в десятки процентов по F&lt;sub&gt;1&lt;/sub&gt;&lt;sup id=&quot;fnref:ref-mi-performance&quot;&gt;&lt;a href=&quot;#fn:ref-mi-performance&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;. Все зависит от вашей конкретной задачи, а также классификационного алгоритма.&lt;/p&gt;
-
-&lt;div class=&quot;footnotes&quot;&gt;
-  &lt;ol&gt;
-    &lt;li id=&quot;fn:ref-mi-performance&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://nlp.stanford.edu/IR-book/html/htmledition/mutual-information-1.html#fig:mccallum&quot;&gt;Introduction to Information Retrieval, 2008 Cambridge University Press&lt;/a&gt;&lt;a href=&quot;#fnref:ref-mi-performance&quot; rel=&quot;reference&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/div&gt;
 </description>
     </item>
     

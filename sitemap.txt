@@ -7,6 +7,7 @@ http://bazhenov.me/rss.xml
 http://bazhenov.me/sitemap.txt
 http://bazhenov.me/tags.html
 
+http://bazhenov.me/blog/2014/07/20/java-8-top10.html
 http://bazhenov.me/blog/2013/04/23/maximum-entropy-classifier.html
 http://bazhenov.me/blog/2013/04/14/linear-counter-bitmask-size.html
 http://bazhenov.me/blog/2013/01/08/search-architecture.html

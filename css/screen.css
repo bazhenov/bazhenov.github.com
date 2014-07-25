@@ -108,6 +108,8 @@ h3               { font-weight: 600 }
   text-align: justify;
 }
 
+.post .incut { color: #999; font-size: 12px; width: 260px; float: right; padding-left: 30px; margin: 0 }
+
 .archive           { width: 90% }
 .archive a         { color: black; text-decoration: none; font-weight: 300 }
 
