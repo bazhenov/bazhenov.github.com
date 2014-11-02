@@ -55,22 +55,22 @@
 
 <h2 id="section">Они повсюду</h2>
 
-<p>Пожалуй самый яркий пример автоматической классификации – это фильтрация спама. Каждый день на мой ящик падает десятки если не сотни спам-писем, которые автоматически отфильтровываются из моего inbox&rsquo;а.</p>
+<p>Пожалуй самый яркий пример автоматической классификации – это фильтрация спама. Каждый день на мой ящик падает десятки если не сотни спам-писем, которые автоматически отфильтровываются из моего inbox’а.</p>
 
 <p class="image photo"><img src="/images/classification/spam.png" alt="Mail Spam" /></p>
 
-<p>Современные коммерческие системы способны успешно фильтровать спам с точностью превышающей 99%<sup id="fnref:google-spam-filter-performance"><a href="#fn:google-spam-filter-performance" rel="footnote">1</a></sup>. Другим довольно типичным примером классификации служит автоматическое определение тематики того или иного текста. Некоторые новостные аггрераторы используют подобный подход для группировки новостей в направления: экономика, политика, общественная жизнь и т.д.</p>
+<p>Современные коммерческие системы способны успешно фильтровать спам с точностью превышающей 99%<sup id="fnref:google-spam-filter-performance"><a href="#fn:google-spam-filter-performance" class="footnote">1</a></sup>. Другим довольно типичным примером классификации служит автоматическое определение тематики того или иного текста. Некоторые новостные аггрераторы используют подобный подход для группировки новостей в направления: экономика, политика, общественная жизнь и т.д.</p>
 
 <p>Зачастую классификация является фундаментом на котором строятся алгоритмы решения более сложных задач.
 Например, классификация используется при создании рекомендательных систем и в частности при реализации <a href="http://ru.wikipedia.org/wiki/Коллаборативная_фильтрация">коллаборативной фильтрации</a>.</p>
 
 <p class="image photo"><img src="/images/classification/recommendation.png" alt="Amazon recommendations" /></p>
 
-<p>Safari Reader Mode является еще одним примером где используются алгоритмы классификации для достижения конечной цели. Суть этого режима работы браузера заключается в том что он позволяет автоматически убрать со страницы всю шелуху не имеющую отношения к сути контента страницы<sup id="fnref:boilerplate-paper"><a href="#fn:boilerplate-paper" rel="footnote">2</a></sup>.</p>
+<p>Safari Reader Mode является еще одним примером где используются алгоритмы классификации для достижения конечной цели. Суть этого режима работы браузера заключается в том что он позволяет автоматически убрать со страницы всю шелуху не имеющую отношения к сути контента страницы<sup id="fnref:boilerplate-paper"><a href="#fn:boilerplate-paper" class="footnote">2</a></sup>.</p>
 
 <p class="image photo"><img src="/images/classification/reader-mode.png" alt="Safari Reader Mode" /></p>
 
-<p>Так же классификация используется в задачах face detection&rsquo;а и face recognition&rsquo;а.</p>
+<p>Так же классификация используется в задачах face detection’а и face recognition’а.</p>
 
 <p class="image photo"><img src="/images/classification/face-detection.png" alt="Face Detection in Aperture" /></p>
 
@@ -83,7 +83,7 @@
   <li>анализ тональности (определение эмоциональной окраски текста).</li>
 </ul>
 
-<p>Этот список можно продолжать еще долго. Например, в медицине алгоритмы классификации используются для реконструирования 3D модели головного мозга по серии МРТ снимков<sup id="fnref:mri-3d"><a href="#fn:mri-3d" rel="footnote">3</a></sup>, а также для диагностики пациентов страдающих синдромом Альцгеймера<sup id="fnref:alzheimer"><a href="#fn:alzheimer" rel="footnote">4</a></sup>.</p>
+<p>Этот список можно продолжать еще долго. Например, в медицине алгоритмы классификации используются для реконструирования 3D модели головного мозга по серии МРТ снимков<sup id="fnref:mri-3d"><a href="#fn:mri-3d" class="footnote">3</a></sup>, а также для диагностики пациентов страдающих синдромом Альцгеймера<sup id="fnref:alzheimer"><a href="#fn:alzheimer" class="footnote">4</a></sup>.</p>
 
 <h2 id="section-1">Традиционные подходы</h2>
 
@@ -102,9 +102,9 @@
   <li>отнюдь не всегда факт наличия или отсутствия какого-либо одного слова является решающим фактором для принятия решения.</li>
 </ul>
 
-<p>Поподробней остановлюсь на последнем пункте. Если вернуться к задаче определения спама и немного подумать о том какие слова являются хорошими классификационными признаками (classifying feature), то станет понятно что нет такого слова наличие которого гарантировало бы что сообщение является спамом. Возможно, в пределах компании производящей <a href="http://ru.wikipedia.org/wiki/Силденафил">силденафил</a> в промышленных масштабах слово &ldquo;виагра&rdquo; не является показательным признаком спам-сообщения, кто знает.</p>
+<p>Поподробней остановлюсь на последнем пункте. Если вернуться к задаче определения спама и немного подумать о том какие слова являются хорошими классификационными признаками (classifying feature), то станет понятно что нет такого слова наличие которого гарантировало бы что сообщение является спамом. Возможно, в пределах компании производящей <a href="http://ru.wikipedia.org/wiki/Силденафил">силденафил</a> в промышленных масштабах слово “виагра” не является показательным признаком спам-сообщения, кто знает.</p>
 
-<p>В общем, суть такова: <em>любое из известных спам-слов пусть редко но встречается в повседневной жизни.</em> Поэтому, принимать окончательно решение основываясь на факте наличия или отсутствия какого-либо одного слова идея контрпродуктивная. Мы можем усложнять правила добавляя вложенные <code>if</code>&lsquo;ы. Но довольно быстро вы поймете что возможности человека в формулировании таких правил очень ограничены, потому что <em>сложность правил растет экспоненциально с количеством выбранных для классификации слов</em>.</p>
+<p>В общем, суть такова: <em>любое из известных спам-слов пусть редко но встречается в повседневной жизни.</em> Поэтому, принимать окончательно решение основываясь на факте наличия или отсутствия какого-либо одного слова идея контрпродуктивная. Мы можем усложнять правила добавляя вложенные <code>if</code>‘ы. Но довольно быстро вы поймете что возможности человека в формулировании таких правил очень ограничены, потому что <em>сложность правил растет экспоненциально с количеством выбранных для классификации слов</em>.</p>
 
 <h3 id="weight-based-classification">Weight based classification</h3>
 
@@ -113,7 +113,7 @@
 <table class="center">
   <thead>
     <tr>
-      <th>&nbsp;</th>
+      <th> </th>
       <th>spam</th>
       <th>not spam</th>
     </tr>
@@ -153,9 +153,9 @@
 }
 </code></pre>
 
-<p>Мы берем каждое слово и определяем суммарный вес документа отдельно для класса &ldquo;спам&rdquo; и класса &ldquo;не спам&rdquo;. Суммарный вес определяется как произведение весов всех известных слов документа. Слова для которых у нас нет веса мы пропускаем при классификации. Какой суммарный вес оказался больше тот класс и побеждает.</p>
+<p>Мы берем каждое слово и определяем суммарный вес документа отдельно для класса “спам” и класса “не спам”. Суммарный вес определяется как произведение весов всех известных слов документа. Слова для которых у нас нет веса мы пропускаем при классификации. Какой суммарный вес оказался больше тот класс и побеждает.</p>
 
-<p>Это более разумный подход, так как он более гибок и принимает решение на основании всех известных слов в тексте. Так же его гораздо проще сопровождать чем полотна <code>if</code>&lsquo;ов. </p>
+<p>Это более разумный подход, так как он более гибок и принимает решение на основании всех известных слов в тексте. Так же его гораздо проще сопровождать чем полотна <code>if</code>‘ов. </p>
 
 <h2 id="section-2">Метод машинного обучения</h2>
 
@@ -166,7 +166,7 @@
 <ul>
   <li>он прост в имплементации и тестировании;</li>
   <li>процесс обучения довольно эффективен по сравнению с другими более сложными классификаторами;</li>
-  <li>на небольших корпусах документов разница между NBC и другими гораздо более сложными алгоритмами классификации зачастую несущественна, а иногда NBC может оказаться и более точным<sup id="fnref:on-bayes-optimality"><a href="#fn:on-bayes-optimality" rel="footnote">5</a></sup>.</li>
+  <li>на небольших корпусах документов разница между NBC и другими гораздо более сложными алгоритмами классификации зачастую несущественна, а иногда NBC может оказаться и более точным<sup id="fnref:on-bayes-optimality"><a href="#fn:on-bayes-optimality" class="footnote">5</a></sup>.</li>
 </ul>
 
 <p>В последующих заметках я более детально опишу вопросы связанные с созданием и тестированием подобного классификатора. Подписывайтесь на <a href="/rss.xml">RSS</a>.</p>
@@ -176,19 +176,19 @@
 <div class="footnotes">
   <ol>
     <li id="fn:google-spam-filter-performance">
-      <p><a href="http://googlesystem.blogspot.com/2007/10/how-gmail-blocks-spam.html">How Gmail Blocks Spam</a><a href="#fnref:google-spam-filter-performance" rel="reference">&#8617;</a></p>
+      <p><a href="http://googlesystem.blogspot.com/2007/10/how-gmail-blocks-spam.html">How Gmail Blocks Spam</a> <a href="#fnref:google-spam-filter-performance" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:boilerplate-paper">
-      <p><a href="http://www.l3s.de/~kohlschuetter/publications/wsdm187-kohlschuetter.pdf">Boilerplate Detection using Shallow Text Features</a><a href="#fnref:boilerplate-paper" rel="reference">&#8617;</a></p>
+      <p><a href="http://www.l3s.de/~kohlschuetter/publications/wsdm187-kohlschuetter.pdf">Boilerplate Detection using Shallow Text Features</a> <a href="#fnref:boilerplate-paper" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:mri-3d">
-      <p><a href="http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=1352574&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel5%2F9356%2F29717%2F01352574.pdf%3Farnumber%3D1352574">Automatic classification of MRI images for three-dimensional volume reconstruction by using general regression neural networks</a><a href="#fnref:mri-3d" rel="reference">&#8617;</a></p>
+      <p><a href="http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=1352574&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fiel5%2F9356%2F29717%2F01352574.pdf%3Farnumber%3D1352574">Automatic classification of MRI images for three-dimensional volume reconstruction by using general regression neural networks</a> <a href="#fnref:mri-3d" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:alzheimer">
-      <p><a href="http://www.ncbi.nlm.nih.gov/pubmed/20542124">Automatic classification of patients with Alzheimer&rsquo;s disease from structural MRI: a comparison of ten methods using the ADNI database</a><a href="#fnref:alzheimer" rel="reference">&#8617;</a></p>
+      <p><a href="http://www.ncbi.nlm.nih.gov/pubmed/20542124">Automatic classification of patients with Alzheimer’s disease from structural MRI: a comparison of ten methods using the ADNI database</a> <a href="#fnref:alzheimer" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:on-bayes-optimality">
-      <p><a href="http://www.cc.gatech.edu/fac/Charles.Isbell/classes/reading/papers/bayes-opt.pdf">On the Optimality of the Simple Bayesian Classifier under Zero-One Loss</a><a href="#fnref:on-bayes-optimality" rel="reference">&#8617;</a></p>
+      <p><a href="http://www.cc.gatech.edu/fac/Charles.Isbell/classes/reading/papers/bayes-opt.pdf">On the Optimality of the Simple Bayesian Classifier under Zero-One Loss</a> <a href="#fnref:on-bayes-optimality" class="reversefootnote">&#8617;</a></p>
     </li>
   </ol>
 </div>

@@ -49,15 +49,15 @@
 
 <p>Вообще, довольно трудно представить себе где бы могла мне пригодится такая очередь сообщений. Cуществует куча бесплатных специализированных решений, которые создавались специально для обработки очередей сообщений. Взять хотя бы <a href="http://activemq.apache.org/">ActiveMQ</a> или <a href="http://community.jboss.org/wiki/JBossMQ">JBossMQ</a>. Поддержка транзакционности, оптимизирована для быстрой вставки (в принципе, как и любая другая MQ система), поддержка практически всех популярных скриптовых языков посредством <a href="http://stomp.codehaus.org/">STOMP</a>, встроенный <a href="http://activemq.apache.org/camel/">message router</a>, поддержка репликации, поддержка forward on demand bridge и куча еще чего. Учитывая то, что MQ системы обычно применяются либо при интеграции приложений либо в целях масштабируемости приложений (что говорит о больших обьемах данных), непонятно зачем нужно решение подобное <code>Q4M</code>. Рано или поздно вы упретесь в пропускную способность sql-сервера по чтению, добавите slave серверов, а затем упретесь в ту же пропускную способность, но уже по записи. И тут уже никакая репликация не спасет.</p>
 
-<p>Справедливости ради надо отметить, что <code>Q4M</code> предоставлят возможности, которых в других mq системах нет. Например, conditional consuming и join&rsquo;ы очередей с обыкновенными таблицами! В принципе, кому-то может пригодится. Ebay, если верить некоторым источникам<sup id="fnref:ebay-mq"><a href="#fn:ebay-mq" rel="footnote">1</a></sup>, использует самописный messaging стек, который поддерживает conditional consuming. Это упрощает использование очереди, да и EIP<sup id="fnref:eip"><a href="#fn:eip" rel="footnote">2</a></sup> была бы раза в два тоньше. Вот только за все приходится платить, и за удобство использования тоже. Особенно, когда за очередью прячется реляционная база данных. В данном случае платить придется производительностью, failover&rsquo;ом и масштабирумостью.</p>
+<p>Справедливости ради надо отметить, что <code>Q4M</code> предоставлят возможности, которых в других mq системах нет. Например, conditional consuming и join’ы очередей с обыкновенными таблицами! В принципе, кому-то может пригодится. Ebay, если верить некоторым источникам<sup id="fnref:ebay-mq"><a href="#fn:ebay-mq" class="footnote">1</a></sup>, использует самописный messaging стек, который поддерживает conditional consuming. Это упрощает использование очереди, да и EIP<sup id="fnref:eip"><a href="#fn:eip" class="footnote">2</a></sup> была бы раза в два тоньше. Вот только за все приходится платить, и за удобство использования тоже. Особенно, когда за очередью прячется реляционная база данных. В данном случае платить придется производительностью, failover’ом и масштабирумостью.</p>
 
 <div class="footnotes">
   <ol>
     <li id="fn:ebay-mq">
-      <p><a href="http://natishalom.typepad.com/nati_shaloms_blog/2007/11/architecture-yo.html">Architecture You Always Wondered About: Lessons Learned at Qcon</a><a href="#fnref:ebay-mq" rel="reference">&#8617;</a></p>
+      <p><a href="http://natishalom.typepad.com/nati_shaloms_blog/2007/11/architecture-yo.html">Architecture You Always Wondered About: Lessons Learned at Qcon</a> <a href="#fnref:ebay-mq" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:eip">
-      <p><a href="http://www.enterpriseintegrationpatterns.com/">Enterprise Integration Patterns: Designing, Building, and Deploying Messaging Solutions</a><a href="#fnref:eip" rel="reference">&#8617;</a></p>
+      <p><a href="http://www.enterpriseintegrationpatterns.com/">Enterprise Integration Patterns: Designing, Building, and Deploying Messaging Solutions</a> <a href="#fnref:eip" class="reversefootnote">&#8617;</a></p>
     </li>
   </ol>
 </div>

@@ -55,12 +55,12 @@
 
 <p>Решил написать грамматику для реализации парсера на <a href="http://www.antlr.org/">ANTLR</a>. К собственному удивлению, справился за пол часа, а результирующая грамматика занимала 35 строчек кода. На выходе я имел следующий интерфейс.</p>
 
-<div class="highlight"><pre><code class="java"><span class="n">RQLParser</span> <span class="n">parser</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RQLParser</span><span class="o">()</span>
-<span class="n">ANTLRStringStream</span> <span class="n">input</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ANTLRStringStream</span><span class="o">(</span><span class="s">&quot;build report &quot;</span><span class="o">+</span>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">RQLParser</span> <span class="n">parser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RQLParser</span><span class="o">()</span>
+<span class="n">ANTLRStringStream</span> <span class="n">input</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ANTLRStringStream</span><span class="o">(</span><span class="s">&quot;build report &quot;</span><span class="o">+</span>
   <span class="s">&quot;from &#39;2005-01-15&#39; to &#39;2005-02-12&#39; with id = 25, subject = &#39;text&#39;&quot;</span><span class="o">);</span>
-<span class="n">RQLLexer</span> <span class="n">lexer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RQLLexer</span><span class="o">(</span><span class="n">input</span><span class="o">);</span>
-<span class="n">CommonTokenStream</span> <span class="n">tokens</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CommonTokenStream</span><span class="o">(</span><span class="n">lexer</span><span class="o">);</span>
-<span class="n">RQLParser</span> <span class="n">parser</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RQLParser</span><span class="o">(</span><span class="n">tokens</span><span class="o">);</span>
+<span class="n">RQLLexer</span> <span class="n">lexer</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RQLLexer</span><span class="o">(</span><span class="n">input</span><span class="o">);</span>
+<span class="n">CommonTokenStream</span> <span class="n">tokens</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">CommonTokenStream</span><span class="o">(</span><span class="n">lexer</span><span class="o">);</span>
+<span class="n">RQLParser</span> <span class="n">parser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RQLParser</span><span class="o">(</span><span class="n">tokens</span><span class="o">);</span>
 <span class="n">parser</span><span class="o">.</span><span class="na">query</span><span class="o">();</span>
 
 <span class="n">parser</span><span class="o">.</span><span class="na">reportName</span><span class="o">;</span> <span class="c1">// имя отчета</span>
@@ -68,9 +68,7 @@
 <span class="n">parser</span><span class="o">.</span><span class="na">dateTo</span><span class="o">;</span> <span class="c1">// конец диапазона</span>
 
 <span class="c1">// Список объектов представляющий собой правила фильтрации</span>
-<span class="n">parser</span><span class="o">.</span><span class="na">criteriaList</span><span class="o">;</span>
-</code></pre>
-</div>
+<span class="n">parser</span><span class="o">.</span><span class="na">criteriaList</span><span class="o">;</span></code></pre></div>
 
 <p>Вполне удобно и легко поддается модификации. Поменял грамматику, запустил генератор, — вот тебе и новый парсер. Пожалуй пора отказываться от регулярок. Достал этот write-only.</p>
 

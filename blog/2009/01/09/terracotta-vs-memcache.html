@@ -45,9 +45,9 @@
 	</div>
 	
 	
-	<p>В последнее время начали сравнивать <code>terracotta</code> и <code>memcache</code>. Мне это сравнение кажется некорректным. Бытует мнение что <code>terracotta</code> — это distributed cache<sup id="fnref:distributed-cache"><a href="#fn:distributed-cache" rel="footnote">1</a></sup>. Это все равно что называть автомобиль &ldquo;четырехколесным мопедом&rdquo;, только потому, что он может ездить и у него четыре колеса.</p>
+	<p>В последнее время начали сравнивать <code>terracotta</code> и <code>memcache</code>. Мне это сравнение кажется некорректным. Бытует мнение что <code>terracotta</code> — это distributed cache<sup id="fnref:distributed-cache"><a href="#fn:distributed-cache" class="footnote">1</a></sup>. Это все равно что называть автомобиль “четырехколесным мопедом”, только потому, что он может ездить и у него четыре колеса.</p>
 
-<p><code>Terracotta</code> часто определяют как Network Attached Memory. И это правда, но не вся. Технически никто не мешает вам использовать <code>terracotta</code> как distributed (или, как его еще иногда называют, clustered) cache. Но тут возникает проблема с <abbr title="High Availability">HA</abbr>. В кластере Terracotta всегда есть координатор, который управляет потоком данных. По словам Ari Zilka<sup id="fnref:ari-zilka-interview"><a href="#fn:ari-zilka-interview" rel="footnote">2</a></sup> (одного из основателей Terracota Inc.), именно по этой причине terracotta очень хорошо масштабируется, так как благодаря наличию координатора нет необходимости использовать multicast передачу данных. Однако, наличие координатора означает single point of failure. При использовании memcache <abbr title="Single Point of Failure">SPOF</abbr> нету, но вам необходимо самому распределять данные по нодам.</p>
+<p><code>Terracotta</code> часто определяют как Network Attached Memory. И это правда, но не вся. Технически никто не мешает вам использовать <code>terracotta</code> как distributed (или, как его еще иногда называют, clustered) cache. Но тут возникает проблема с <abbr title="High Availability">HA</abbr>. В кластере Terracotta всегда есть координатор, который управляет потоком данных. По словам Ari Zilka<sup id="fnref:ari-zilka-interview"><a href="#fn:ari-zilka-interview" class="footnote">2</a></sup> (одного из основателей Terracota Inc.), именно по этой причине terracotta очень хорошо масштабируется, так как благодаря наличию координатора нет необходимости использовать multicast передачу данных. Однако, наличие координатора означает single point of failure. При использовании memcache <abbr title="Single Point of Failure">SPOF</abbr> нету, но вам необходимо самому распределять данные по нодам.</p>
 
 <p>Используя terracota вы можете взять <code>LinkedBlockingQueue&lt;Runnable&gt;</code>, пометить его как shared и обрабатывать очередь задач на всех нодах кластера. Вместе с корректной имплементацией распределенных локов мы имеем отличную платформу для распределенных вычислений и возможно даже хранения данных.</p>
 
@@ -60,20 +60,20 @@
 
 <p>С первым все должно быть понятно. Если приложение не смогло пережить потерю кеша, значит там хранился оригинал каких-либо данных, а следовательно это уже не кеш. Со вторым немного сложнее. Так как значение в кеше зависит только от внешних данных (данных не хранящихся в кеше), значит невозможны операции когда новое значение кеша зависит от его предыдущего значения. А значит не нужны атомарные обновления.</p>
 
-<p><code>Memсache</code> отлично подходит для таких сценариев. Ну а если вы решили использовать <code>memcache</code> как storage, а не как кеш, то вы обречены на собственную реализацию атомарного обновления данных<sup id="fnref:ref-php-sessions-memcache"><a href="#fn:ref-php-sessions-memcache" rel="footnote">3</a></sup>, как минимум.</p>
+<p><code>Memсache</code> отлично подходит для таких сценариев. Ну а если вы решили использовать <code>memcache</code> как storage, а не как кеш, то вы обречены на собственную реализацию атомарного обновления данных<sup id="fnref:ref-php-sessions-memcache"><a href="#fn:ref-php-sessions-memcache" class="footnote">3</a></sup>, как минимум.</p>
 
 <p>Таким образом, <code>memcache</code> и <code>terracotta</code> — это совсем разные вещи. Первое — это просто Network Attached Memory сервер. И без дополнительного кодирования его можно использовать только для кеширования данных. Второе — полноценная платформа для кластеризации вычислений. Как говорится, know your enemy.</p>
 
 <div class="footnotes">
   <ol>
     <li id="fn:distributed-cache">
-      <p><a href="http://debasishg.blogspot.com/2008/09/memcached-and-terracotta-alternatives.html">Memcached and Terracotta : Alternatives or Complementary?</a><a href="#fnref:distributed-cache" rel="reference">&#8617;</a></p>
+      <p><a href="http://debasishg.blogspot.com/2008/09/memcached-and-terracotta-alternatives.html">Memcached and Terracotta : Alternatives or Complementary?</a> <a href="#fnref:distributed-cache" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:ari-zilka-interview">
-      <p><a href="http://www.infoq.com/interviews/ari-zilka-terracotta">Ari Zilka on Terracotta, Clustering and Open Source</a><a href="#fnref:ari-zilka-interview" rel="reference">&#8617;</a></p>
+      <p><a href="http://www.infoq.com/interviews/ari-zilka-terracotta">Ari Zilka on Terracotta, Clustering and Open Source</a> <a href="#fnref:ari-zilka-interview" class="reversefootnote">&#8617;</a></p>
     </li>
     <li id="fn:ref-php-sessions-memcache">
-      <p><a href="http://habrahabr.ru/blogs/php/38261/">Особенности хранения сессий PHP в memcached</a><a href="#fnref:ref-php-sessions-memcache" rel="reference">&#8617;</a></p>
+      <p><a href="http://habrahabr.ru/blogs/php/38261/">Особенности хранения сессий PHP в memcached</a> <a href="#fnref:ref-php-sessions-memcache" class="reversefootnote">&#8617;</a></p>
     </li>
   </ol>
 </div>

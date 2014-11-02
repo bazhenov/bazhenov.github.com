@@ -3,7 +3,6 @@ http://bazhenov.me/about.html
 http://bazhenov.me/archive.html
 http://bazhenov.me/index.html
 http://bazhenov.me/pages.html
-http://bazhenov.me/rss.xml
 http://bazhenov.me/sitemap.txt
 http://bazhenov.me/tags.html
 
