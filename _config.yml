@@ -1,0 +1,21 @@
+# This is the default format. 
+# For more see: https://github.com/mojombo/jekyll/wiki/Permalinks
+permalink: /blog/:year/:month/:day/:title.html
+#auto: true
+#pygments: true
+highlighter: pygments
+var:
+  archive_path: /archive.html
+  categories_path : /categories.html
+  tags_path : /tags.html
+
+production_url : http://bazhenov.me # or your custom domain name
+title : Суровая реальность
+markdown : kramdown
+
+author :
+  name : Denis Bazhenov
+  email : dotsid@gmail.com
+  github : bazhenov
+  twitter : denis_bazhenov
+  flickr : denis-bazhenov

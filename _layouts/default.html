@@ -1,0 +1,57 @@
+---
+---
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru-ru">
+<head>
+	 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	 <title>{{ page.title }}</title>
+	 <meta name="author" content="{{ site.author.name }}" />
+	 <link href="http://feeds.feedburner.com/severe-reality" rel="alternate" title="Severe Reality" type="application/atom+xml" />
+	 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=latin,cyrillic-ext,cyrillic' rel='stylesheet' type='text/css'>
+	 
+	 <link rel="openid2.provider" href="https://www.google.com/accounts/o8/ud?source=profiles" > 
+	 <link rel="openid2.local_id" href="http://www.google.com/profiles/dotsid" >
+	 
+	 <!-- syntax highlighting CSS -->
+	 <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+	 <!-- Homepage CSS -->
+	 <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+</head>
+<body>
+
+	<div class="site">
+		{% if page.skipHeader != true %}
+			<header>
+				<div class="content">
+					<a href="/">{{ site.title }}</a>
+				</div>
+			</header>
+		{% endif %}
+
+		{{ content }}
+
+		<footer>
+			<div class="content">
+				<a href="http://feeds.feedburner.com/severe-reality">RSS Subscribe</a>
+					|
+				<a href="mailto:{{ site.author.email }}">Email</a>
+			</div>
+		</footer>
+					
+	</div>
+	
+	<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('pre.code code').each(function(i, e) {hljs.highlightBlock(e, '  ')});
+	});
+	</script>
+	
+	{% include production/analytics.html %}
+
+	<link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/idea.min.css">
+</body>
+</html>
