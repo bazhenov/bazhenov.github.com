@@ -36,7 +36,7 @@ skipHeader: true
 							<span class="date">{{ post.date | date_to_string }}</span>
 						</div>
 						<p>
-							{{ post.content | summarize }}
+							{{ post.excerpt }}
 							<a href="{{post.url}}" class="readLink">Читать полностью &raquo;</a>
 						</p>
 					</div>
