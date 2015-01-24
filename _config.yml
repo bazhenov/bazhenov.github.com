@@ -1,7 +1,4 @@
-# This is the default format. 
-# For more see: https://github.com/mojombo/jekyll/wiki/Permalinks
 permalink: /blog/:year/:month/:day/:title.html
-#auto: true
 #pygments: true
 highlighter: pygments
 var:

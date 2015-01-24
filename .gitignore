@@ -2,5 +2,5 @@ _site/*
 *.swp
 Thumbs.db
 .DS_Store
-/draft
+/_drafts
 !.gitkeep
