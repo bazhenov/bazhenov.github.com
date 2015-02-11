@@ -50,9 +50,13 @@ h3               { font-weight: 600 }
                         margin: 0; padding-left: 60px; min-height: 40px;
                         font-size: 14px }
                     
+kbd                      { background-color: black; border-radius: 3px; padding: 0 3px; background-color:#f7f7f7;
+    border:1px solid #ccc; box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset; margin:0 .1em;
+    padding:.1em .6em; }
+    
 .post pre                { font-size: 14px }
 .post pre code           { overflow-x: auto }
-.post pre.shell code     { background-color: black !important; color: #ddd !important }
+.post pre.shell code     { background-color: #222 !important; color: #ddd !important; border-radius: 2px }
 .post em                 { font-style: normal; background-color: #ffc; padding: 0 3px; border-radius: 5px; }
 
 .post .update            { font-size: 14px; border-left: 5px solid #ddd;
