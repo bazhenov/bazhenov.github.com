@@ -1,6 +1,6 @@
 permalink: /blog/:year/:month/:day/:title.html
 #pygments: true
-highlighter: pygments
+highlighter: rouge
 var:
   archive_path: /archive.html
   categories_path : /categories.html
