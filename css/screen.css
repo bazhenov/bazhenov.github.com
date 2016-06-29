@@ -56,7 +56,7 @@ kbd                      { background-color: black; border-radius: 3px; padding:
     
 .post pre                { font-size: 14px }
 .post pre code           { overflow-x: auto }
-.post pre.shell code     { background-color: #222 !important; color: #ddd !important; border-radius: 2px }
+.post .shell pre         { background-color: #222 !important; color: #eee !important; border-radius: 2px; padding: 15px }
 .post em                 { font-style: normal; background-color: #ffc; padding: 0 3px; border-radius: 5px; }
 
 .post .update            { font-size: 14px; border-left: 5px solid #ddd;
@@ -68,6 +68,8 @@ kbd                      { background-color: black; border-radius: 3px; padding:
 
 .post table td            { padding: 5px; font-size: 80%}
 .post table td.label      { text-align: right !important }
+
+pre, code                 { tab-size: 2 }
 
 .postOverview {
   width: 90%;

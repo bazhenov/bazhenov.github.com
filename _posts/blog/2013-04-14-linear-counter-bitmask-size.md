@@ -46,33 +46,34 @@ $$m > \max\left(5, \frac{1}{(\epsilon t)^2}\right) \left(e^t - t - 1\right)$$
 
 Использование такого подхода возможно, так как правая часть неравенства хоть и не является дифференцируемой на всём промежутке значений, тем не менее, можно показать, что она монотонно убывает при $$m\to\infty$$ (так как данная заметка носит прикладной характер, доказательство остается на совести читателя). Это означает, что есть такое вещественное значение $$m_0$$, которое делит всю область допустимых значений на две: справа неравенство выполняется, а слева не выполняется. Округлив это значение до ближайшего целого сверху мы получим искомый ответ.
 
-	int computeRequiredBitMaskLength(double n, double eps) {
-		if (eps >= 1 || eps <= 0) {
-			throw new IllegalArgumentException("Epsilon should be in (0, 1) range");
-		}
-		if (n <= 0) {
-			throw new IllegalArgumentException("Cardinality should be positive");
-		}
-		int fromM = 1;
-		int toM = 100000000;
-		int m;
-		double eq;
-		do {
-			m = (toM + fromM) / 2;
-			eq = precisionInequalityRV(n / m, eps);
-			if (m > eq) {
-				toM = m;
-			} else {
-				fromM = m + 1;
-			}
-		} while (toM > fromM);
-		return m > eq ? m : m + 1;
+{% highlight java %}
+int computeRequiredBitMaskLength(double n, double eps) {
+	if (eps >= 1 || eps <= 0) {
+		throw new IllegalArgumentException("Epsilon should be in (0, 1) range");
 	}
+	if (n <= 0) {
+		throw new IllegalArgumentException("Cardinality should be positive");
+	}
+	int fromM = 1;
+	int toM = 100000000;
+	int m;
+	double eq;
+	do {
+		m = (toM + fromM) / 2;
+		eq = precisionInequalityRV(n / m, eps);
+		if (m > eq) {
+			toM = m;
+		} else {
+			fromM = m + 1;
+		}
+	} while (toM > fromM);
+	return m > eq ? m : m + 1;
+}
 
-	double precisionInequalityRV(double t, double eps) {
-		return max(1.0 / pow(eps * t, 2), 5) * (exp(t) - t - 1);
-	}
-{:.code}
+double precisionInequalityRV(double t, double eps) {
+	return max(1.0 / pow(eps * t, 2), 5) * (exp(t) - t - 1);
+}
+{% endhighlight %}
 
 Как и любой другой бинарный поиск, этот выполняется за $$O(\log d)$$ (где d — размер диапазона по которому происходит поиск). Таким образом, этот подход позволяет находить ответ за несколько десятков итераций даже для больших значений d. Этого более чем достаточно для большинства прикладных задач.
 

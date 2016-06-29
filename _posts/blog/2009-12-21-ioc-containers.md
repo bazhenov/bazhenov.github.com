@@ -40,31 +40,33 @@ alias: /2009/12/ioc.html
 
 Конфигурация в нашем случае описывается примерно следующим образом:
 
-	<?xml version="1.0" encoding="utf8"?>
-	<beans xmlns="http://farpost.com/slr/injector">
-	  <bean id="masterConnection" class="MySqlConection">
-	    <property name="host" value="hostname" />
-	    <property name="user" value="john" />
-	    <property name="password" value="secret" />
-	    <property name="db" value="orders" />
-	  </bean>
+{% highlight xml %}
+<?xml version="1.0" encoding="utf8"?>
+<beans xmlns="http://farpost.com/slr/injector">
+  <bean id="masterConnection" class="MySqlConection">
+    <property name="host" value="hostname" />
+    <property name="user" value="john" />
+    <property name="password" value="secret" />
+    <property name="db" value="orders" />
+  </bean>
 
-	  <bean id="userRepository" class="SqlUserRepository">
-	    <constructor-arg ref="masterConnection" />
-	  </bean>
-	</beans>
-{:.code}
+  <bean id="userRepository" class="SqlUserRepository">
+    <constructor-arg ref="masterConnection" />
+  </bean>
+</beans>
+{% endhighlight %}
 
 Фактически, это эквивалентно следующему коду:
 
-	$masterConnection = new MySqlConnection();
-	$masterConnection->setHost("hostname");
-	$masterConnection->setUser("john");
-	$masterConnection->setPassword("secret");
-	$masterConnection->setDb("orders");
-	
-	$userRepository = new SqlUserRepository($masterConnection);
-{:.code}
+{% highlight php %}
+$masterConnection = new MySqlConnection();
+$masterConnection->setHost("hostname");
+$masterConnection->setUser("john");
+$masterConnection->setPassword("secret");
+$masterConnection->setDb("orders");
+
+$userRepository = new SqlUserRepository($masterConnection);
+{% endhighlight %}
 
 Многословно? Да, наверное. Но это дешевле чем каждый раз писать код создающий объекты на основании конфигурации, когда у вас сотни таких объектов.
 

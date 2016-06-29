@@ -194,12 +194,13 @@ $$\frac{\partial\log p(C|D,\lambda)}{\partial\lambda_i}=
 
 Проще всего будет тем, кто использует Maven для управления зависимостями. Достаточно прописать следующую зависимость в проекте:
 
-	<dependency>
-	  <groupId>org.apache.opennlp</groupId>
-	  <artifactId>opennlp-maxent</artifactId>
-	  <version>3.0.2-incubating</version>
-	</dependency>
-{:.code}
+{% highlight xml %}
+<dependency>
+  <groupId>org.apache.opennlp</groupId>
+  <artifactId>opennlp-maxent</artifactId>
+  <version>3.0.2-incubating</version>
+</dependency>
+{% endhighlight %}
 
 Затем, необходимо реализовать класс, который будет извлекать из текста классификационные признаки в формате OpenNLP. Для этого необходимо реализовать интерфейс `EventStream`. Этот интерфейс представляет собой итератор по объектам типа `Event`. Каждый `Event` является обучающим семплом, который содержит в себе массив классификационных признаков и результирующий класс (context и outcome в терминологии OpenNLP). Классификационный признак – это просто напросто уникальная строка.
 
@@ -211,15 +212,17 @@ $$\frac{\partial\log p(C|D,\lambda)}{\partial\lambda_i}=
 
 Результирующую модель можно сохранить в файл при помощи следующего кода:
 
-	SuffixSensitiveGISModelWriter writer = new SuffixSensitiveGISModelWriter(model, new File("maxent.model"));
-	writer.persist();
-{:.code}
+{% highlight java %}
+SuffixSensitiveGISModelWriter writer = new SuffixSensitiveGISModelWriter(model, new File("maxent.model"));
+writer.persist();
+{% endhighlight %}
 
 а прочитать из файла при помощи следующего:
 
-	SuffixSensitiveGISModelReader reader = new SuffixSensitiveGISModelReader(new File("maxent.model"));
-	reader.getModel();
-{:.code}
+{% highlight java %}
+SuffixSensitiveGISModelReader reader = new SuffixSensitiveGISModelReader(new File("maxent.model"));
+reader.getModel();
+{% endhighlight %}
 
 Если у вас остались вопросы, оставляйте из в комментариях. Подписывайтесь на [RSS][ref-rss] для того чтобы получать обновления. Если вам понравилась эта заметка, плюсуйте или поделитесь ссылкой в социальных сетях.
 

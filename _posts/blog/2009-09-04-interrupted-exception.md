@@ -13,30 +13,33 @@ alias: /2009/09/interrupted-exception.html
 
 Важно понимать, что interrupt адресуется не только вам (коду, который выполняется в потоке), но и владельцу потока. Другими словами, не только вы в этом потоке заинтересованы в том, чтобы определить что наступило прерывание.
 
-	try {
-	  Object o = queue.take();
-	} catch ( InterruptedException e ) {}
-{:.code}
+{% highlight java %}
+try {
+  Object o = queue.take();
+} catch ( InterruptedException e ) {}
+{% endhighlight %}
 
 Данный код неверен, потому что он "давит" сигнал прерывания. Если этот код выполняется в thread pool'е, то на этом таске worker (который вызвал вас) должен был бы завершить исполнение задач, так как поток получил прерывание. Но этого не произойдет потому что сигнал прерывания был перехвачен вышеприведенным кодом. Как правило, это выражается в том, что после посылки `kill` сигнала java машине у нее остаются висеть потоки worker'ов из-за чего JVM не может завершить свою работу. В данном случае единственный выход — `kill -9`.
 
 Следующий код так же некорректен, потому что мы "маскируем" interrupt в исключительную ситуацию другого типа. Тем самым он не дает возможности вызывающей стороне зафиксировать ситуацию прерывания.
 
-	try { 
-	  Object o = queue.take();
-	} catch ( InterruptedException e ) {
-	  throw new RuntimeException(e);
-	}
-{:.code}
+{% highlight java %}
+try { 
+  Object o = queue.take();
+} catch ( InterruptedException e ) {
+  throw new RuntimeException(e);
+}
+{% endhighlight %}
 
 Корректный код будет выглядеть следующим образом.
 
-	try {
-	  Object o = queue.take();
-	} catch ( InterruptedException e ) {
-	  Thread.currentThread().interrupt();
-	}
-{:.code}
+{% highlight java %}
+try {
+  Object o = queue.take();
+} catch ( InterruptedException e ) {
+  Thread.currentThread().interrupt();
+}
+{% endhighlight %}
 
 Здесь мы ловим `InterruptedException` и выставляем флаг потока сигнализирующий о прерывании.
 
