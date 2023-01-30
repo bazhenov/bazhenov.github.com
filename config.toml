@@ -1,0 +1,68 @@
+baseurl = "http://www.example.com"
+defaultcontentlanguage = "en"
+languagecode = "ru"
+theme = "hugo-coder"
+title = "Severe Reality"
+
+paginate = 20
+
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+pygmentsstyle = "dracula"
+
+disqusShortname = "yourdiscussshortname"
+
+[params]
+author = "Denis Bazhenov"
+avatarurl = "images/avatar.jpg"
+description = "Denis Bazhenov's personal website"
+info = "Full Stack DevOps and Magician"
+keywords = "blog,developer,personal"
+#gravatar = "john.doe@example.com"
+
+favicon_16 = "/img/favicon-16x16.png"
+favicon_32 = "/img/favicon-32x32.png"
+
+since = 2008
+
+enableTwemoji = true
+
+colorScheme = "auto"
+hidecolorschemetoggle = false
+
+# customCSS = ["css/custom.css"]
+# customSCSS = ["scss/custom.scss"]
+# customJS = ["js/custom.js"]
+
+[taxonomies]
+author = "authors"
+category = "categories"
+series = "series"
+tag = "tags"
+
+# Social links
+[[params.social]]
+icon = "fa fa-github fa-2x"
+name = "Github"
+url = "https://github.com/johndoe/"
+weight = 1
+[[params.social]]
+icon = "fa fa-gitlab fa-2x"
+name = "Gitlab"
+url = "https://gitlab.com/johndoe/"
+weight = 2
+[[params.social]]
+icon = "fa fa-twitter fa-2x"
+name = "Twitter"
+url = "https://twitter.com/johndoe/"
+weight = 3
+
+# Menu links
+[[menu.main]]
+name = "Blog"
+url = "blog/"
+weight = 1
+[[menu.main]]
+name = "About"
+url = "about/"
+weight = 2
