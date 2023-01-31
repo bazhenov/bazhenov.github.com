@@ -22,29 +22,24 @@ math: true
 Я значительную часть рабочего дня провожу в IntelliJ IDEA. Отличная среда, пожалуй лучшая. А еще, я [использую guava][ref-functional-java], хорошая библиотека. И есть там такой метод `Closeables.closeQuietly()`, который закрывает `Closeable` объект подавляя все исключения. Так вот, когда вы пишете имя метода которого нет в текущем классе, IDEA автоматически предлагает вам сделать `static import` подходящего метода из других классов.
 
 ![IntelliJ IDEA static import](/images/autocomplete/idea-good.png)
-{:.image .photo}
 
 Прекрасная фича, которая не работает если вы опечатались. А я ну никак не могу запомнить как правильно пишется слово "quietly".
 
 ![IntelliJ IDEA static import reject](/images/autocomplete/idea-bad.png)
-{:.image .photo}
 
 В этом случае IDE "фейлит" и предлагает мне создать новый метод. Примерно то же самое происходит и с автодополнением. Стоит мне ввести хотя бы один не тот символ, как тут же "No suggestions". Я считаю, IDEA могла бы быть гораздо более толерантна к девелоперу на этапе ввода кода. Это же не какой-нибудь там NetBeans :)
 
 Этой же проблемой страдает большое количество продуктов.
 
 ![Mac OS X Help Search](/images/autocomplete/mac-help.png)
-{:.image .photo}
 Встроенный в Mac OS X поиск по позиция системного меню
 {:.description}
 
 ![Mac OS X Spotlight Search](/images/autocomplete/mac-spotlight.png)
-{:.image .photo}
 Mac OS X Spotlight
 {:.description}
 
 ![Money](/images/autocomplete/money.png)
-{:.image .photo}
 Money — ПО для учета персональных финансов
 {:.description}
 
@@ -76,7 +71,6 @@ Money — ПО для учета персональных финансов
 Альтернативный подход заключается в том чтобы использовать [коэффициент Жаккара][ref-jaccard-coeff] как метрику расстояния между строками. Коэффициент Жаккара (Jaccard index) это индекс сходства двух множеств который определяется как отношение мощности пересечения этих множеств к мощности их объединения.
 
 ![Sets](/images/autocomplete/sets.png)
-{:.image}
 
 $$ J = \frac{\mid A \cap B \mid} {\mid A \cup B \mid} $$
 

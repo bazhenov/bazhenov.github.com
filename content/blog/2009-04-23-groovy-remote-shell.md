@@ -15,7 +15,6 @@ alias: /2009/04/groovy-remote-shell.html
 Взяв за основу [groovysh][ref-groovysh] (стандартный интерпретирующий shell идущий в поставке с groovy) и поигравшись немного с Input/OutputStream, я написал клиента который работает с удаленно запущенной инстанцией groovysh так же, как если бы он был запущен локально (работает автодополнение по tab, command history и т.д.).
 
 ![Groovy shell](/images/groovy-remote-shell/sample.png)
-{:.image .photo}
 
 [ref-groovy]: http://groovy.codehaus.org/
 [ref-groovysh]: http://groovy.codehaus.org/Groovy+Shell

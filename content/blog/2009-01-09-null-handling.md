@@ -9,7 +9,6 @@ alias: /2009/01/enhanced-null-handling-java.html
 Как показало голосование по вопросу java 7 language changes[^poll], null-handling в java - это самый большой "pain in the ass" из всех, через которые Java заставляет проходить программистов. С другой стороны то-же голосование на devoxxx по вопросу самого популярного языка под JVM, показало, что это Groovy.
 
 ![Результаты голосования][ref-poll-results]
-{:.image}
 
 Видимо, все те, кто привыкли к [оператору Элвиса][ref-elvis-op] и [safe-navigate][ref-self-navigate] в groovy, пришли на devoxxx и устроили флеш моб. Вобщем приветствуйте. Proposal[^proposal] определяет 2 новых оператора в языке: `null-safe` и `null-default`. Работает так же как и в groovy. Просто и понятно.
 
