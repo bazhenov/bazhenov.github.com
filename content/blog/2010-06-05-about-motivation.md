@@ -12,8 +12,7 @@ It turns out that not only money motivate people to do their job. OSS is the pro
 
 Daniel H. Pink some time ago gave an excellent talk about motivation factors and how to use them in work process.
 
-<div><iframe width="560" height="315" src="http://www.youtube.com/embed/_mG-hhWL_ug" frameborder="0" allowfullscreen="1"></iframe></div>
-{:.center}
+{{< youtube _mG-hhWL_ug >}}
 
 Some companies, like [Atlassian][ref-atlassian], show outstanding results in the process of self organizing their employees. They simply said to their developers:
 

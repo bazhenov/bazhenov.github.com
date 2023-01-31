@@ -13,27 +13,29 @@ alias: /2009/01/enhanced-null-handling-java.html
 Видимо, все те, кто привыкли к [оператору Элвиса][ref-elvis-op] и [safe-navigate][ref-self-navigate] в groovy, пришли на devoxxx и устроили флеш моб. Вобщем приветствуйте. Proposal[^proposal] определяет 2 новых оператора в языке: `null-safe` и `null-default`. Работает так же как и в groovy. Просто и понятно.
 
 ## Null-safe operator
-	String a ... ;
-	String b;
+```java
+String a ... ;
+String b;
 
-	// сегодня
-	b = a != null
-	  ? a.substring(10, 2);
-	  : null;
+// сегодня
+b = a != null
+	? a.substring(10, 2);
+	: null;
 
-	// завтра
-	String b = a?.substring(10, 2);
-{:.code}
+// завтра
+String b = a?.substring(10, 2);
+```
 
 ## Null-default operator
-	// сегодня
-	if ( name == null ) {
-	  name = "Anonymous";
-	}
+```java
+// сегодня
+if ( name == null ) {
+	name = "Anonymous";
+}
 
-	// завтра
-	name = name ?: "Anonymous";
-{:.code}
+// завтра
+name = name ?: "Anonymous";
+```
 
 Лично я ничего против не имею. Давно пора.
 

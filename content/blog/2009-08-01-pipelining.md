@@ -11,11 +11,12 @@ alias: /2009/08/pipelining.html
 
 Представьте себе следующий код:
 
-	while ( !isInterrupted() ) {
-	  byte[] data = performComplexIOOperation();
-	  performComplexProcessing(data);
-	}
-{:.code}
+```java
+while ( !isInterrupted() ) {
+	byte[] data = performComplexIOOperation();
+	performComplexProcessing(data);
+}
+```
 
 Довольно типичная ситуация. Сначала мы читаем данные, потом обрабатываем. Если каждая из фаз (чтение/обработка) в отдельности требует много времени, то этот код не сможет полностью утилизовать ни процессор ни подсистему ввода/вывода. Что мы можем сделать для того, чтобы более полно утилизовать ресурсы машины, на которой работает приложение?
 
@@ -34,29 +35,30 @@ alias: /2009/08/pipelining.html
 
 Мы можем вынести чтение в отдельный поток и связать потоки при помощи очереди задач.
 
-	class ReadingThread implements Runnable {
-	
-	  private final Queue<ByteBuffer> queue;
-	  [...]
-	  public void run() {
-	    while ( !isInterrupted() ) {
-	      queue.add( performComplexIOOperation() );
-	    }
-	  }
-	}
-	
-	class ProcessingThread implements Runnable {
+```java
+class ReadingThread implements Runnable {
 
-	  private final Queue<ByteBuffer> queue;
-	  [...]
-	  public void run() {
-	    while ( !isInterrupted() ) {
-	      ByteBuffer buffer = queue.poll();
-	      performComplexProcessing(buffer);
-	    }
-	  }
+	private final Queue<ByteBuffer> queue;
+	[...]
+	public void run() {
+		while ( !isInterrupted() ) {
+			queue.add( performComplexIOOperation() );
+		}
 	}
-{:.code}
+}
+
+class ProcessingThread implements Runnable {
+
+	private final Queue<ByteBuffer> queue;
+	[...]
+	public void run() {
+		while ( !isInterrupted() ) {
+			ByteBuffer buffer = queue.poll();
+			performComplexProcessing(buffer);
+		}
+	}
+}
+```
 
 В этом случае картина будет выглядеть примерно следующим образом.
 
