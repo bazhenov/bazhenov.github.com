@@ -1,4 +1,6 @@
 ---
+date: 2009-08-01
+url: /blog/2009/08/01/scaling-vectors.html
 title: О проблемах растущего размера
 layout: post
 tags: [scalability]

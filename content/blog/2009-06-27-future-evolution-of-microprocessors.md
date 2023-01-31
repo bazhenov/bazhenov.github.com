@@ -1,4 +1,6 @@
 ---
+date: 2009-06-27
+url: /blog/2009/06/27/future-evolution-of-microprocessors.html
 title: Future Evolution of High-Performance Microprocessors
 layout: post
 tags: threading scalability concurrency performance

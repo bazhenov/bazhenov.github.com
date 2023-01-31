@@ -1,4 +1,6 @@
 ---
+date: 2009-12-21
+url: /blog/2009/12/21/ioc-containers.html
 title: IoC контейнеры
 layout: post
 tags: ioc php solid ooad

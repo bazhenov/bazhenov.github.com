@@ -1,4 +1,6 @@
 ---
+date: 2017-10-19
+url: /blog/2017/10/19/java-futext-2-gc.html
 title: Java, futex, 2 gc
 layout: post
 tags: [java, gc, linux]

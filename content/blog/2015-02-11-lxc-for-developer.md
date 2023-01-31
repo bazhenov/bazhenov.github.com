@@ -1,4 +1,6 @@
 ---
+date: 2015-02-11
+url: /blog/2015/02/11/lxc-for-developer.html
 title: LXC для разработчика
 layout: post
 tags: linux lxc

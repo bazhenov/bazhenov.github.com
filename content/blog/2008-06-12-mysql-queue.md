@@ -1,4 +1,6 @@
 ---
+date: 2008-06-12
+url: /blog/2008/06/12/mysql-queue.html
 title: MySQL Queue
 layout: post
 tags: messaging mysql

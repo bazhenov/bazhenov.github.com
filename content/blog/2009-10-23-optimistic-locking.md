@@ -1,4 +1,6 @@
 ---
+date: 2009-10-23
+url: /blog/2009/10/23/optimistic-locking.html
 title: Оптимистическая блокировка
 layout: post
 tags: [concurrency, mysql, php]

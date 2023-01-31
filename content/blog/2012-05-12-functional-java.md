@@ -1,4 +1,6 @@
 ---
+date: 2012-05-12
+url: /blog/2012/05/12/functional-java.html
 title: Особенности функциональщины в Java
 layout: post
 tags: java programming guava

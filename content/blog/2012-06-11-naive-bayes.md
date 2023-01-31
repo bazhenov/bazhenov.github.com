@@ -1,4 +1,6 @@
 ---
+date: 2012-06-11
+url: /blog/2012/06/11/naive-bayes.html
 title: Наивный байесовский классификатор
 layout: post
 tags: [information retrieval, classification, algorithms]

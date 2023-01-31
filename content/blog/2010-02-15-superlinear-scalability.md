@@ -1,4 +1,6 @@
 ---
+date: 2010-02-15
+url: /blog/2010/02/15/superlinear-scalability.html
 title: Superlinear scalability
 layout: post
 tags: [theory, scalability]

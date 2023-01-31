@@ -1,4 +1,6 @@
 ---
+date: 2009-09-04
+url: /blog/2009/09/04/interrupted-exception.html
 title: Interrupted Exception
 layout: post
 tags: [java, concurrency]

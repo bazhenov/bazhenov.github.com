@@ -1,4 +1,6 @@
 ---
+date: 2012-06-05
+url: /blog/2012/06/05/classification.html
 title: О задачах классификации
 layout: post
 tags: [information rerieval, classification]

@@ -1,4 +1,6 @@
 ---
+date: 2009-06-28
+url: /blog/2009/06/28/performance-versus-scalability.html
 title: Perfomance vs. scalability
 layout: post
 tags: concurrency perfomance scalability

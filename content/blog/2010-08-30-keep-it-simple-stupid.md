@@ -1,4 +1,6 @@
 ---
+date: 2010-08-30
+url: /blog/2010/08/30/keep-it-simple-stupid.html
 title: Keep it simple, stupid
 layout: post
 tags: [simplicity]

@@ -1,4 +1,6 @@
 ---
+date: 2009-07-19
+url: /blog/2009/07/19/Andy-and-Bill.html
 title: Энди и Билл
 layout: post
 tags: [concurrency, threading, performance]

@@ -1,4 +1,6 @@
 ---
+date: 2012-07-21
+url: /blog/2012/07/21/classification-performance-evaluation.html
 title: Оценка классификатора (точность, полнота, F-мера)
 tags: [information retrieval, classification]
 layout: post

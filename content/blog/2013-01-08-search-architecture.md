@@ -1,4 +1,6 @@
 ---
+date: 2013-01-08
+url: /blog/2013/01/08/search-architecture.html
 title: Архитектура поисковых систем
 layout: post
 tags: search architecture

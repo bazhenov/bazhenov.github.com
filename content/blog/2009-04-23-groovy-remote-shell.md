@@ -1,4 +1,6 @@
 ---
+date: 2009-04-23
+url: /blog/2009/04/23/groovy-remote-shell.html
 title: Groovy Remote Shell
 layout: post
 tags: groovy java

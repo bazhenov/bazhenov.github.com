@@ -1,4 +1,6 @@
 ---
+date: 2009-08-01
+url: /blog/2009/08/01/pipelining.html
 title: Pipelining
 layout: post
 tags: [concurrency]

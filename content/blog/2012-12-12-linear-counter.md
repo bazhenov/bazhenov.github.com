@@ -1,4 +1,6 @@
 ---
+date: 2012-12-12
+url: /blog/2012/12/12/linear-counter.html
 title: Линейный счетчик
 layout: post
 tags: algorithms math probability

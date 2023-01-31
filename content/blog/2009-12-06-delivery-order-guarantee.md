@@ -1,4 +1,6 @@
 ---
+date: 2009-12-06
+url: /blog/2009/12/06/delivery-order-guarantee.html
 title: Гарантия доставки сообщений и ее последствия
 layout: post
 tags: [messaging, theory]

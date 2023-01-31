@@ -1,4 +1,6 @@
 ---
+date: 2016-06-28
+url: /blog/2016/06/28/linear-counter-merge.html
 layout: post
 title: Объединение линейных счётчиков
 math: true

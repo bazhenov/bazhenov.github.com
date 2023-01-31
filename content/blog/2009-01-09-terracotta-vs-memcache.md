@@ -1,4 +1,6 @@
 ---
+date: 2009-01-09
+url: /blog/2009/01/09/terracotta-vs-memcache.html
 title: Terracotta vs. Memcache
 layout: post
 tags: cache java

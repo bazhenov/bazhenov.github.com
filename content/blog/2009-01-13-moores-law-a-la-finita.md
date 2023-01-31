@@ -1,4 +1,6 @@
 ---
+date: 2009-01-13
+url: /blog/2009/01/13/moores-law-a-la-finita.html
 title: Конец эры закона Мура
 layout: post
 tags: concurrency threading scalability performance

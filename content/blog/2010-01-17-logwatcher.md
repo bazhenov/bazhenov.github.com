@@ -1,4 +1,6 @@
 ---
+date: 2010-01-17
+url: /blog/2010/01/17/logwatcher.html
 title: Слежка за логами
 layout: post
 tags: [operation]

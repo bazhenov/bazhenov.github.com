@@ -1,4 +1,6 @@
 ---
+date: 2009-08-01
+url: /blog/2009/08/01/mysqlnd-php.html
 title: Возожности mysqlnd в PHP/5.3
 layout: post
 tags: [php, mysql]

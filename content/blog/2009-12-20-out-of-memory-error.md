@@ -1,4 +1,6 @@
 ---
+date: 2009-12-20
+url: /blog/2009/12/20/out-of-memory-error.html
 title: Диагностика OutOfMemoryError подручными средствами
 layout: post
 tags: [java, cache, jdk]

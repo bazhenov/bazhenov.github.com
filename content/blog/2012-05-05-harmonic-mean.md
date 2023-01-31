@@ -1,4 +1,6 @@
 ---
+date: 2012-05-05
+url: /blog/2012/05/05/harmonic-mean.html
 title: Гармоническое среднее
 layout: post
 tags: unix operation monitoring

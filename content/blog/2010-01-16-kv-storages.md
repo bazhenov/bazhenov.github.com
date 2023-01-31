@@ -1,4 +1,6 @@
 ---
+date: 2010-01-16
+url: /blog/2010/01/16/kv-storages.html
 title: KV-хранилища
 layout: post
 tags: nosql scalability

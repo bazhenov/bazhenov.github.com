@@ -1,4 +1,6 @@
 ---
+date: 2009-01-09
+url: /blog/2009/01/09/null-handling.html
 title: Enhanced null handling в Java
 tags: java language
 layout: post

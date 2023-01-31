@@ -1,4 +1,6 @@
 ---
+date: 2010-08-10
+url: /blog/2010/08/10/lock-vs-lease.html
 title: Lock vs. Lease
 layout: post
 tags: [theory, distributed, concurrency]

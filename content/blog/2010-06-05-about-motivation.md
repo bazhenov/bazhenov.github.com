@@ -1,4 +1,6 @@
 ---
+date: 2010-06-05
+url: /blog/2010/06/05/about-motivation.html
 title: About motivation
 layout: post
 tags: [motivation]
