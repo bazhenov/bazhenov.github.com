@@ -1,4 +1,4 @@
-baseurl = "http://www.example.com"
+baseurl = "http://bazhenov.me"
 defaultcontentlanguage = "en"
 languagecode = "ru"
 theme = "hugo-coder"
@@ -16,9 +16,9 @@ disqusShortname = "yourdiscussshortname"
 author = "Denis Bazhenov"
 avatarurl = "images/avatar.jpg"
 description = "Denis Bazhenov's personal website"
+gravatar = "dotsid@gmail.com"
 info = "Full Stack DevOps and Magician"
 keywords = "blog,developer,personal"
-#gravatar = "john.doe@example.com"
 
 favicon_16 = "/img/favicon-16x16.png"
 favicon_32 = "/img/favicon-32x32.png"
@@ -30,10 +30,6 @@ enableTwemoji = true
 colorScheme = "auto"
 hidecolorschemetoggle = false
 
-# customCSS = ["css/custom.css"]
-# customSCSS = ["scss/custom.scss"]
-# customJS = ["js/custom.js"]
-
 [taxonomies]
 author = "authors"
 category = "categories"
@@ -44,18 +40,26 @@ tag = "tags"
 [[params.social]]
 icon = "fa fa-github fa-2x"
 name = "Github"
-url = "https://github.com/johndoe/"
+url = "https://github.com/bazhenov"
 weight = 1
+
 [[params.social]]
-icon = "fa fa-gitlab fa-2x"
-name = "Gitlab"
-url = "https://gitlab.com/johndoe/"
-weight = 2
+icon = "fa fa-linkedin fa-2x"
+name = "Linkedin"
+url = "https://www.linkedin.com/in/denisbazhenov/"
+weight = 3
+
+[[params.social]]
+icon = "fa fa-stack-overflow fa-2x"
+name = "Linkedin"
+url = "https://stackoverflow.com/users/53658/denis-bazhenov"
+weight = 3
+
 [[params.social]]
 icon = "fa fa-twitter fa-2x"
 name = "Twitter"
-url = "https://twitter.com/johndoe/"
-weight = 3
+url = "https://twitter.com/denis_bazhenov"
+weight = 4
 
 # Menu links
 [[menu.main]]
