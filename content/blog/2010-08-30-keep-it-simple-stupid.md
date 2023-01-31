@@ -29,14 +29,14 @@ alias: /2010/08/keep-it-simple-stupid.html
 
 Например, если вы считаете что следующий код слишком сложен, так это просто потому что вы не знакомы с функциональным программированием.
 
-{% highlight scala %}
+```scala
 def qsort: List[Int] => List[Int] = {
   case Nil => Nil
   case pivot :: tail =>
     val(lessThan, greaterOrEqualThan) = tail partition(_ < pivot)
     qsort(lessThan) ::: pivot :: qsort(greaterOrEqualThan)
 }
-{% endhighlight %}
+```
 
 Это приводит нас к заключению, что если мы хотим создать простой продукт, мы обязаны учитывать ментальные особенности людей которые будут работать с продуктом. И тут возможны два варианта:
 

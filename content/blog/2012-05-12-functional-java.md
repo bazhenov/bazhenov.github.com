@@ -11,12 +11,12 @@ tags: java programming guava
 
 Классический императивный подход к оперированию коллекциями заключается в написании кода выполняющего обход и обработку каждого элемента коллекции. Типичный map в императивном стиле выглядит следующим образом:
 
-{% highlight java %}
+```java
 	List<String> result = new ArrayList<String>();
 	for (Position p : autocomplete.suggest(q)) {
 		result.add(p.getTitle());
 	}
-{% endhighlight %}
+```
 
 Не так уж и плохо. Но когда подобную операцию надо выполнять несколько раз в пределах одного метода, `for`'ы начинают мозолить глаз.
 
@@ -24,14 +24,14 @@ tags: java programming guava
 
 Мы используем [guava][ref-guava] (бывшая google collections) для упрощения оперирования коллекциями. Guava предоставляет массу функциональных примитивов для работы с коллекциями. Несмотря на излишний синтаксический шум, в Java можно применять элементы функционального программирования. Правда не без ограничений. Давайте посмотрим на вышеприведенный пример переписанный с использованием guava.
 
-{% highlight java %}
+```java
 List<String> result = transform(autocomplete.suggest(q), new Function<Position, String>() {
  	@Override
  	public String apply(final Position input) {
 		return input.getTitle();
  	}
 });
-{% endhighlight %}
+```
 
 Если честно, то стало еще хуже. Если раньше у нас был простой и понятный `for`-цикл, то сейчас мешанина из ключевых слов и названий типов. На сегодняшний день это пожалуй самое сильное ограничение Java — _объявлять предикаты по месту проблематично из-за синтаксиса анонимных классов_. Поэтому мы пошли на следующее ухищрение.
 
@@ -41,7 +41,7 @@ List<String> result = transform(autocomplete.suggest(q), new Function<Position, 
 
 Например, вышеприведенный пример мы переписываем следующим образом:
 
-{% highlight java %}
+```java
 class Position {
 
 	public static final Function<Position, String> retrieveName = new Function<Position, String>() {
@@ -51,17 +51,17 @@ class Position {
 		}
 	};
 }
-{% endhighlight %}
+```
 
 Тогда клиент сводится к следующему коду:
 
-{% highlight java %}
+```java
 List<String> result = transform(autocomplete.suggest(q), retrieveName);
-{% endhighlight %}
+```
 
 что уже довольно вменяемо. В случае если функция обладает состоянием мы делаем для нее статическую фабрику в классе к которому она относится.
 
-{% highlight java %}
+```java
 class Span {
 	
 	public static Function<Span, String> chopFromText(final String text) {
@@ -78,15 +78,15 @@ class Span {
 		return string.substring(start, end);
 	}
 }
-{% endhighlight %}
+```
 
 при этом клиент выглядит похожим образом:
 
-{% highlight java %}
+```java
 List<Span> spans = asList(new Span(0, 5), new Span(6, 2), new Span(9, 3));
 List<String> words = transform(spans, chopFromText("Hello to you!"));
 // words -> ["Hello", "to", "you"]
-{% endhighlight %}
+```
 
 Этот подход работает благодаря тому что предикаты и map-функции принимают ровно один аргумент по типу которого можно определить к какому классу относить эту функцию. Таким образом, всякий раз когда вам нужен предикат на тип `Position` вы знаете что его надо искать именно в классе `Position`.
 

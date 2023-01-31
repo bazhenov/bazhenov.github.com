@@ -40,7 +40,7 @@ alias: /2009/12/ioc.html
 
 Конфигурация в нашем случае описывается примерно следующим образом:
 
-{% highlight xml %}
+```xml
 <?xml version="1.0" encoding="utf8"?>
 <beans xmlns="http://farpost.com/slr/injector">
   <bean id="masterConnection" class="MySqlConection">
@@ -54,11 +54,11 @@ alias: /2009/12/ioc.html
     <constructor-arg ref="masterConnection" />
   </bean>
 </beans>
-{% endhighlight %}
+```
 
 Фактически, это эквивалентно следующему коду:
 
-{% highlight php %}
+```php
 $masterConnection = new MySqlConnection();
 $masterConnection->setHost("hostname");
 $masterConnection->setUser("john");
@@ -66,7 +66,7 @@ $masterConnection->setPassword("secret");
 $masterConnection->setDb("orders");
 
 $userRepository = new SqlUserRepository($masterConnection);
-{% endhighlight %}
+```
 
 Многословно? Да, наверное. Но это дешевле чем каждый раз писать код создающий объекты на основании конфигурации, когда у вас сотни таких объектов.
 
