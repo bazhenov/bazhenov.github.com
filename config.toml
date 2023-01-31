@@ -29,6 +29,8 @@ enableTwemoji = true
 colorScheme = "auto"
 hidecolorschemetoggle = false
 
+customSCSS = ["css/custom.scss"]
+
 [taxonomies]
 author = "authors"
 category = "categories"

@@ -1,0 +1,6 @@
+{{- $caption := .Get 0 -}}
+
+<figure>
+  {{- .Inner | .Page.RenderString | chomp -}}
+  <figcaption>{{ $caption }}</figcaption>
+</figure>
