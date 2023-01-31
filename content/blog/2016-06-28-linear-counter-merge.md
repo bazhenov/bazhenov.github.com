@@ -1,7 +1,6 @@
 ---
 layout: post
 title: Объединение линейных счётчиков
-date: 2016-06-28
 math: true
 ---
 
