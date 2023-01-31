@@ -2,7 +2,7 @@ baseurl = "http://bazhenov.me"
 defaultcontentlanguage = "en"
 languagecode = "ru"
 theme = "hugo-coder"
-title = "Severe Reality"
+title = "bazhenov.me"
 
 paginate = 20
 
@@ -10,14 +10,13 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 pygmentsstyle = "dracula"
 
-disqusShortname = "yourdiscussshortname"
+disqusShortname = "bazhenov"
 
 [params]
 author = "Denis Bazhenov"
-avatarurl = "images/avatar.jpg"
 description = "Denis Bazhenov's personal website"
 gravatar = "dotsid@gmail.com"
-info = "Full Stack DevOps and Magician"
+info = "Software Developer"
 keywords = "blog,developer,personal"
 
 favicon_16 = "/img/favicon-16x16.png"
@@ -66,7 +65,13 @@ weight = 4
 name = "Blog"
 url = "blog/"
 weight = 1
+
 [[menu.main]]
 name = "About"
 url = "about/"
 weight = 2
+
+[outputFormats]
+[outputFormats.RSS]
+baseName = "rss"
+mediatype = "application/rss"
