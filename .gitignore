@@ -1,6 +1,7 @@
-_site/*
 *.swp
 Thumbs.db
 .DS_Store
-/_drafts
 !.gitkeep
+/resources
+/public
+/.hugo_build.lock
