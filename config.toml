@@ -60,7 +60,7 @@ weight = 3
 
 [[params.social]]
 icon = "fa fa-stack-overflow fa-2x"
-name = "Linkedin"
+name = "Stackoverflow"
 url = "https://stackoverflow.com/users/53658/denis-bazhenov"
 weight = 3
 
