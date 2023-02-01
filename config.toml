@@ -4,6 +4,8 @@ languagecode = "ru"
 theme = "hugo-coder"
 title = "bazhenov.me"
 
+googleAnalytics = 'G-EX5SW9L894'
+
 paginate = 20
 
 pygmentscodefences = true
