@@ -45,16 +45,16 @@ _Я репозиторий пользователей, дайте мне в ко
 ```xml
 <?xml version="1.0" encoding="utf8"?>
 <beans xmlns="http://farpost.com/slr/injector">
-  <bean id="masterConnection" class="MySqlConection">
-    <property name="host" value="hostname" />
-    <property name="user" value="john" />
-    <property name="password" value="secret" />
-    <property name="db" value="orders" />
-  </bean>
+	<bean id="masterConnection" class="MySqlConection">
+		<property name="host" value="hostname" />
+		<property name="user" value="john" />
+		<property name="password" value="secret" />
+		<property name="db" value="orders" />
+	</bean>
 
-  <bean id="userRepository" class="SqlUserRepository">
-    <constructor-arg ref="masterConnection" />
-  </bean>
+	<bean id="userRepository" class="SqlUserRepository">
+		<constructor-arg ref="masterConnection" />
+	</bean>
 </beans>
 ```
 

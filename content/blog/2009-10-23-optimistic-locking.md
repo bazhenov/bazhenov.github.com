@@ -40,14 +40,14 @@ try {
 
 ```php
 public function saveBulletin(Bulletin $bulletin) {
-  $connection->prepareStatement("UPDATE bulletins SET version = version + 1 ... ".
-    "WHERE id = :id AND version = :version")
-  ->int('id', $bulletin->getId())
-  ->int('version', $bulletin->getVersion())
-  ->execute();
-  if ( $connection->rowsAffected() <= 0 ) {
-    throw new ConcurrentModificationException();
-  }
+	$connection->prepareStatement("UPDATE bulletins SET version = version + 1 ... ".
+		"WHERE id = :id AND version = :version")
+	->int('id', $bulletin->getId())
+	->int('version', $bulletin->getVersion())
+	->execute();
+	if ( $connection->rowsAffected() <= 0 ) {
+		throw new ConcurrentModificationException();
+	}
 }
 ```
 
@@ -57,9 +57,9 @@ public function saveBulletin(Bulletin $bulletin) {
 
 ```php
 try {
-  $manager->saveBulletin($bulletin);
+	$manager->saveBulletin($bulletin);
 } catch ( ConcurrentModificationException $e ) {
-  // Huh?!
+	// Huh?!
 }
 ```
 
@@ -69,7 +69,7 @@ try {
 
 ```php
 $manager->processBulletin($request->id, function(Bulletin $b) {
-  $b->setHits( $b->getHits()+1 );
+	$b->setHits( $b->getHits()+1 );
 });
 ```
 
@@ -84,8 +84,8 @@ $manager->processBulletin($request->id, function(Bulletin $b) {
 ```php
 $bulletin = $manager->findBulletinById(...);
 if ( $bulletin->getText() != $request->text ) {
-  $bulletin->setText($request->text);
-  $manager->saveBulletin($bulletin);
+	$bulletin->setText($request->text);
+	$manager->saveBulletin($bulletin);
 }
 ```
 
