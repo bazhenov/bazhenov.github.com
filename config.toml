@@ -77,3 +77,8 @@ weight = 2
 [outputFormats.RSS]
 baseName = "rss"
 mediatype = "application/rss"
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+unsafe = true
