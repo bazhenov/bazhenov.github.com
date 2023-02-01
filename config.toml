@@ -47,6 +47,12 @@ url = "https://github.com/bazhenov"
 weight = 1
 
 [[params.social]]
+icon = "fa fa-telegram fa-2x"
+name = "Twitter"
+url = "https://t.me/dotsid"
+weight = 2
+
+[[params.social]]
 icon = "fa fa-linkedin fa-2x"
 name = "Linkedin"
 url = "https://www.linkedin.com/in/denisbazhenov/"
