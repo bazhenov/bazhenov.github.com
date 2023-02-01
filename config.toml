@@ -66,8 +66,8 @@ weight = 4
 
 # Menu links
 [[menu.main]]
-name = "Blog"
-url = "blog/"
+name = "Posts"
+url = "posts/"
 weight = 1
 
 [[menu.main]]
