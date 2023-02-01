@@ -72,12 +72,12 @@ weight = 4
 
 # Menu links
 [[menu.main]]
-name = "Posts"
+name = "Posts 📖"
 url = "posts/"
 weight = 1
 
 [[menu.main]]
-name = "About"
+name = "About 💁‍♂️"
 url = "about/"
 weight = 2
 
