@@ -4,3 +4,14 @@ figure {
     font-size: 0.8em;
   }
 }
+
+section.list {
+  ul.pagination {
+    li {
+      a {
+        padding: 0 0.5em;
+      }
+      margin: 0 0.3em;
+    }
+  }
+}
