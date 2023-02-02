@@ -1,4 +1,4 @@
-baseurl = "http://bazhenov.me"
+baseurl = "https://bazhenov.me"
 defaultcontentlanguage = "en"
 languagecode = "ru"
 theme = "hugo-coder"
