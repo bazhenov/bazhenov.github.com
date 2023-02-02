@@ -12,7 +12,7 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 pygmentsstyle = "dracula"
 
-disqusShortname = "bazhenov"
+disqusShortname = "severe-reality"
 
 [params]
 author = "Denis Bazhenov"
