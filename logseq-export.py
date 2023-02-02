@@ -22,8 +22,12 @@ if __name__ == "__main__":
 
     for file in os.listdir(dir_path):
         if file.endswith(".md"):
-            new_file_name
-            print(f"{file}")
+            title = file[:-3]
+            from_path = dir_path + "/" + file
+            to_path = "./content/notes/" + file
+            html = render_html(from_path)
+            html = f"---\ntitle: {title}\n---\n" + html
+            open(to_path, 'w').write(html)
     # content = open(file_path).read()
     # parser = marko.Parser()
     # ast = parser.parse(content)
