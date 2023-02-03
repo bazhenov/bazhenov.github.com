@@ -1,3 +1,5 @@
+from pathlib import Path, PosixPath
+from typing import Generator
 import marko
 from marko.inline import InlineElement
 from marko.block import BlockElement, Element
@@ -33,7 +35,7 @@ class RendererMixins:
         return f"REFERENCE: {el.id}"
 
     def render_attribute(self, el: Attribute):
-        return f"A: {el.name}={el.value}"
+        return ""
 
 
 class LogSeqExtension:
@@ -131,19 +133,29 @@ def migrate_logseq_files(logseq_path: str, output_path: str):
             open(to_path, 'w').write(html)
 
 
+def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]:
+    for file in Path(logseq_path).glob("pages/*.md"):
+        yield file
+
+
 if __name__ == "__main__":
     # input = sys.argv[1]
     # output_path = "./content/notes"
     # migrate_logseq_files(input, output_path)
 
-    file_path = sys.argv[1]
-    content = open(file_path).read()
-    md = marko.Markdown(extensions=[LogSeqExtension])
-    ast = md.parse(content)
+    logseq_path = sys.argv[1]
+    file_to_render_path = sys.argv[2]
 
-    refs = find_all_refs(ast)
+    md = marko.Markdown(extensions=[LogSeqExtension])
+
+    refs = {}
+
+    for page in enumerate_logseq_pages(logseq_path):
+        content = open(file_to_render_path).read()
+        ast = md.parse(content)
+        refs = refs | find_all_refs(ast)
+
     for (ref, node) in refs.items():
         print(f"ref: {ref}")
-        print(f"{render(node)}")
+        print(f"{md.render(node)}")
         print()
-    # print(f"{render(ast)}")
