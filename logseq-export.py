@@ -4,7 +4,6 @@ import marko
 from marko.inline import InlineElement
 from marko.block import BlockElement, Element
 import marko.inline
-from more_itertools import partition
 from re import Match
 import sys
 import os
@@ -17,6 +16,20 @@ class BlockRef(InlineElement):
 
     def __init__(self, match: Match) -> None:
         self.id = match.group(1)
+
+
+class WikiLink(InlineElement):
+    pattern = r"\[\[([^]]+)\]\]"
+    parse_children = False
+    page: str
+
+    def __init__(self, match: Match) -> None:
+        self.page = match.group(1)
+
+
+class BlockEmbed(BlockElement):
+    def __init__(self, children: Element) -> None:
+        self.children = [children]
 
 
 class Attribute(InlineElement):
@@ -37,14 +50,20 @@ class RendererMixins:
     def render_attribute(self, el: Attribute):
         return ""
 
+    def render_wiki_link(self, el: WikiLink):
+        return f"<a href='#'>[[{el.page}]]</a>"
+
+    def render_block_embed(self, el: BlockEmbed):
+        return f"<p class='embed'>{self.render_children(el)}</p>"
+
 
 class LogSeqExtension:
-    elements = [BlockRef, Attribute]
+    elements = [BlockRef, Attribute, WikiLink]
     renderer_mixins = [RendererMixins]
 
 
 def get_children(el: Element) -> list[Element]:
-    if isinstance(el, BlockElement) and not isinstance(el, marko.block.BlankLine):
+    if isinstance(el, BlockElement) and hasattr(el, 'children'):
         return el.children
     else:
         return []
@@ -138,6 +157,20 @@ def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]
         yield file
 
 
+def embed_refs(el: Element, refs: dict[str, Element]):
+    """
+    Replaces all BlockRef's in a md-tree with referenced blocks
+    """
+    if isinstance(el, BlockElement) and hasattr(el, 'children'):
+        for (idx, child) in enumerate(el.children):
+            if isinstance(child, BlockRef):
+                id = child.id
+                if id in refs:
+                    el.children[idx] = BlockEmbed(refs[id])
+            else:
+                embed_refs(child, refs)
+
+
 if __name__ == "__main__":
     # input = sys.argv[1]
     # output_path = "./content/notes"
@@ -151,11 +184,18 @@ if __name__ == "__main__":
     refs = {}
 
     for page in enumerate_logseq_pages(logseq_path):
-        content = open(file_to_render_path).read()
-        ast = md.parse(content)
+        ast = md.parse(open(page).read())
         refs = refs | find_all_refs(ast)
 
-    for (ref, node) in refs.items():
-        print(f"ref: {ref}")
-        print(f"{md.render(node)}")
-        print()
+    # for (ref, node) in refs.items():
+    #     print(f"ref: {ref}")
+    #     print(f"{md.render(node)}")
+    #     print()
+
+    ast = md.parse(open(file_to_render_path).read())
+    embed_refs(ast, refs)
+    print("---")
+    print("unsafe: true")
+    print(f"title: {file_to_render_path}")
+    print("---")
+    print(md.render(ast))
