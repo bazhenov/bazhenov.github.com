@@ -11,7 +11,33 @@ section.list {
       a {
         padding: 0 0.5em;
       }
+
       margin: 0 0.3em;
+    }
+  }
+}
+
+article li {
+  padding: 0.1em;
+}
+
+article {
+
+  blockquote {
+    p {
+      margin: 0;
+    }
+    margin: 0;
+  }
+
+  p.quote-source {
+    padding: 0;
+    margin: 0;
+    text-align: right;
+
+    a {
+      font-size: 0.8em;
+      font-variant: small-caps;
     }
   }
 }
