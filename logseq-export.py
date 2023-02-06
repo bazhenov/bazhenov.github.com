@@ -5,9 +5,12 @@ from marko.inline import InlineElement
 from marko.block import BlockElement, Element
 import marko.inline
 from re import Match
+import re
 import sys
 import os
+from os.path import basename
 
+NOTES_URL = "/notes"
 
 class BlockRef(InlineElement):
     pattern = r"^\(\(([^)]+)\)\)$"
@@ -51,7 +54,7 @@ class RendererMixins:
         return ""
 
     def render_wiki_link(self, el: WikiLink):
-        return f"<a href='#'>[[{el.page}]]</a>"
+        return f"<a href='{NOTES_URL}/{escape_slug(el.page)}'>[[{el.page}]]</a>"
 
     def render_block_embed(self, el: BlockEmbed):
         return f"<p class='embed'>{self.render_children(el)}</p>"
@@ -134,6 +137,10 @@ def render(el: Element, depth=0):
         print(el.children)
     elif isinstance(el, Attribute):
         print(f"attr> {el.name}={el.value}")
+    elif isinstance(el, WikiLink):
+        print(f"link> {el.page}")
+    elif isinstance(el, BlockEmbed):
+        print(f"block-embed>")
     else:
         raise ValueError(f"Invalid element type: {type(el)}")
     if isinstance(el, BlockElement) and not isinstance(el, marko.block.BlankLine):
@@ -170,6 +177,8 @@ def embed_refs(el: Element, refs: dict[str, Element]):
             else:
                 embed_refs(child, refs)
 
+def escape_slug(title: str) -> str:
+    return re.sub("[^a-zа-я0-9]", '-', title.lower())
 
 if __name__ == "__main__":
     # input = sys.argv[1]
@@ -192,10 +201,14 @@ if __name__ == "__main__":
     #     print(f"{md.render(node)}")
     #     print()
 
+    title = basename(file_to_render_path)
+    title = re.sub(r"\.md$", '', title)
+    slug = escape_slug(title)
     ast = md.parse(open(file_to_render_path).read())
     embed_refs(ast, refs)
     print("---")
     print("unsafe: true")
-    print(f"title: {file_to_render_path}")
+    print(f"title: {title}")
+    print(f"url: {NOTES_URL}/{slug}/")
     print("---")
     print(md.render(ast))
