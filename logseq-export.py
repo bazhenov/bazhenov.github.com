@@ -40,7 +40,7 @@ class BlockEmbed(BlockElement):
 
 
 class Attribute(InlineElement):
-    pattern = r"(?:^|\n)([a-zA-Z]+)::\s*([a-zA-Z0-9_-]+)"
+    pattern = r"(?:^|\n)([a-zA-Z]+)::\s*(.+)"
     parse_children = False
     name: str
     value: str
@@ -170,6 +170,8 @@ def render(el: Element, depth=0):
         print(f"link> {el.page}")
     elif isinstance(el, marko.inline.CodeSpan):
         print(f"codespan>")
+    elif isinstance(el, marko.block.CodeBlock):
+        print(f"codeblock>")
     elif isinstance(el, BlockEmbed):
         print(f"block-embed>")
     else:
@@ -269,7 +271,7 @@ def cli_render_all_pages(args: argparse.Namespace):
 
 def cli_render_ast(args: argparse.Namespace):
     ast = md.parse(open(args.note).read())
-    print(render(ast))
+    render(ast)
 
 
 def main():
