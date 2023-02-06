@@ -28,16 +28,16 @@ article li {
 }
 
 article {
+  blockquote {
+    margin: 0;
+
+    p {
+      margin: 0;
+    }
+  }
+
   div.quote {
     padding: 0.5em 1em;
-
-    blockquote {
-      margin: 0;
-
-      p {
-        margin: 0;
-      }
-    }
 
     p.quote-source {
       margin-block-start: 0;
