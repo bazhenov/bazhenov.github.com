@@ -10,6 +10,7 @@ from re import Match
 import re
 import os
 from os.path import basename
+import itertools
 
 
 class BlockRef(InlineElement):
@@ -74,7 +75,8 @@ def get_children(el: Element) -> list[Element]:
 
 def read_all_refs(logseq_path: str) -> dict[str, Element]:
     refs = {}
-    for page in enumerate_logseq_pages(logseq_path):
+    pages = itertools.chain(enumerate_logseq_pages(logseq_path), enumerate_logseq_journal(logseq_path))
+    for page in pages:
         ast = md.parse(open(page).read())
         refs = refs | read_refs_from_ast(ast)
     return refs
@@ -179,6 +181,10 @@ def read_attributes_from_ast(el: Element) -> dict[str, str]:
 
 def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]:
     for file in Path(logseq_path).glob("pages/*.md"):
+        yield file
+
+def enumerate_logseq_journal(logseq_path: str) -> Generator[PosixPath, None, None]:
+    for file in Path(logseq_path).glob("journals/*.md"):
         yield file
 
 
