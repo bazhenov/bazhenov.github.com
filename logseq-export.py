@@ -32,8 +32,11 @@ class WikiLink(InlineElement):
 
 
 class BlockEmbed(BlockElement):
-    def __init__(self, children: Element) -> None:
+    source_page_title: str
+
+    def __init__(self, title, children: Element) -> None:
         self.children = [children]
+        self.source_page_title = title
 
 
 class Attribute(InlineElement):
@@ -58,7 +61,9 @@ class RendererMixins:
         return f"<a href='{NOTES_URL}/{escape_slug(el.page)}'>[[{el.page}]]</a>"
 
     def render_block_embed(self, el: BlockEmbed):
-        return f"<p class='embed'>{self.render_children(el)}</p>"
+        href = f"{NOTES_URL}/{escape_slug(el.source_page_title)}"
+        link = f"<p class='quote-source'><a href='{href}'>{el.source_page_title}</a></p>"
+        return f"<div class='quote'>{self.render_children(el)}{link}</div>"
 
 
 class LogSeqExtension:
@@ -73,12 +78,21 @@ def get_children(el: Element) -> list[Element]:
         return []
 
 
-def read_all_refs(logseq_path: str) -> dict[str, Element]:
+def page_title_from_filename(filename: str) -> str:
+    return re.sub(r"\.md$", '', basename(filename))
+
+
+def read_all_refs(logseq_path: str) -> dict[str, (str, Element)]:
     refs = {}
-    pages = itertools.chain(enumerate_logseq_pages(logseq_path), enumerate_logseq_journal(logseq_path))
+    pages = itertools.chain(enumerate_logseq_pages(
+        logseq_path), enumerate_logseq_journal(logseq_path))
     for page in pages:
         ast = md.parse(open(page).read())
-        refs = refs | read_refs_from_ast(ast)
+        page_refs = read_refs_from_ast(ast)
+        page_title = page_title_from_filename(page)
+        refs_with_title = {id: (page_title, ref)
+                           for (id, ref) in page_refs.items()}
+        refs = refs | refs_with_title
     return refs
 
 
@@ -95,24 +109,29 @@ def read_refs_from_ast(el: Element) -> dict[str: Element]:
     """
     if len(children) >= 2:
         [p, target] = el.children[0:2]
-        if isinstance(p, marko.block.Paragraph) and len(p.children) == 1 and isinstance(target, BlockElement):
-            attr = p.children[0]
-            if isinstance(attr, Attribute) and attr.name == 'id':
-                refs[attr.value] = target
+        if isinstance(p, marko.block.Paragraph) and len(p.children) >= 1 and isinstance(target, BlockElement):
+            is_attr = [isinstance(c, Attribute) for c in p.children]
+            if all(is_attr):
+                for attr in p.children:
+                    if isinstance(attr, Attribute) and attr.name == 'id':
+                        refs[attr.value] = target
 
-    """
-    Second heuristic - target is paragraph
-        * Paragraph
-            * ...
-            * Attr(id, _)
-    """
-    if isinstance(el, marko.block.Paragraph) and len(children) >= 2:
-        attr = el.children[-1]
-        if isinstance(attr, Attribute) and attr.name == 'id':
-            refs[attr.value] = el
+    if len(refs) == 0:
+        """
+        Second heuristic - target is paragraph
+            * Paragraph
+                * ...
+                * Attr(id, _)
+        """
+        if isinstance(el, marko.block.Paragraph) and len(children) >= 2:
+            is_attr = [isinstance(c, Attribute) for c in el.children]
+            if not all(is_attr):
+                for attr in el.children:
+                    if isinstance(attr, Attribute) and attr.name == 'id':
+                        refs[attr.value] = el
 
     for child in children:
-        refs = refs | read_refs_from_ast(child)
+        refs = read_refs_from_ast(child) | refs
 
     return refs
 
@@ -149,6 +168,8 @@ def render(el: Element, depth=0):
         print(f"attr> {el.name}={el.value}")
     elif isinstance(el, WikiLink):
         print(f"link> {el.page}")
+    elif isinstance(el, marko.inline.CodeSpan):
+        print(f"codespan>")
     elif isinstance(el, BlockEmbed):
         print(f"block-embed>")
     else:
@@ -183,12 +204,13 @@ def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]
     for file in Path(logseq_path).glob("pages/*.md"):
         yield file
 
+
 def enumerate_logseq_journal(logseq_path: str) -> Generator[PosixPath, None, None]:
     for file in Path(logseq_path).glob("journals/*.md"):
         yield file
 
 
-def embed_refs(el: Element, refs: dict[str, Element]):
+def embed_refs(el: Element, refs: dict[str, (str, Element)]):
     """
     Replaces all BlockRef's in a md-tree with referenced blocks
     """
@@ -197,7 +219,8 @@ def embed_refs(el: Element, refs: dict[str, Element]):
             if isinstance(child, BlockRef):
                 id = child.id
                 if id in refs:
-                    el.children[idx] = BlockEmbed(refs[id])
+                    title, embed = refs[id]
+                    el.children[idx] = BlockEmbed(title, embed)
             else:
                 embed_refs(child, refs)
 
@@ -221,8 +244,7 @@ def cli_render_single_page(args: argparse.Namespace):
 
     refs = read_all_refs(logseq_path)
 
-    title = basename(file_to_render_path)
-    title = re.sub(r"\.md$", '', title)
+    title = page_title_from_filename(file_to_render_path)
     ast = md.parse(open(file_to_render_path).read())
     embed_refs(ast, refs)
     render_page(ast, title, sys.stdout)
@@ -239,7 +261,7 @@ def cli_render_all_pages(args: argparse.Namespace):
         attributes = read_attributes_from_ast(ast)
 
         if 'public' in attributes and attributes['public'] == 'true':
-            title = re.sub(r"\.md$", '', basename(page))
+            title = page_title_from_filename(page)
             embed_refs(ast, refs)
             with open(output_path + "/" + basename(page), 'w') as f:
                 render_page(ast, title, f)
