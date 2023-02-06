@@ -10,7 +10,7 @@ from re import Match
 import re
 import os
 from os.path import basename
-import itertools
+from itertools import chain
 
 
 class BlockRef(InlineElement):
@@ -83,17 +83,23 @@ def page_title_from_filename(filename: str) -> str:
 
 
 def read_all_refs(logseq_path: str) -> dict[str, (str, Element)]:
-    refs = {}
-    pages = itertools.chain(enumerate_logseq_pages(
-        logseq_path), enumerate_logseq_journal(logseq_path))
-    for page in pages:
+    """
+    Read all pages in logseq folder and return dictionary of following form:
+    ```
+    UUID: ("Page title", Element),
+    ...
+    """
+    all_refs = {}
+    pages = enumerate_logseq_pages(logseq_path)
+    dairies = enumerate_logseq_journal(logseq_path)
+    for page in chain(pages, dairies):
         ast = md.parse(open(page).read())
-        page_refs = read_refs_from_ast(ast)
-        page_title = page_title_from_filename(page)
-        refs_with_title = {id: (page_title, ref)
-                           for (id, ref) in page_refs.items()}
-        refs = refs | refs_with_title
-    return refs
+        refs = read_refs_from_ast(ast)
+        title = page_title_from_filename(page)
+        refs = {id: (title, ref)
+                for (id, ref) in refs.items()}
+        all_refs = all_refs | refs
+    return all_refs
 
 
 def read_refs_from_ast(el: Element) -> dict[str: Element]:
@@ -242,12 +248,12 @@ def render_page(el: Element, title: str, f: IO):
 
 def cli_render_single_page(args: argparse.Namespace):
     logseq_path = args.logseq_path
-    file_to_render_path = args.note
+    note_path = args.note
 
     refs = read_all_refs(logseq_path)
 
-    title = page_title_from_filename(file_to_render_path)
-    ast = md.parse(open(file_to_render_path).read())
+    title = page_title_from_filename(note_path)
+    ast = md.parse(open(note_path).read())
     embed_refs(ast, refs)
     render_page(ast, title, sys.stdout)
 
