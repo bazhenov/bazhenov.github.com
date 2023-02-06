@@ -1,17 +1,15 @@
 import argparse
 from pathlib import Path, PosixPath
-from typing import Generator
+import sys
+from typing import IO, Generator
 import marko
 from marko.inline import InlineElement
 from marko.block import BlockElement, Element
 import marko.inline
 from re import Match
 import re
-import sys
 import os
 from os.path import basename
-
-NOTES_URL = "/notes"
 
 
 class BlockRef(InlineElement):
@@ -74,7 +72,15 @@ def get_children(el: Element) -> list[Element]:
         return []
 
 
-def find_all_refs(el: Element) -> dict[str: Element]:
+def read_all_refs(logseq_path: str) -> dict[str, Element]:
+    refs = {}
+    for page in enumerate_logseq_pages(logseq_path):
+        ast = md.parse(open(page).read())
+        refs = refs | read_refs_from_ast(ast)
+    return refs
+
+
+def read_refs_from_ast(el: Element) -> dict[str: Element]:
     """Returns dictionary of all found UUID refs in a given markdown tree (key - UUID, value - marko Node)"""
     children = get_children(el)
 
@@ -104,7 +110,7 @@ def find_all_refs(el: Element) -> dict[str: Element]:
             refs[attr.value] = el
 
     for child in children:
-        refs = refs | find_all_refs(child)
+        refs = refs | read_refs_from_ast(child)
 
     return refs
 
@@ -161,6 +167,16 @@ def migrate_logseq_files(logseq_path: str, output_path: str):
             open(to_path, 'w').write(html)
 
 
+def read_attributes_from_ast(el: Element) -> dict[str, str]:
+    attrs = {}
+    children = get_children(el)
+    if len(children) > 0:
+        for candidate in get_children(children[0]):
+            if isinstance(candidate, Attribute):
+                attrs[candidate.name] = candidate.value
+    return attrs
+
+
 def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]:
     for file in Path(logseq_path).glob("pages/*.md"):
         yield file
@@ -184,33 +200,46 @@ def escape_slug(title: str) -> str:
     return re.sub("[^a-zа-я0-9]", '-', title.lower())
 
 
-def render_single_page(args: argparse.Namespace):
+def render_page(el: Element, title: str, f: IO):
+    f.writelines(["---\n",
+                  "unsafe: true\n",
+                  f"title: {title}\n",
+                  f"url: {NOTES_URL}/{escape_slug(title)}/\n",
+                  "---\n",
+                  md.render(el)])
+
+
+def cli_render_single_page(args: argparse.Namespace):
     logseq_path = args.logseq_path
     file_to_render_path = args.note
 
-    md = marko.Markdown(extensions=[LogSeqExtension])
-
-    refs = {}
-
-    for page in enumerate_logseq_pages(logseq_path):
-        ast = md.parse(open(page).read())
-        refs = refs | find_all_refs(ast)
+    refs = read_all_refs(logseq_path)
 
     title = basename(file_to_render_path)
     title = re.sub(r"\.md$", '', title)
-    slug = escape_slug(title)
     ast = md.parse(open(file_to_render_path).read())
     embed_refs(ast, refs)
-    print("---")
-    print("unsafe: true")
-    print(f"title: {title}")
-    print(f"url: {NOTES_URL}/{slug}/")
-    print("---")
-    print(md.render(ast))
+    render_page(ast, title, sys.stdout)
 
 
-def render_ast(args: argparse.Namespace):
-    md = marko.Markdown(extensions=[LogSeqExtension])
+def cli_render_all_pages(args: argparse.Namespace):
+    logseq_path = args.logseq_path
+    output_path = args.output_path
+
+    refs = read_all_refs(logseq_path)
+
+    for page in enumerate_logseq_pages(logseq_path):
+        ast = md.parse(open(page).read())
+        attributes = read_attributes_from_ast(ast)
+
+        if 'public' in attributes and attributes['public'] == 'true':
+            title = re.sub(r"\.md$", '', basename(page))
+            embed_refs(ast, refs)
+            with open(output_path + "/" + basename(page), 'w') as f:
+                render_page(ast, title, f)
+
+
+def cli_render_ast(args: argparse.Namespace):
     ast = md.parse(open(args.note).read())
     print(render(ast))
 
@@ -220,13 +249,20 @@ def main():
     subparsers = parser.add_subparsers()
 
     render = subparsers.add_parser('render')
-    render.set_defaults(func=render_single_page)
+    render.set_defaults(func=cli_render_single_page)
     render.add_argument('logseq_path', type=str,
                         help="path to logseq directory")
     render.add_argument('note', type=str, help="path to note to render")
 
+    render = subparsers.add_parser('render-all')
+    render.set_defaults(func=cli_render_all_pages)
+    render.add_argument('logseq_path', type=str,
+                        help="path to logseq directory")
+    render.add_argument('output_path', type=str,
+                        help="path to output")
+
     render = subparsers.add_parser('render-ast')
-    render.set_defaults(func=render_ast)
+    render.set_defaults(func=cli_render_ast)
     render.add_argument('note', type=str, help="path to note to render")
 
     args = parser.parse_args()
@@ -234,4 +270,6 @@ def main():
 
 
 if __name__ == "__main__":
+    NOTES_URL = "/notes"
+    md = marko.Markdown(extensions=[LogSeqExtension])
     main()
