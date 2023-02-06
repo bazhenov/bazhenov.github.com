@@ -63,7 +63,7 @@ class RendererMixins:
     def render_block_embed(self, el: BlockEmbed):
         href = f"{NOTES_URL}/{escape_slug(el.source_page_title)}"
         link = f"<p class='quote-source'><a href='{href}'>{el.source_page_title}</a></p>"
-        return f"<div class='quote'>{self.render_children(el)}{link}</div>"
+        return f"<div class='quote'>{link}{self.render_children(el)}</div>"
 
 
 class LogSeqExtension:

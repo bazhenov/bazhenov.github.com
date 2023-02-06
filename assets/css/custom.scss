@@ -1,3 +1,5 @@
+@import "themes/hugo-coder/assets/scss/_variables.scss";
+
 figure {
   figcaption {
     color: gray;
@@ -17,27 +19,49 @@ section.list {
   }
 }
 
+article ul {
+  padding-inline-start: 1em;
+}
+
 article li {
   padding: 0.1em;
 }
 
 article {
+  div.quote {
+    padding: 0.5em 1em;
 
-  blockquote {
-    p {
+    blockquote {
       margin: 0;
+
+      p {
+        margin: 0;
+      }
     }
-    margin: 0;
+
+    p.quote-source {
+      margin-block-start: 0;
+      line-height: 1em;
+      padding: 0;
+      padding-bottom: 0.5em;
+      margin: 0;
+
+      a {
+        font-size: 0.8em;
+        font-variant: small-caps;
+      }
+    }
   }
+}
 
-  p.quote-source {
-    padding: 0;
-    margin: 0;
-    text-align: right;
+body.colorscheme-dark {
+  article div.quote {
+    background-color: adjust-color($color: $bg-color-dark, $lightness: +5%)
+  }
+}
 
-    a {
-      font-size: 0.8em;
-      font-variant: small-caps;
-    }
+body.colorscheme-light {
+  article div.quote {
+    background-color: adjust-color($color: $bg-color, $lightness: -5%)
   }
 }
