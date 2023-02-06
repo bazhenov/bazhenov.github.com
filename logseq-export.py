@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path, PosixPath
 from typing import Generator
 import marko
@@ -11,6 +12,7 @@ import os
 from os.path import basename
 
 NOTES_URL = "/notes"
+
 
 class BlockRef(InlineElement):
     pattern = r"^\(\(([^)]+)\)\)$"
@@ -177,16 +179,14 @@ def embed_refs(el: Element, refs: dict[str, Element]):
             else:
                 embed_refs(child, refs)
 
+
 def escape_slug(title: str) -> str:
     return re.sub("[^a-zа-я0-9]", '-', title.lower())
 
-if __name__ == "__main__":
-    # input = sys.argv[1]
-    # output_path = "./content/notes"
-    # migrate_logseq_files(input, output_path)
 
-    logseq_path = sys.argv[1]
-    file_to_render_path = sys.argv[2]
+def render_single_page(args: argparse.Namespace):
+    logseq_path = args.logseq_path
+    file_to_render_path = args.note
 
     md = marko.Markdown(extensions=[LogSeqExtension])
 
@@ -195,11 +195,6 @@ if __name__ == "__main__":
     for page in enumerate_logseq_pages(logseq_path):
         ast = md.parse(open(page).read())
         refs = refs | find_all_refs(ast)
-
-    # for (ref, node) in refs.items():
-    #     print(f"ref: {ref}")
-    #     print(f"{md.render(node)}")
-    #     print()
 
     title = basename(file_to_render_path)
     title = re.sub(r"\.md$", '', title)
@@ -212,3 +207,31 @@ if __name__ == "__main__":
     print(f"url: {NOTES_URL}/{slug}/")
     print("---")
     print(md.render(ast))
+
+
+def render_ast(args: argparse.Namespace):
+    md = marko.Markdown(extensions=[LogSeqExtension])
+    ast = md.parse(open(args.note).read())
+    print(render(ast))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    render = subparsers.add_parser('render')
+    render.set_defaults(func=render_single_page)
+    render.add_argument('logseq_path', type=str,
+                        help="path to logseq directory")
+    render.add_argument('note', type=str, help="path to note to render")
+
+    render = subparsers.add_parser('render-ast')
+    render.set_defaults(func=render_ast)
+    render.add_argument('note', type=str, help="path to note to render")
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
