@@ -3,7 +3,7 @@ date: 2009-12-21
 url: /blog/2009/12/21/ioc-containers.html
 title: IoC контейнеры
 layout: post
-tags: ioc php solid ooad
+tags: [ioc, php, solid, ooad]
 alias: /2009/12/ioc.html
 ---
 Если вы пишете на объектно-ориентированном языке, то вы должны быть знакомы с "джентльменским набором" принципов, которые очень полезны при написании кода. К таким принципам относятся: [single responsibility principle][ref-srp], [open-closed principle][ref-ocp], [interface segregation principle][ref-isp] и другие. Общий эффект их использования заключается в том, что количество сущностей (классов и интерфейсов) в системе стремительно растет. В этом есть как положительные, так и отрицательные стороны.

@@ -3,7 +3,7 @@ date: 2012-08-04
 url: /blog/2012/08/04/autocomplete.html
 title: Толерантный автокомплит
 layout: post
-tags: algorithms
+tags: [algorithms]
 math: true
 ---
 

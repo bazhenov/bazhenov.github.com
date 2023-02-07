@@ -3,7 +3,7 @@ date: 2009-11-04
 url: /blog/2009/11/04/optimistic-locking-application.html
 title: Прикладное применение оптимистической блокировки
 layout: post
-tags: messaging architecture
+tags: [messaging, architecture]
 alias: /2009/11/blog-post.html
 ---
 

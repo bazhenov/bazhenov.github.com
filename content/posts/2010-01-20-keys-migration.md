@@ -3,7 +3,7 @@ date: 2010-01-20
 url: /blog/2010/01/20/keys-migration.html
 title: Миграция ключей
 layout: post
-tags: theory math quizz
+tags: [theory, math, quizz]
 alias: /2010/01/blog-post_20.html
 math: true
 ---

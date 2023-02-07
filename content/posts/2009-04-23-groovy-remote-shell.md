@@ -3,7 +3,7 @@ date: 2009-04-23
 url: /blog/2009/04/23/groovy-remote-shell.html
 title: Groovy Remote Shell
 layout: post
-tags: groovy java
+tags: [groovy, java]
 alias: /2009/04/groovy-remote-shell.html
 ---
 Я работаю в довольно интенсивно развивающемся проекте. Мы много эксперементируем с разными инструментами. Иногда приходится инструменты разрабатывать самим.

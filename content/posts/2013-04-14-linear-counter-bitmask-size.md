@@ -3,7 +3,7 @@ date: 2013-04-14
 url: /blog/2013/04/14/linear-counter-bitmask-size.html
 title: Размер линейного счетчика
 layout: post
-tags: algorithms math probability
+tags: [algorithms, math, probability]
 math: true
 ---
 

@@ -3,7 +3,7 @@ date: 2009-06-28
 url: /blog/2009/06/28/performance-versus-scalability.html
 title: Perfomance vs. scalability
 layout: post
-tags: concurrency perfomance scalability
+tags: [concurrency, perfomance, scalability]
 alias: /2009/06/perfomance-vs-scalability_28.html
 ---
 Иногда встречаюсь c непониманием того, что такое производительность, а что такое масштабируемость. Почему-то некоторые люди считают, что это одно и то же.

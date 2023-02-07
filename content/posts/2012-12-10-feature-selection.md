@@ -3,7 +3,7 @@ date: 2012-12-10
 url: /blog/2012/12/10/feature-selection.html
 title: Feature selection в алгоритмах классификации
 layout: post
-tags: algorithms math
+tags: [algorithms, math]
 math: true
 ---
 
