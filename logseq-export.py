@@ -25,6 +25,7 @@ class BlockRef(InlineElement):
 class WikiLink(InlineElement):
     pattern = r"\[\[([^]]+)\]\]"
     parse_children = False
+    public_link = False
     page: str
 
     def __init__(self, match: Match) -> None:
@@ -33,10 +34,12 @@ class WikiLink(InlineElement):
 
 class BlockEmbed(BlockElement):
     source_page_title: str
+    source_page_public: bool
 
-    def __init__(self, title, children: Element) -> None:
+    def __init__(self, title, is_public, children: Element) -> None:
         self.children = [children]
         self.source_page_title = title
+        self.source_page_public = is_public
 
 
 class Attribute(InlineElement):
@@ -58,11 +61,16 @@ class RendererMixins:
         return ""
 
     def render_wiki_link(self, el: WikiLink):
-        return f"<a href='{NOTES_URL}/{escape_slug(el.page)}'>[[{el.page}]]</a>"
+        if el.public_link:
+            return f"<a href='{NOTES_URL}/{escape_slug(el.page)}'>[[{el.page}]]</a>"
+        else:
+            return f"<span class='missing-note'>[[{el.page}]]</span>"
 
     def render_block_embed(self, el: BlockEmbed):
         href = f"{NOTES_URL}/{escape_slug(el.source_page_title)}"
-        link = f"<p class='quote-source'><a href='{href}'>{el.source_page_title}</a></p>"
+        link = f"<a href='{href}'>{el.source_page_title}</a>" if el.source_page_public \
+            else f"<span class='missing-note'>{el.source_page_title}</span>"
+        link = f"<p class='quote-source'>{link}</p>"
         return f"<div class='quote'>{link}{self.render_children(el)}</div>"
 
 
@@ -82,11 +90,11 @@ def page_title_from_filename(filename: str) -> str:
     return re.sub(r"\.md$", '', basename(filename))
 
 
-def read_all_refs(logseq_path: str) -> dict[str, (str, Element)]:
+def read_all_refs(logseq_path: str) -> dict[str, (str, bool, Element)]:
     """
     Read all pages in logseq folder and return dictionary of following form:
     ```
-    UUID: ("Page title", Element),
+    UUID: ("Page title", is_public, Element),
     ...
     """
     all_refs = {}
@@ -94,9 +102,13 @@ def read_all_refs(logseq_path: str) -> dict[str, (str, Element)]:
     dairies = enumerate_logseq_journal(logseq_path)
     for page in chain(pages, dairies):
         ast = md.parse(open(page).read())
+        
+        attributes = read_attributes_from_ast(ast)
+        public = 'public' in attributes and attributes['public'] == 'true'
+
         refs = read_refs_from_ast(ast)
         title = page_title_from_filename(page)
-        refs = {id: (title, ref)
+        refs = {id: (title, public, ref)
                 for (id, ref) in refs.items()}
         all_refs = all_refs | refs
     return all_refs
@@ -218,7 +230,7 @@ def enumerate_logseq_journal(logseq_path: str) -> Generator[PosixPath, None, Non
         yield file
 
 
-def embed_refs(el: Element, refs: dict[str, (str, Element)]):
+def embed_refs(el: Element, refs: dict[str, (str, bool, Element)], public_pages=set()):
     """
     Replaces all BlockRef's in a md-tree with referenced blocks
     """
@@ -227,8 +239,8 @@ def embed_refs(el: Element, refs: dict[str, (str, Element)]):
             if isinstance(child, BlockRef):
                 id = child.id
                 if id in refs:
-                    title, embed = refs[id]
-                    el.children[idx] = BlockEmbed(title, embed)
+                    title, is_public, embed = refs[id]
+                    el.children[idx] = BlockEmbed(title, is_public, embed)
             else:
                 embed_refs(child, refs)
 
@@ -245,6 +257,17 @@ def render_page(el: Element, title: str, f: IO):
                   "---\n",
                   md.render(el)])
 
+def enumerate_ast(el: Element) -> Generator[Element, None, None]:
+    yield el
+    for child in get_children(el):
+        yield child
+        yield from enumerate_ast(child)
+
+
+def mark_public_pages(el: Element, public_pages: set[str]):
+    for node in enumerate_ast(el):
+        if isinstance(node, WikiLink) and node.page in public_pages:
+            node.public_link = True
 
 def cli_render_single_page(args: argparse.Namespace):
     logseq_path = args.logseq_path
@@ -264,15 +287,26 @@ def cli_render_all_pages(args: argparse.Namespace):
 
     refs = read_all_refs(logseq_path)
 
-    for page in enumerate_logseq_pages(logseq_path):
-        ast = md.parse(open(page).read())
+    pages = []
+    public_pages = set()
+    for file_name in enumerate_logseq_pages(logseq_path):
+        ast = md.parse(open(file_name).read())
         attributes = read_attributes_from_ast(ast)
+        title = page_title_from_filename(file_name)
+        pages.append((file_name, title, ast))
 
         if 'public' in attributes and attributes['public'] == 'true':
-            title = page_title_from_filename(page)
-            embed_refs(ast, refs)
-            with open(output_path + "/" + basename(page), 'w') as f:
-                render_page(ast, title, f)
+            public_pages.add(title)
+    
+    for (file_name, title, page) in pages:
+        if not title in public_pages:
+            continue
+
+        print(f"Exporint page: {title}...")
+        mark_public_pages(page, public_pages)
+        embed_refs(page, refs)
+        with open(output_path + "/" + basename(file_name), 'w') as f:
+            render_page(page, title, f)
 
 
 def cli_render_ast(args: argparse.Namespace):
