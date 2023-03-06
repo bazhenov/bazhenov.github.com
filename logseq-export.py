@@ -254,6 +254,7 @@ def render_page(el: Element, title: str, f: IO):
                   "unsafe: true\n",
                   f"title: {title}\n",
                   f"url: {NOTES_URL}/{escape_slug(title)}/\n",
+                  f"math: true\n",
                   "---\n",
                   md.render(el)])
 
