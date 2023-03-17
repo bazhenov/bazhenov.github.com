@@ -4,7 +4,8 @@ import sys
 from typing import IO, Generator
 import marko
 from marko.inline import InlineElement
-from marko.block import BlockElement, Element
+from marko.element import Element
+from marko.block import BlockElement
 import marko.inline
 from re import Match
 import re
@@ -86,7 +87,7 @@ def get_children(el: Element) -> list[Element]:
         return []
 
 
-def page_title_from_filename(filename: str) -> str:
+def page_title_from_filename(filename: Path) -> str:
     return re.sub(r"\.md$", '', basename(filename))
 
 
@@ -102,7 +103,7 @@ def read_all_refs(logseq_path: str) -> dict[str, (str, bool, Element)]:
     dairies = enumerate_logseq_journal(logseq_path)
     for page in chain(pages, dairies):
         ast = md.parse(open(page).read())
-        
+
         attributes = read_attributes_from_ast(ast)
         public = 'public' in attributes and attributes['public'] == 'true'
 
@@ -114,7 +115,7 @@ def read_all_refs(logseq_path: str) -> dict[str, (str, bool, Element)]:
     return all_refs
 
 
-def read_refs_from_ast(el: Element) -> dict[str: Element]:
+def read_refs_from_ast(el: Element) -> dict[str, Element]:
     """Returns dictionary of all found UUID refs in a given markdown tree (key - UUID, value - marko Node)"""
     children = get_children(el)
 
@@ -126,7 +127,7 @@ def read_refs_from_ast(el: Element) -> dict[str: Element]:
         * BlockElement
     """
     if len(children) >= 2:
-        [p, target] = el.children[0:2]
+        [p, target] = children[0:2]
         if isinstance(p, marko.block.Paragraph) and len(p.children) >= 1 and isinstance(target, BlockElement):
             is_attr = [isinstance(c, Attribute) for c in p.children]
             if all(is_attr):
@@ -220,12 +221,12 @@ def read_attributes_from_ast(el: Element) -> dict[str, str]:
     return attrs
 
 
-def enumerate_logseq_pages(logseq_path: str) -> Generator[PosixPath, None, None]:
+def enumerate_logseq_pages(logseq_path: str) -> Generator[Path, None, None]:
     for file in Path(logseq_path).glob("pages/*.md"):
         yield file
 
 
-def enumerate_logseq_journal(logseq_path: str) -> Generator[PosixPath, None, None]:
+def enumerate_logseq_journal(logseq_path: str) -> Generator[Path, None, None]:
     for file in Path(logseq_path).glob("journals/*.md"):
         yield file
 
@@ -298,7 +299,7 @@ def cli_render_all_pages(args: argparse.Namespace):
 
         if 'public' in attributes and attributes['public'] == 'true':
             public_pages.add(title)
-    
+
     for (file_name, title, page) in pages:
         if not title in public_pages:
             continue
