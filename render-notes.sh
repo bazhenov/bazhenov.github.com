@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
+set -e
 
 for F in content/notes/*.md; do
     if [[ "${F: -10}" != "/_index.md" ]]; then
-        rm -f $F
+        echo "Removing $F"
+        rm "$F"
     fi
 done
 
