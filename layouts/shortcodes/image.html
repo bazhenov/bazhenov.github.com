@@ -1,9 +1,16 @@
 {{- $url := .Get 0 }}
 {{- $alt := .Get 1 -}}
 
-{{ $image := resources.Get $url }}
+{{ $image := .Page.Resources.Get $url }}
 {{ with $image }}
-<img src="{{ $image.RelPermalink }}" width="{{ $image.Width }}" height="{{ $image.Height }}" alt="{{ $alt }}">
+  {{ $resized := $image.Fit "800x600" }}
+  <a href="{{ $image.RelPermalink }}">
+    <img src="{{ $resized.RelPermalink }}" alt="{{ $alt }}">
+  </a>
 {{ else }}
-Image not found
+  {{ if not hugo.IsProduction }}
+  <p style="font-weight: bold; color: red;">
+    Image <i>{{ $url }}</i> not found
+  </p>
+  {{ end }}
 {{ end }}
