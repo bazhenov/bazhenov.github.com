@@ -1,6 +1,7 @@
 ---
 date: 2023-03-28
 title: Why Clean Code was (and still is) important?
+url: posts/why-clean-code-was-important
 layout: post
 tags: performance
 ---
