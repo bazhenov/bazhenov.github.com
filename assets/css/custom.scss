@@ -1,5 +1,13 @@
 @import "themes/hugo-coder/assets/scss/_variables.scss";
 
+body {
+  line-height: 1.6em;
+}
+
+blockquote {
+  line-height: 1.4em;
+}
+
 figure {
   figcaption {
     color: gray;
