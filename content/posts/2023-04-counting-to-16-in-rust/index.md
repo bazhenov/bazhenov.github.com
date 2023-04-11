@@ -120,7 +120,7 @@ I spent some time trying to convince the compiler that it should optimize the co
 ```rust
 for chunk in buffer[..len].chunks_mut(16) {
     for item in chunk.iter_mut() {
-        *item = self.next + self.next;
+        *item = self.next;
         self.next += 1;
     }
 }
@@ -137,12 +137,12 @@ Although it helps, the compiler only unrolls the loop [by a factor of 4](https:/
 for chunk in buffer[..len].chunks_mut(16) {
     if chunk.len() == 16 {
         for item in chunk.iter_mut() {
-            *item = self.next + self.next;
+            *item = self.next;
             self.next += 1;
         }
     } else {
         for item in chunk.iter_mut() {
-            *item = self.next + self.next;
+            *item = self.next;
             self.next += 1;
         }
     }
