@@ -332,3 +332,6 @@ Modern compilers are good at two things: (1) not making stupid mistakes in assem
 - Rust, as well as C++, has done a great job of providing Zero Cost Abstractions. However, almost every abstraction is not transparent to the compiler in some way or another. It is important to be able to narrow down the set of applicable abstractions for a task and verify that the selected abstraction does not hinder performance.
 
 If you think you know how to make this code even faster [let me know](maito:dotsid@gmail.com).
+
+Discussion of this post is on
+[Reddit](https://www.reddit.com/r/rust/comments/12hj0yq/how_fast_can_you_count_to_16_in_rust/).

@@ -12,8 +12,6 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 pygmentsstyle = "dracula"
 
-disqusShortname = "severe-reality"
-
 [params]
 author = "Denis Bazhenov"
 description = "Denis Bazhenov's personal website"
