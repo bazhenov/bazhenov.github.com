@@ -1,8 +1,7 @@
 ---
-date: 2023-05-01
+date: 2023-05-03
 title: Fast(er) binary search in Rust
 url: posts/faster-binary-search-in-Rust
-draft: true
 tags: [performance, rust, cpu]
 ---
 
@@ -19,12 +18,12 @@ Let's try to find a way to address these problems. But first, let's establish a 
 
 {{< image "std.svg" >}}
 
+This graph shows the average time it took to look up a random element in an array of different sizes. Graph also shows the size of L1/L2/L3 CPU caches test was run on ([sources][sources]).
+
 {{< notice note "Test platform" >}}
 - Intel Core i7-1068NG7 CPU @ 2.30GHz
 - 32Gb LPDDR4X 3733 MHz
 - Darwin Kernel Version 22.4.0
-
-You can reproduce this experiment using [published code][sources].
 {{</ notice >}}
 
 In practical terms, the performance of binary search starts to drop when the dataset becomes larger than the size of the on-core cache (L2), which in my case is 512KB or 128K `u32` elements.
@@ -37,7 +36,9 @@ One way to address the memory access predictability problem is to use the Eytzin
 
 The array starts with the tree root (depth=0), followed by all the elements at depth 1, then depth=2, and so on. Using this layout, tree siblings are always stored together in memory, which means there are fewer cache misses.
 
-This layout requires array preprocessing, so it's appropriate when the underlying array is fixed or changes infrequently. I won't delve deeply into the algorithm of constructing such an array, but you can check the [sources][sources] or read [1].
+This layout requires array preprocessing, so it's appropriate when the underlying array is fixed or changes infrequently. The Eytzinger layout is only applicable if you don't need sorted data as the output of the algorithm. An appropriate use case for this layout would be when you only need to test the presence of an element in an array.
+
+I won't delve deeply into the algorithm of constructing such an array, but you can check the [sources][sources] or read [1].
 
 Although it might seem quite complex, navigating an Eytzinger layout array is simple if you store all your elements starting from index 1 (the first element is a dummy). You just update the index to `idx = 2 * idx` if you want to go left or `idx = 2 * idx + 1` if you want to go right:
 
