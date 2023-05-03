@@ -1,7 +1,8 @@
 ---
 date: 2023-05-03
 title: Fast(er) binary search in Rust
-url: posts/faster-binary-search-in-Rust
+url: posts/faster-binary-search-in-rust
+aliases: [posts/faster-binary-search-in-Rust]
 tags: [performance, rust, cpu]
 ---
 
