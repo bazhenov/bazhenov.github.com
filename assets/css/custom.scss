@@ -4,6 +4,13 @@ body {
   line-height: 1.6em;
 }
 
+body.colorscheme-dark {
+  img.transparent {
+    background-color: #a8a8a8;
+    border-radius: 5px;
+  }
+}
+
 blockquote {
   line-height: 1.4em;
 }

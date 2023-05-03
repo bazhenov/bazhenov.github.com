@@ -3,10 +3,14 @@
 
 {{ $image := .Page.Resources.Get $url }}
 {{ with $image }}
-  {{ $resized := $image.Fit "800x600" }}
-  <a href="{{ $image.RelPermalink }}">
-    <img src="{{ $resized.RelPermalink }}" alt="{{ $alt }}">
-  </a>
+  {{ if eq .MediaType.SubType "svg" }}
+    <img class="transparent" src="{{ $image.RelPermalink }}" alt="{{ $alt }}">
+  {{ else }}
+    {{ $resized := $image.Fit "800x600" }}
+    <a href="{{ $image.RelPermalink }}">
+      <img src="{{ $resized.RelPermalink }}" alt="{{ $alt }}">
+    </a>
+  {{ end }} 
 {{ else }}
   {{ if not hugo.IsProduction }}
   <p style="font-weight: bold; color: red;">
