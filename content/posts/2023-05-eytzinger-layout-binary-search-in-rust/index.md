@@ -103,11 +103,11 @@ CPUs are hundreds of cycles away from the main memory, so they try to predict wh
 This is where the exponential nature of binary search comes in handy. In practice, it can be more beneficial not to check if we found the target element in a loop body and instead traverse the whole tree down to the leaves anyway. Yes, there will be some extra iterations, but not many, because binary search has a complexity of `O(log n)`.
 
 ```rust
-pub fn binary_search_branchless(data: &[u32], value: u32) -> usize {
+pub fn binary_search_branchless(data: &[u32], target: u32) -> usize {
   let mut idx = 1;
   while idx < data.len() {
     let el = data[idx];
-    idx = 2 * idx + usize::from(el < value);
+    idx = 2 * idx + usize::from(el < target);
   }
   idx >>= idx.trailing_ones() + 1;
   usize::from(data[idx] == target) * idx
@@ -130,9 +130,9 @@ Decoding code relies on the following facts:
 1. following two expressions are equivalent
    ```rust
    // arithmetic index update
-   idx = 2 * idx + usize::from(el < value);
+   idx = 2 * idx + usize::from(el < target);
    // binary operation index update
-   idx = (idx << 1) | usize::from(el < value);
+   idx = (idx << 1) | usize::from(el < target);
    ```
    From this, you can conclude that `idx` can be interpreted as a binary tree traversal history, where each bit is 1 if we took a right turn and 0 if we took a left one. For example, a value of 19 (`0001_0011`) after 5 iterations means that the sequence of turns was: RLLRR.
 2. if we found the target element we will make a left turn `usize::from(el < value) == 0`
@@ -163,7 +163,7 @@ Although the Eytzinger layout memory access is very predictable, on large arrays
 Let's add software memory prefetch. We know that the next iteration will always require consecutive elements of an array: `2 * idx` or `2 * idx + 1`. This allows us to instruct the CPU about the data we will need on the next iteration.
 
 ```rust{hl_lines=["4-7"]}
-pub fn binary_search_branchless(data: &[u32], value: u32) -> usize {
+pub fn binary_search_branchless(data: &[u32], target: u32) -> usize {
   let mut idx = 1;
   while idx < data.len() {
     unsafe {
@@ -171,7 +171,7 @@ pub fn binary_search_branchless(data: &[u32], value: u32) -> usize {
       _mm_prefetch::<_MM_HINT_T0>(ptr::addr_of!(prefetch) as *const i8);
     }
     let el = data[idx];
-    idx = 2 * idx + usize::from(el < value);
+    idx = 2 * idx + usize::from(el < target);
   }
   idx >>= idx.trailing_ones() + 1;
   usize::from(data[idx] == target) * idx
