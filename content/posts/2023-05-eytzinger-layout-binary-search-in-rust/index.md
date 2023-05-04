@@ -179,11 +179,11 @@ pub fn binary_search_branchless(data: &[u32], target: u32) -> usize {
 ```
 
 {{< notice note "Is it safe?" >}}
-Formally no, but in practice... kind of, becuase we never dereference the prefetch address. `_mm_prefetch()` is the intrinsic for `PREFETCHh` instruction which by documentation
+As was [pointed out on the Reddit](https://www.reddit.com/r/rust/comments/136kz1x/comment/jipx57c/?utm_source=share&utm_medium=web2x&context=3) [`SliceIndex::get_unchecked()`](https://doc.rust-lang.org/std/slice/trait.SliceIndex.html#tymethod.get_unchecked) is undefined behaviour even if the resulting reference is not dereferenced. The same is true for [`ptr:add()`](https://doc.rust-lang.org/std/primitive.pointer.html#method.add). So I guess yes, and I see no way around it. But the `PREFETCHh` instruction itself by documentation
 
 > is merely a hint and does not affect program behavior
 
-In case of an invalid address or TLB error, the prefetch instruction will ignore the address. This allows us to do prefetch unconditionally, even on the last iteration when `2 * idx` is pointing after the end of an array 🫣.
+In case of an invalid address or TLB error, the prefetch instruction will ignore the address. This allows us to do prefetch unconditionally, even on the last iteration when `2 * idx` is pointing after the end of an array. At least at the moment 🫣 (rustc/1.68.0). There is no guarantee this will work correctly in the future.
 {{</ notice >}}
 
 {{< image "eytzinger-branchless-prefetch.svg" >}}
