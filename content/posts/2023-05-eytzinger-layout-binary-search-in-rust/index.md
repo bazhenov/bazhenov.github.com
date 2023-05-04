@@ -167,7 +167,7 @@ pub fn binary_search_branchless(data: &[u32], target: u32) -> usize {
   let mut idx = 1;
   while idx < data.len() {
     unsafe {
-      let prefetch = data.get_unchecked(2 * idx);
+      let prefetch = data.as_ptr().wrapping_offset(2 * idx as isize);
       _mm_prefetch::<_MM_HINT_T0>(ptr::addr_of!(prefetch) as *const i8);
     }
     let el = data[idx];
@@ -179,11 +179,17 @@ pub fn binary_search_branchless(data: &[u32], target: u32) -> usize {
 ```
 
 {{< notice note "Is it safe?" >}}
-As was [pointed out on the Reddit](https://www.reddit.com/r/rust/comments/136kz1x/comment/jipx57c/?utm_source=share&utm_medium=web2x&context=3) [`SliceIndex::get_unchecked()`](https://doc.rust-lang.org/std/slice/trait.SliceIndex.html#tymethod.get_unchecked) is undefined behaviour even if the resulting reference is not dereferenced. The same is true for [`ptr:add()`](https://doc.rust-lang.org/std/primitive.pointer.html#method.add). So I guess yes, and I see no way around it. But the `PREFETCHh` instruction itself by documentation
+As was [pointed out on the Reddit](https://www.reddit.com/r/rust/comments/136kz1x/comment/jipx57c/?utm_source=share&utm_medium=web2x&context=3) methods like [`SliceIndex::get_unchecked()`](https://doc.rust-lang.org/std/slice/trait.SliceIndex.html#tymethod.get_unchecked) and [`ptr:add()`](https://doc.rust-lang.org/std/primitive.pointer.html#method.add) are undefined behaviour even if the resulting reference is not dereferenced. But it follows from the documentation that [`ptr::wrapping_offset()`](https://doc.rust-lang.org/std/primitive.pointer.html#method.wrapping_offset) is safe:
+
+> This operation itself is always safe, but using the resulting pointer is not.
+
+We are not using the pointer (dereferencing), but pass it to the `prefetcht0` instruction which is by documentation
 
 > is merely a hint and does not affect program behavior
 
-In case of an invalid address or TLB error, the prefetch instruction will ignore the address. This allows us to do prefetch unconditionally, even on the last iteration when `2 * idx` is pointing after the end of an array. At least at the moment 🫣 (rustc/1.68.0). There is no guarantee this will work correctly in the future.
+In case of an invalid address or TLB error, the prefetch instruction will ignore the address. This allows us to do prefetch unconditionally, even on the last iteration when `2 * idx` is pointing after the end of an array.
+
+I must give a credit to a [/u/minno](https://www.reddit.com/user/minno/) who suggested `ptr::wrapping_offset()` solution.
 {{</ notice >}}
 
 {{< image "eytzinger-branchless-prefetch.svg" >}}
