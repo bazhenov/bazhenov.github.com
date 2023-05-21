@@ -38,10 +38,11 @@ In traditional varint encoding, the most significant bit of each byte is reserve
 
 Here's how numbers are encoded:
 
-Numbers that can fit within 7 bits (excluding leading zero bits) are encoded as 0xxxxxxx.
-Numbers with 14 bits are encoded as 0xxxxxxx 1xxxxxxx.
-Numbers with 24 bits are encoded as 0xxxxxxx 1xxxxxxx 1xxxxxxx, and so on.
-A 32-bit number in this scheme would be encoded as 5 bytes: 0000xxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx.
+- Numbers that can fit within 7 bits (excluding leading zero bits) are encoded as `0xxxxxxx`.
+- Numbers with 14 bits are encoded as `0xxxxxxx` `1xxxxxxx`.
+- Numbers with 24 bits are encoded as `0xxxxxxx` `1xxxxxxx` `1xxxxxxx`, and so on.
+A 32-bit number in this scheme would be encoded as 5 bytes: `0000xxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx`.
+
 However, this approach introduces a significant data dependency in the format. Decoding the next number can only begin after decoding the previous number because the offset where the next number starts in the byte stream needs to be determined. As a result, instructions cannot be executed in parallel on modern CPUs, hindering performance.
 
 ## Stream VByte
@@ -52,7 +53,7 @@ The approach is as follows: we separate the length information and the number da
 
 Consider this observation: for a u32 number, there are four possible lengths in bytes. These lengths can be represented using 2 bits (00 for length 1, 11 for length 4). Using 1 byte, we can encode the lengths of four u32 numbers. We refer to this byte as the "control byte". The sequence of control bytes forms the control stream. The second stream, called the data stream, contains the bytes of the compressed varint numbers laid out sequentially without any 7-bit shenanigans.
 
-Let's take an example. Suppose we encode the following four numbers: 0x00000011, 0x00002222, 0x00333333, and 0x44444444. In the encoded format, they would appear as follows:
+Let's take an example. Suppose we encode the following four numbers: `0x00000011`, `0x00002222`, `0x00333333`, and `0x44444444`. In the encoded format, they would appear as follows:
 
 ```
 CONTROL STREAM:
@@ -73,7 +74,7 @@ And there is instruction for that.
 
 ### PSHUFB SSE instruction
 
-Indeed, the `PSHUFB` instruction offers more flexibility than just inserting zeros. It allows you to permute or zero out bytes within a 16-byte register in any desired arrangement.
+The `PSHUFB` instruction offers more flexibility than just inserting zeros. It allows you to permute or zero out bytes within a 16-byte register in any desired arrangement.
 
 `PSHUFB` operates on two 16-byte registers (`__m128`): an input register and a mask register, producing a 16-byte register output. Each byte in the output register is controlled by the corresponding byte in the mask register. There are two possible scenarios:
 
