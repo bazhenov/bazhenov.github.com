@@ -6,7 +6,7 @@
   {{ if eq .MediaType.SubType "svg" }}
     <img class="transparent" src="{{ $image.RelPermalink }}" alt="{{ $alt }}">
   {{ else }}
-    {{ $resized := $image.Fit "800x600" }}
+    {{ $resized := $image.Fit "900x600 Lanczos" }}
     <a href="{{ $image.RelPermalink }}">
       <img src="{{ $resized.RelPermalink }}" alt="{{ $alt }}">
     </a>
