@@ -40,14 +40,14 @@ Here's how numbers are encoded:
 
 - Numbers that can fit within 7 bits (excluding leading zero bits) are encoded as `0xxxxxxx`.
 - Numbers with 14 bits are encoded as `0xxxxxxx` `1xxxxxxx`.
-- Numbers with 24 bits are encoded as `0xxxxxxx` `1xxxxxxx` `1xxxxxxx`, and so on.
-A 32-bit number in this scheme would be encoded as 5 bytes: `0000xxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx`.
+- Numbers with 21 bits are encoded as `0xxxxxxx` `1xxxxxxx` `1xxxxxxx`, and so on.
+- A 32-bit number in this scheme would be encoded as 5 bytes: `0000xxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx` `1xxxxxxx`.
 
 However, this approach introduces a significant data dependency in the format. Decoding the next number can only begin after decoding the previous number because the offset where the next number starts in the byte stream needs to be determined. As a result, instructions cannot be executed in parallel on modern CPUs, hindering performance.
 
 ## Stream VByte
 
-Varints decoding can be vectorized using various methods, including the patented [varint-G8IU][patent] format by Google. One elegant solution, in my opinion, is the [Stream VByte][vbyte] format proposed by Daniel Lemirea, Nathan Kurzb, and Christoph Ruppc.
+Varints decoding can be vectorized using various methods, including the patented [varint-G8IU][patent]. One elegant solution, in my opinion, is the [Stream VByte][vbyte] format proposed by Daniel Lemire, Nathan Kurzb, and Christoph Ruppc.
 
 The approach is as follows: we separate the length information and the number data into independent streams, allowing us to decode a group of numbers in parallel.
 
@@ -93,7 +93,7 @@ An interesting aspect of this algorithm is that there is no need to compute the 
 
 ## Implementation details
 
-Ok, more to the [Rust implementation][github]. To use SIMD intrinsics we will need nightly. SSE decode kernel is very simple.
+Ok, more to the [Rust implementation][github]. SSE decode kernel is very simple.
 
 ```rust{linenos=inline}
 type u32x4 = [u32; 4];
@@ -112,11 +112,11 @@ fn simd_decode(input: *const u8, control_word: *const u8, output: *mut u32x4) ->
   }
 }
 ```
-- Line 3: The code reads the shuffle mask and encoded length from the statically precomputed array.
-- Lines 4-5: The input and masks are loaded into `__m128i` registers. It's important to note that all loads and stores must be unaligned, hence the use of `storeu`/`loadu`. If you attempt to load an unaligned address using the `_mm_load_si128` intrinsic, you may encounter a segmentation violation error.
-- Line 6: The code restores the proper boundaries of four `u32` numbers.
-- Line 7: The numbers are stored in the result buffer.
-- Line 9: The code returns the number of consumed bytes from the data stream. In the next iteration, the data stream will need to advance by this amount of bytes.
+- Line 7: Reads the shuffle mask and encoded length from the statically precomputed array.
+- Lines 8-9: The input and masks are loaded into `__m128i` registers. It's important to note that all loads and stores must be unaligned, hence the use of `storeu`/`loadu`. If you attempt to load an unaligned address using the `_mm_load_si128` intrinsic, you may encounter a segmentation violation error.
+- Line 10: Restores the proper boundaries of four `u32` numbers.
+- Line 11: The numbers are stored in the result buffer.
+- Line 13: Returns the number of consumed bytes from the data stream. In the next iteration, the data stream will need to advance by this amount of bytes.
 
 Now we can utilize this kernel to decode any number of integers.
 
