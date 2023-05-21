@@ -67,16 +67,9 @@ Now we can read a single control byte, decode lengths of 4 `u32` numbers and dec
 
 If you think about it, all we need to do is to insert some zeros in the correct places to align numbers properly.
 
-```
-  [[ 0x00,    0x00,    0x00 ]], 0x11,
-  [[ 0x00,    0x00 ]], 0x22,    0x22,
-  [[ 0x00 ]], 0x33,    0x33,    0x33,
-     0x44,    0x44,    0x44,    0x44
-```
+{{< image "decode.png" >}}
 
 And there is instruction for that.
-
-[IMAGE]
 
 ### PSHUFB SSE instruction
 
@@ -87,22 +80,7 @@ Actually, it can do a lot more than that. It allows you to permute or zero out b
 - if the most significant bit of the byte in the mask register is set – then the corresponding byte in output will be zero
 - if MSB is not set, then 4 lower bits address the byte in the input register which will be copied to the output.
 
-```
-  Byte offsets:          0        1        2        3        4  ...
-                  ┌────────┬────────┬────────┬────────┬────────┬───┐
-Input Register:   │   0x03 │   0x15 │   0x22 │   0x19 │   0x08 │...│
-                  └────▲───┴────────┴────▲───┴────▲───┴────▲───┴───┘
-                       │        ┌────────┘        │        │
-                       │        │        ┌─────────────────┘
-                       │        │        │        │
-                       └───────────────────────────────────┐
-                                │        │        │        │
-                  ┌────────┬────┴───┬────┴───┬────┴───┬────┴───┬───┐
-  Mask Register:  │   0x80 │   0x02 │   0x04 │   0x03 │   0x00 │...│
-                  ├────────┼────────┼────────┼────────┼────────┼───┤
-Output Register:  │   0x00 │   0x22 │   0x08 │   0x19 │   0x03 │...│
-                  └────────┴────────┴────────┴────────┴────────┴───┘
-```
+{{< image "pshufb.png" >}}
 
 When decoding 4 numbers in parallel we need to provide a mask that will place all the number bytes on their corresponding places in the output register. This way we can decode 4 `u32` numbers in one CPU instruction.
 
