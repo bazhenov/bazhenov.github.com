@@ -1,6 +1,5 @@
 ---
-date: 2023-05-20
-draft: true
+date: 2023-05-21
 title: "Compress-a-Palooza: Unpacking 5 Billion Varints in only 4 Billion CPU Cycles"
 url: posts/rust-stream-vbyte-varint-decoding
 tags: [performance, rust, cpu]
@@ -8,9 +7,9 @@ tags: [performance, rust, cpu]
 
 ## Introduction
 
-Varint is a well-known technique for compressing integer streams. It boils down to the very simple idea – sometimes it's just more efficient to encode a number not as a fixed-size binary representation, but as a variable-length one. It allows stripping all the leading zeros from the binary number, thus reducing its representation size. It's working better the smaller the number is being encoded.
+Varint is a widely recognized technique used for compressing integer streams. Essentially, it suggests that it can be more efficient to encode a number using a variable-length representation instead of a fixed-size binary representation. By removing leading zeros from the binary number, the overall representation size can be reduced. This technique works particularly well for encoding smaller numbers.
 
-In this article, I give a brief introduction and motivation for varint encoding. Then I describe [Stream VByte][vbyte] format which allows fully vectorized decoding using SSE instructions and some of my findings when I [implemented this algorithm in Rust][github]. The implementation provides encoding as well as decoding primitives and allows to read data from RAM as well as from disk.
+In this article, I provide a brief introduction and rationale for varint encoding. Additionally, I describe the [Stream VByte][vbyte] format, which enables fully vectorized decoding through SSE instructions. I also share my findings from [implementing this algorithm in Rust][github], which includes both encoding and decoding primitives and the ability to read data from both RAM and disk.
 
 Algorithm was tested on several platforms:
 
@@ -24,35 +23,36 @@ The decoding speed is 0.75 CPU cycles per integer on average.
 
 ## Motivation
 
-Varint compression is widespread and is used in a variety of places:
+Varint compression is widely used in various contexts:
 
-- in the serialization formats for more effective state transfer representation (for example, [Protobuf][protobuf]);
-- in database engines (for example, SQLite uses it in a [BTree page format][sqlite]);
-- search engines are heavily using it for compressing the document lists containing ids of the documents where some word is presented (so-called, posting lists);
-- one can argue that UTF8 is a varint encoding. Although, it's a special one, handcrafted for backward compatibility with ASCII text binary representation.
+- It is utilized in serialization formats to achieve more efficient state transfer representation. For example, [Protobuf][protobuf] employs varint compression.
+- Database engines often employ varint compression (for example, [SQLite BTree page format][sqlite]).
+- Search engines heavily rely on varint compression to compress document lists that contain IDs of documents where a specific word is present (referred to as posting lists).
+- It can be argued that UTF8 is a form of varint encoding. However, it is a special variant crafted to maintain compatibility with the binary representation of ASCII text.
 
-Being a very successful technique it suffers from one particular problem – low decoding speed. To understand why, we need to understand how classical varint encoding is working.
+Despite its success, varint compression faces a specific challenge: slow decoding speed. To comprehend the reason behind this, it is necessary to understand how classical varint encoding functions.
 
 ## Scalar varint
 
-Usually, varint is reserving the most significant bit of each byte to represent if this byte is a continuation of the previous one. The rest of the bits are carrying the number itself.
+In traditional varint encoding, the most significant bit of each byte is reserved to indicate whether the byte is a continuation of the previous byte. The remaining bits carry the actual number.
 
-- numbers that can fit in 7 bits (without leading zero bits of course) are encoded as `0xxxxxxx`;
-- 14 bits are encoded as `0xxxxxxx 1xxxxxxx`
-- 24 bits – `0xxxxxxx 1xxxxxxx 1xxxxxxx` and so on...
-- 32-bit numbers in this scheme will be encoded as 5 bytes `0000xxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx`
+Here's how numbers are encoded:
 
-The problem is it introduces strong data dependency in the format. You can start decoding the next number only after you decoded the previous one because you need to know the offset where the next number starts in the byte stream. It prevents executing instructions in parallel on modern CPUs.
+Numbers that can fit within 7 bits (excluding leading zero bits) are encoded as 0xxxxxxx.
+Numbers with 14 bits are encoded as 0xxxxxxx 1xxxxxxx.
+Numbers with 24 bits are encoded as 0xxxxxxx 1xxxxxxx 1xxxxxxx, and so on.
+A 32-bit number in this scheme would be encoded as 5 bytes: 0000xxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx 1xxxxxxx.
+However, this approach introduces a significant data dependency in the format. Decoding the next number can only begin after decoding the previous number because the offset where the next number starts in the byte stream needs to be determined. As a result, instructions cannot be executed in parallel on modern CPUs, hindering performance.
 
 ## Stream VByte
 
-Varints decoding can be vectorized in several ways, including [varint-G8IU][patent] format patented by Google. One elegant solution, in my opinion, is the [Stream VByte][vbyte] format proposed by Daniel Lemirea, Nathan Kurzb, and Christoph Ruppc.
+Varints decoding can be vectorized using various methods, including the patented [varint-G8IU][patent] format by Google. One elegant solution, in my opinion, is the [Stream VByte][vbyte] format proposed by Daniel Lemirea, Nathan Kurzb, and Christoph Ruppc.
 
-It goes like this. Let's separate length information and numbers data into different independent streams, so we can decode a bunch of numbers in parallel.
+The approach is as follows: we separate the length information and the number data into independent streams, allowing us to decode a group of numbers in parallel.
 
-Here is a simple observation: for `u32` there are 4 possible lengths of the number in bytes. They can be represented using 2 bits (`00` - length 1, `11` - length 4). Using 1 byte we can encode the length of 4 `u32`'s. Let's call this byte – control byte. The sequence of control bytes we call the control stream. The second stream called the data stream contains the bytes of the compressed varint numbers laid out sequentially one after the other without any 7-bit shenanigans.
+Consider this observation: for a u32 number, there are four possible lengths in bytes. These lengths can be represented using 2 bits (00 for length 1, 11 for length 4). Using 1 byte, we can encode the lengths of four u32 numbers. We refer to this byte as the "control byte". The sequence of control bytes forms the control stream. The second stream, called the data stream, contains the bytes of the compressed varint numbers laid out sequentially without any 7-bit shenanigans.
 
-Let's look at the example. Suppose we encode 4 numbers: `0x00000011`, `0x00002222`, `0x00333333`, and `0x44444444`. In encoded format, they will look like this:
+Let's take an example. Suppose we encode the following four numbers: 0x00000011, 0x00002222, 0x00333333, and 0x44444444. In the encoded format, they would appear as follows:
 
 ```
 CONTROL STREAM:
@@ -63,9 +63,9 @@ DATA STREAM:
    0x33, 0x44, 0x44, 0x44, 0x44
 ```
 
-Now we can read a single control byte, decode lengths of 4 `u32` numbers and decode them one by one. This is already some improvement over the original scalar decode implementation. But we can do better. Much better. We can decode all 4 numbers in 1 CPU instruction!
+Now, we can read a single control byte, decode the lengths of four u32 numbers, and decode them one by one. This already represents an improvement over the original scalar decode implementation. However, we can achieve even greater performance. In fact, we can decode all four numbers in just one CPU instruction!
 
-If you think about it, all we need to do is to insert some zeros in the correct places to align numbers properly.
+If we consider it carefully, all we need to do is insert zeros in the appropriate positions to align the numbers correctly.
 
 {{< image "decode.png" >}}
 
@@ -73,20 +73,22 @@ And there is instruction for that.
 
 ### PSHUFB SSE instruction
 
-Actually, it can do a lot more than that. It allows you to permute or zero out bytes in the 16-byte register in any possible way.
+Indeed, the `PSHUFB` instruction offers more flexibility than just inserting zeros. It allows you to permute or zero out bytes within a 16-byte register in any desired arrangement.
 
-`PSHUFB` takes 2 16-byte registers (`__m128`): input and a mask. And producing 16-byte register output. Each byte in the output is controlled by the corresponding byte in the mask register. There are two possible variants:
+`PSHUFB` operates on two 16-byte registers (`__m128`): an input register and a mask register, producing a 16-byte register output. Each byte in the output register is controlled by the corresponding byte in the mask register. There are two possible scenarios:
 
-- if the most significant bit of the byte in the mask register is set – then the corresponding byte in output will be zero
-- if MSB is not set, then 4 lower bits address the byte in the input register which will be copied to the output.
+1. If the most significant bit (MSB) of a byte in the mask register is set, the corresponding byte in the output register will be zeroed out.
+2. If the MSB is not set, the lower 4 bits of the byte in the mask register indicate which byte from the input register should be copied to the output.
+
+This instruction provides a powerful mechanism for manipulating and rearranging bytes within registers.
 
 {{< image "pshufb.png" >}}
 
-When decoding 4 numbers in parallel we need to provide a mask that will place all the number bytes on their corresponding places in the output register. This way we can decode 4 `u32` numbers in one CPU instruction.
+When decoding four numbers in parallel, it is necessary to provide a mask that ensures each number byte is placed in its corresponding position within the output register. By carefully configuring the mask, we can decode all four `u32` numbers in a single CPU instruction. This approach maximizes efficiency and allows for significant performance gains.
 
 ### How to create mask?
 
-The neat part about this algorithm is that there is no need to compute the masks at runtime. There are only 256 possible masks that cover all the possible length variants of 4 encoded numbers. So masks can be precomputed at compile time in the array and can be easily accessed using a control byte as an index in the array. This is where Rust's `const fn` is very handy.
+An interesting aspect of this algorithm is that there is no need to compute the masks at runtime. Since there are only 256 possible masks that cover all the potential length variations of four encoded numbers, these masks can be precomputed during compilation and stored in an array. Accessing the appropriate mask becomes a simple task of using the control byte as an index in the array. Rust's `const fn` feature is particularly useful for this purpose, as it allows for the efficient computation and storage of the masks during the compilation phase.
 
 ## Implementation details
 
@@ -109,14 +111,13 @@ fn simd_decode(input: *const u8, control_word: *const u8, output: *mut u32x4) ->
   }
 }
 ```
+- Line 3: The code reads the shuffle mask and encoded length from the statically precomputed array.
+- Lines 4-5: The input and masks are loaded into `__m128i` registers. It's important to note that all loads and stores must be unaligned, hence the use of `storeu`/`loadu`. If you attempt to load an unaligned address using the `_mm_load_si128` intrinsic, you may encounter a segmentation violation error.
+- Line 6: The code restores the proper boundaries of four `u32` numbers.
+- Line 7: The numbers are stored in the result buffer.
+- Line 9: The code returns the number of consumed bytes from the data stream. In the next iteration, the data stream will need to advance by this amount of bytes.
 
- - Line 3. Reading shuffle mask and encoded length from the statically precomputed array;
- - Lines 4-5. Loading input and masks into `__m128i` registers. It's important to note that all loads and stores must be unaligned, hence `storeu`/`loadu`. If you try to load an unaligned address using `_mm_load_si128` intrinsic you may get a segmentation violation error.
- - Line 6. Restoring proper boundaries of 4 `u32` numbers;
- - Line 7. Storing numbers in the result buffer.
- - Line 9. Returning the number of consumed bytes from the data stream. The data stream will have to advance this amount of bytes next iteration.
-
-Now we can use this kernel to decode an arbitrary number of integers:
+Now we can utilize this kernel to decode any number of integers.
 
 ```rust
 pub struct DecodeCursor {
@@ -160,21 +161,21 @@ fn decode(&mut self, buffer: &mut [u32]) -> io::Result<usize> {
 }
 ```
 
-As you can see this code heavily relay on pointers. There is a very good reason for this – performance.
+As you can see, this code heavily relies on pointers, and there is a good reason for it - performance.
 
 ## Performance Considerations
 
-The first implementation I wrote was able to decode only around 500 million integers per second. The order of magnitude is slower than the CPU is capable of! There are some tricks you need to implement to utilize the CPU more effectively. Now I will try to explain what you need to pay attention to.
+The initial implementation of this code was only able to decode around 500 million integers per second. This is significantly slower than what the CPU is capable of! There are some tricks that can be implemented to utilize the CPU more effectively. Let me explain what you need to pay attention to.
 
-### Use correct intrinsics
+### Use the correct intrinsics
 
-When first implementing the decode kernel I used `_mm_loadu_epi8()` and not `_mm_loadu_si128()`. It turns out that `_mm_loadu_epi8()` is part of AVX512, not SSE ISA. But the program never failed, it passed all the tests. Rust library contains retrofit implementations which are used if the target CPU doesn't support some particular instruction. As you might guess, they are not nearly as fast.
+In the initial implementation of the decode kernel, I used `_mm_loadu_epi8()` instead of `_mm_loadu_si128()`. It turns out that `_mm_loadu_epi8()` is part of the AVX512 instruction set, not the SSE ISA. Surprisingly, the program didn't fail and passed all the tests. It turns out, the Rust library contains retrofit implementations that are used when the target CPU doesn't support certain instructions. As you might guess, these retrofit implementations are not nearly as fast.
 
-**Lesson 1**: check if the intrinsic you are using is supported on the target CPU.
+**Lesson 1**: Always check if the intrinsic you are using is supported on the target CPU.
 
-### Check if slice indexing is a problem
+### Investigate potential issues with slice indexing
 
-The next problem is slice indexing produces a lot of branch instructions. When indexing slices compiler is forced to check slice boundaries each time the slice is accessed. Suppose the following code:
+Another issue to consider is that slice indexing can generate a significant number of branch instructions. When indexing slices, the compiler is forced to check the slice boundaries each time the slice is accessed. Consider the following code snippet:
 
 ```rust
 pub fn foo(x: &[i32]) -> i32 {
@@ -199,13 +200,13 @@ example::foo:
   ud2
 ```
 
-Here we can see the first thing compiler is doing is checking slice bounds (`cmp rsi, 6`). If it's below 6, `core::panicking::panic_bounds_check()` is called. It is a safe thing to do for the compiler, no doubt about that. But all those conditional jumps are hurting performance a lot. So in tightly optimized loops, it's better to replace slice indexing with something more efficient.
+In the code snippet provided, we can observe that the first action performed by the compiler is to check the slice bounds (`cmp rsi, 6`). If the value is below 6, `core::panicking::panic_bounds_check()` is called. It is a safety measure implemented by the compiler, and there's no doubt about its necessity. However, these conditional jumps significantly impact performance. Therefore, in tightly optimized loops, it is preferable to replace slice indexing with a more efficient alternative.
 
-The question is what it should be replaced with? The first thing that comes to mind is `iter()`, but I can't come up with elegant coding using Rust iterators. Mainly because the data stream should be advanced with a different number of bytes in each iteration. Another option is `slice::get_unchecked()`, but I would strongly advocate against it.
+The question then arises: What should it be replaced with? The first option that comes to mind is using iterators (`iter()`). However, I haven't been able to come up with an elegant solution using Rust iterators, primarily because the data stream needs to be advanced by a different number of bytes in each iteration. Another possibility is to use `slice::get_unchecked()`, but I strongly discourage its usage.
 
-The better approach, in this case, is to use pointer arithmetics in a way that saves as much safety as possible. Most of the operations of the pointers are safe by themselves, but you can end up with SIGSEGV when dereferencing them.
+A better approach, in this case, is to employ pointer arithmetic while ensuring as much safety as possible. Most pointer operations are safe by themselves, but dereferencing them can lead to SIGSEGV errors.
 
-But as always, first, you should check if this is a problem in the first place. Consider the code I show you earlier:
+Nevertheless, as always, the first step is to determine if this is indeed a problem in the given scenario. Let's consider the previously shown code snippet:
 
 ```rust
 const MASKS: [(u32x4, u8); 256] = ...
@@ -218,17 +219,16 @@ fn simd_decode(input: *const u8, control_word: *const u8, output: *mut u32x4) ->
 }
 ```
 
-Here compiler can produce assembly without any additional checks because the compiler knows the following facts:
+In this case, the compiler can generate assembly code without any additional checks because it has certain knowledge:
 
- - `MASKS` is an array of size 256;
- - `*control_world` is strictly less than 256 (`u8`).
+- `MASKS` is an array of size 256.
+- `*control_word` is strictly less than 256 (`u8`).
 
-**Lesson 2**: slice access often implies a branching which can be harmful. When optimizing code in the tight loops look for a way to replace slice indexing with the most safe alternative possible. But only after you're sure slice indexing is a problem. The most obvious alternative is `iter()`.
-
+**Lesson 2**: Slice access often involves branching, which can negatively impact performance. When optimizing code within tight loops, it is important to minimize the use of slice indexing and replace them with `iter()` where possible.
 
 ### Check your loops
 
-Even after all those optimizations performance was around 2.5 billion integers per second. The thing that really speeds things up is loop unrolling. It's the same story as in [How fast can you count to 16 in Rust?]({{< ref "/posts/2023-04-counting-to-16-in-rust" >}}), you should try to minimize the number of branches per unit of work done. Nudge the compiler a little bit to perform loop unrolling.
+Despite all the optimizations mentioned earlier, the performance remained at around 2.5 billion integers per second. The technique that significantly improved performance was loop unrolling. This is similar to the concept discussed in the article "[How fast can you count to 16 in Rust?]({{< ref "/posts/2023-04-counting-to-16-in-rust" >}})". By minimizing the number of branches per unit of work, we can achieve better performance. But you need to nudge the compiler a little bit.
 
 ```rust
 const UNROLL_FACTOR: usize = 8;
@@ -244,7 +244,7 @@ while iterations_left >= UNROLL_FACTOR {
 }
 ```
 
-Now, I'm about to show you a very long assembly which this source translates into. Pay attention not to the individual instructions, but that it doesn't have any branching.
+Now, I'm going to show you the assembly code that this source translates into. Please pay attention to the absence of any branching instructions, rather than focusing on the individual instructions themselves.
 
 ```asm
 movzbl              (%rsi), %eax
@@ -285,9 +285,11 @@ addq                $-0x4, %r9
 cmpq                $0x4, %r9
 ```
 
-Isn't it a beauty? The whole inner loop is implemented as one long instruction highway, if you will, with no exit lanes or splits. Only arithmetics and vector operations of different kinds. Future instructions and memory accesses are easily predictable. The CPU can prefetch all needed data in time. It really helps to achieve high performance in this particular case.
+Isn't it a beauty? The whole inner loop is implemented as one long highway, if you will, with no exit lanes or splits. Only arithmetics and vector operations of different kinds. Next instructions and memory accesses are easily predictable. Therefore, the CPU can prefetch all required data in time.
 
 And the result is 5.5 billion integers per second, which is quite remarkable for a 4.1GHz CPU if you ask me.
+
+The outcome of this optimized implementation is the ability to process an 5.5 billion integers, which is impressive considering the clock speed of the CPU, which stands at 4.1GHz.
 
 ```
 $ cargo bench -q --bench decode
@@ -304,14 +306,14 @@ Found 8 outliers among 100 measurements (8.00%)
 
 ## Further optimizations
 
-Some additional improvements can be done on top of this code which I'm looking forward to trying
+There are some additional enhancements that can be applied to this code, which I am eager to try:
 
-- Aligning. This will allow us to get rid of some unaligned loads in the kernel. On an x86 platform, this is unlikely to give great benefit due to the intrinsically strong memory model. As far as I understand it makes more sense on ARM. But still, I wonder how much benefit it brings on x86.
-- right now the length of encoded quadruplets is memoized the same way the masks do. But it is possible to compute the length of the file using some bit of trickery. But it pays off only when you are decoding not a single control word, but 4 of them at a time (as a `u32`).
+- We can eliminate some unaligned loads within the kernel. Although on an x86 platform, this may not yield significant benefits due to its memory model, it might be advantageous on ARM. But ARM kernel should be written first.
+- Currently, the length of encoded quadruplets is memoized in the same manner as the masks. However, it is possible to compute the length of the encoded quadruplet in runtime. This optimization pays off when decoding not just a single control word, but four of them at once (as a `u32`).
 
 ## Conclusion
 
-Varint is a simple, powerful, and widespread compression algorithm. Without this type of compression fast search engines like Apache Lucene or Tantivy would be impossible. Memory bandwidth is quickly becoming a bottleneck when you work with uncompressed data. But in its naive implementation varint is not able to saturate modern CPUs because of data dependencies. Stream VByte is solving that issue separating length and data information, which allows to read both streams independently thus pipelining the decoding algorithm.
+Varint is a simple, powerful, and widely used compression algorithm. Without this type of compression, fast search engines like Apache Lucene or Tantivy would be impractical. When working with uncompressed data, memory bandwidth quickly becomes a bottleneck. However, in its basic implementation, varint is unable to fully utilize modern CPUs due to data dependencies. Stream VByte addresses this issue by separating length and data information, allowing independent reading of both streams and enabling the pipelining of the decoding algorithm.
 
 [protobuf]: https://protobuf.dev/programming-guides/encoding/#varints
 [sqlite]: https://www.sqlite.org/fileformat.html
