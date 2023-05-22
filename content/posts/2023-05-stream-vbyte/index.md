@@ -9,7 +9,7 @@ tags: [performance, rust, cpu]
 
 Varint is a widely recognized technique used for compressing integer streams. Essentially, it suggests that it can be more efficient to encode a number using a variable-length representation instead of a fixed-size binary representation. By removing leading zeros from the binary number, the overall representation size can be reduced. This technique works particularly well for encoding smaller numbers.
 
-In this article, I provide a brief introduction and rationale for varint encoding. Additionally, I describe the [Stream VByte][vbyte] format, which enables fully vectorized decoding through SSE instructions. I also share my findings from [implementing this algorithm in Rust][github], which includes both encoding and decoding primitives and the ability to read data from both RAM and disk.
+In this article, I provide a brief introduction and rationale for varint encoding. Additionally, I describe the [Stream VByte][vbyte] format, which enables fully vectorized decoding through SSSE3 instructions. I also share my findings from [implementing this algorithm in Rust][github], which includes both encoding and decoding primitives and the ability to read data from both RAM and disk.
 
 Algorithm was tested on several platforms:
 
@@ -72,7 +72,7 @@ If we consider it carefully, all we need to do is insert zeros in the appropriat
 
 And there is instruction for that.
 
-### PSHUFB SSE instruction
+### PSHUFB SSSE3 instruction
 
 The `PSHUFB` instruction offers more flexibility than just inserting zeros. It allows you to permute or zero out bytes within a 16-byte register in any desired arrangement.
 
@@ -93,7 +93,7 @@ An interesting aspect of this algorithm is that there is no need to compute the 
 
 ## Implementation details
 
-Ok, more to the [Rust implementation][github]. SSE decode kernel is very simple.
+Ok, more to the [Rust implementation][github]. Decode kernel is very simple.
 
 ```rust{linenos=inline}
 type u32x4 = [u32; 4];
@@ -170,7 +170,7 @@ The initial implementation of this code was only able to decode around 500 milli
 
 ### Use the correct intrinsics
 
-In the initial implementation of the decode kernel, I used `_mm_loadu_epi8()` instead of `_mm_loadu_si128()`. It turns out that `_mm_loadu_epi8()` is part of the AVX512 instruction set, not the SSE ISA. Surprisingly, the program didn't fail and passed all the tests. It turns out, the Rust library contains retrofit implementations that are used when the target CPU doesn't support certain instructions. As you might guess, these retrofit implementations are not nearly as fast.
+In the initial implementation of the decode kernel, I used `_mm_loadu_epi8()` instead of `_mm_loadu_si128()`. It turns out that `_mm_loadu_epi8()` is part of the AVX512 instruction set, not the SSSE3 ISA. Surprisingly, the program didn't fail and passed all the tests. It turns out, the Rust library contains retrofit implementations that are used when the target CPU doesn't support certain instructions. As you might guess, these retrofit implementations are not nearly as fast.
 
 **Lesson 1**: Always check if the intrinsic you are using is supported on the target CPU.
 
@@ -315,6 +315,8 @@ There are some additional enhancements that can be applied to this code, which I
 ## Conclusion
 
 Varint is a simple, powerful, and widely used compression algorithm. Without this type of compression, fast search engines like Apache Lucene or Tantivy would be impractical. When working with uncompressed data, memory bandwidth quickly becomes a bottleneck. However, in its basic implementation, varint is unable to fully utilize modern CPUs due to data dependencies. Stream VByte addresses this issue by separating length and data information, allowing independent reading of both streams and enabling the pipelining of the decoding algorithm.
+
+Discussion of the article is on [Disquss](https://www.reddit.com/r/rust/comments/13nnxv2/compressapalooza_unpacking_5_billion_varints_in/).
 
 [protobuf]: https://protobuf.dev/programming-guides/encoding/#varints
 [sqlite]: https://www.sqlite.org/fileformat.html
