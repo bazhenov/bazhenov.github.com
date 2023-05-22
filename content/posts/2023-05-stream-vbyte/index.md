@@ -322,5 +322,5 @@ Discussion of the article is on [Disquss](https://www.reddit.com/r/rust/comments
 [sqlite]: https://www.sqlite.org/fileformat.html
 [patent]: https://patents.google.com/patent/WO2012116086A1/en
 [vbyte]: https://arxiv.org/abs/1709.08990
-[github]: https://github.com/bazhenov/stream-vbyte
+[github]: https://github.com/bazhenov/svbyte
 [assembly-example]: https://godbolt.org/z/8a3roYcTP
