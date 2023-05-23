@@ -3,6 +3,7 @@ date: 2023-05-21
 title: "Compress-a-Palooza: Unpacking 5 Billion Varints in only 4 Billion CPU Cycles"
 url: posts/rust-stream-vbyte-varint-decoding
 tags: [performance, rust, cpu]
+reddit: https://www.reddit.com/r/rust/comments/13nnxv2/compressapalooza_unpacking_5_billion_varints_in/
 ---
 
 ## Introduction
@@ -315,8 +316,6 @@ There are some additional enhancements that can be applied to this code, which I
 ## Conclusion
 
 Varint is a simple, powerful, and widely used compression algorithm. Without this type of compression, fast search engines like Apache Lucene or Tantivy would be impractical. When working with uncompressed data, memory bandwidth quickly becomes a bottleneck. However, in its basic implementation, varint is unable to fully utilize modern CPUs due to data dependencies. Stream VByte addresses this issue by separating length and data information, allowing independent reading of both streams and enabling the pipelining of the decoding algorithm.
-
-Discussion of the article is on [Disquss](https://www.reddit.com/r/rust/comments/13nnxv2/compressapalooza_unpacking_5_billion_varints_in/).
 
 [protobuf]: https://protobuf.dev/programming-guides/encoding/#varints
 [sqlite]: https://www.sqlite.org/fileformat.html
