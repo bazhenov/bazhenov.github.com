@@ -1,5 +1,10 @@
 # Projects
 
+Here is the list of open source project I've developed through the years...
+
+## [svbyte](https://github.com/bazhenov/svbyte)
+Properly vectorized Rust implementation of Stream VByte compression algorithm.
+
 ## [Groovysh Server](https://github.com/bazhenov/groovy-shell-server)  
 Groovy shell embedded in an application and exposed via secure SSH channel. Helps to monitor and diagnose JVM applications using interactive REPL shell.
 
