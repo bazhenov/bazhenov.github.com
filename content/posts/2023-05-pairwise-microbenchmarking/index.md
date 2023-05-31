@@ -189,7 +189,25 @@ utf8/std_count          time:   [2.7335 µs 2.8060 µs 2.8786 µs]
 utf8/std_count_rev      time:   [3.0029 µs 3.0804 µs 3.1495 µs]
 ```
 
-These results confirm that backward iteration is indeed slower.
+These results confirm that backward iteration is indeed slower. However, let's examine pointwise benchmarks for `std_length_5000`/`std_length_4925`:
+
+```
+utf8/std_length_5000    time:   [3.9461 µs 4.0783 µs 4.2288 µs]
+utf8/std_length_4925    time:   [3.1340 µs 3.1875 µs 3.2455 µs]
+```
+
+Based on these results, it appears reasonable to conclude that `std_length_4925` performs faster. However, the magnitude of the difference is quite large. To gain further insight, let's change the order in which the benchmarks are run:
+
+```
+utf8/std_length_4925    time:   [3.4154 µs 3.4940 µs 3.5771 µs]
+                        change: [+5.3494% +8.4154% +11.806%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+utf8/std_length_5000    time:   [3.1802 µs 3.2415 µs 3.3061 µs]
+                        change: [-21.896% -18.510% -15.017%] (p = 0.00 < 0.05)
+                        Performance has improved.
+```
+
+Remarkably, the results have flipped. **The function being run last tends to have an advantage**. Pointwise testing, in such nuanced circumstances, is not sensitive enough to detect meaningful differences. However, I find the results for `std_count`/`std_count_rev` more reliable since `std_count_rev` is slower despite being favored by the benchmark.
 
 ## Conclusion
 
