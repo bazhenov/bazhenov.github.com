@@ -9,7 +9,7 @@ tags: [performance, statistics, rust]
 
 In this article, I discuss the [challenges](#challenges) associated with testing algorithm performance, focusing primarily on microbenchmarks rather than overall application performance, although some principles apply to both. I provide a [brief overview of efforts to address](#addressing) these challenges and highlight some limitations we're encountering.
 
-Subsequently, I introduce an alternative method of performance testing called [paired benchmarking](#paired), which effectively tackles some of these challenges. While paired benchmarking is a [well-known statistical technique](https://en.wikipedia.org/wiki/Paired_difference_test), as far as I am aware, it has not yet been implemented in any benchmarking tools.
+Subsequently, I introduce an alternative method of performance testing called [paired benchmarking](#paired), which effectively tackles some of these challenges. While paired testing is a [well-known statistical technique](https://en.wikipedia.org/wiki/Paired_difference_test), as far as I am aware, it has not yet been implemented in any benchmarking tools.
 
 Finally, I present the [experimental results](#results) and [share the Rust source code](https://github.com/bazhenov/rust-paired-benchmarks) for those interested in experimenting with this concept.
 
