@@ -1,9 +1,8 @@
 ---
-date: 2023-05-28
-title: Paired benchmarking. How to measure performance.
+date: 2023-05-31
+title: Paired benchmarking. How to measure performance
 url: posts/paired-benchmarking
 tags: [performance, statistics, rust]
-draft: true
 ---
 
 ## Introduction
