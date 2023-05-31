@@ -3,7 +3,7 @@ date: 2012-04-16
 url: /blog/2012/04/16/one-in-a-million.html
 title: Один на миллион
 layout: post
-tags: [theory, math]
+tags: [theory, math, statistics]
 alias: /2012/04/blog-post.html
 math: true
 ---
