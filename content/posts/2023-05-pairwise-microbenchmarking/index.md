@@ -1,114 +1,120 @@
 ---
 date: 2023-05-28
-title: Paired benchmarking. How to measure performance properly.
+title: Paired benchmarking. How to measure performance.
 url: posts/paired-benchmarking
-tags: [performance, rust, cpu, statistics]
+tags: [performance, statistics, rust]
 draft: true
 ---
 
 ## Introduction
 
-In this article, I'll start from what are the challenges when testing the performance of the algorithms. I will be talking about microbenchmarks mainly, not the application performance as a whole. Although some of the principles are applied there also. I'll give a brief overview of how we are trying to overcome those challenges and what some of the drawbacks are.
+In this article, I discuss the [challenges](#challenges) associated with testing algorithm performance, focusing primarily on microbenchmarks rather than overall application performance, although some principles apply to both. I provide a [brief overview of efforts to address](#addressing) these challenges and highlight some limitations we're encountering.
 
-Next, I'll describe an alternative way of performance testing – paired benchmarking and how it solves some of those challenges. Although it's a well-known technique in statistics, to the best of my knowledge this is not implemented in any benchmarking tools yet.
+Subsequently, I introduce an alternative method of performance testing called [paired benchmarking](#paired), which effectively tackles some of these challenges. While paired benchmarking is a [well-known statistical technique](https://en.wikipedia.org/wiki/Paired_difference_test), as far as I am aware, it has not yet been implemented in any benchmarking tools.
 
-Finally, I'll describe the experimental result as well as provide Rust source code for experimenting with this idea.
+Finally, I present the [experimental results](#results) and [share the Rust source code](https://github.com/bazhenov/rust-pairwise-testing) for those interested in experimenting with this concept.
 
-## Why benchmarking is hard?
+## Why is benchmarking challenging? {#challenges}
 
-To test the performance of an algorithm in a reproducible way we need a controlled environment. Unfortunately, computer systems are complex, stateful systems with intricate interactions between their components like hardware and operating system.
+Benchmarking the performance of an algorithm is a difficult task due to the need for a controlled environment. Computer systems are complex and stateful, with various interactions between their components, such as hardware and the operating system.
 
-It's almost impossible to fully control the state of the system so that each run of the benchmark will experience the same performance. Some of the factors preventing reproducible results:
+Achieving complete control over the system state to ensure consistent performance across benchmark runs is nearly impossible. Several factors contribute to the lack of reproducible results, including:
 
-- CPU frequency scaling facilities;
-- CPU thermal and power limiting;
-- Unpredictable memory hierarchy latencies due to preemptive task execution and migration between NUMA nodes;
-- OS interrupts;
-- scheduling latencies;
+- CPU frequency scaling mechanisms
+- CPU thermal and power limitations
+- Unpredictable latencies in the memory hierarchy caused by preemptive task execution and migration between NUMA nodes
+- Interruptions from the operating system
+- Latencies in scheduling processes
 
-## How we are trying to overcome those challenges?
+Here are some observations I have encountered during performance benchmarking on my laptop:
 
-There are several ways and each one of them is coming with its own drawbacks.
+1. Playing music in the background leads to a performance decrease of approximately 3-5%. It is worth noting that all benchmarks are single-threaded. Could this be attributed to scheduling latency?
+2. When running the benchmark after adding a dependency to `Cargo.toml`, the performance drops by around 10%. However, with each subsequent benchmark run, the performance gradually returns to normal. My suspicion is that the active recompilation process triggered by adding the dependency puts the CPU in a state where it experiences more aggressive thermal limitations.
 
-### Trying harder to control
+## How we are addressing these challenges? {#addressing}
 
-One of the ways is trying harder to control each and every aspect of the system where benchmarks are executed. Disabling Turbo Boost and its alternatives, throttling CPU statically so it won't be subject to dynamic power and thermal limiting, pinning benchmark to dedicated cores, checking no other tasks are executing in the system, and so on.
+There are several approaches we are employing to tackle these challenges, each with its drawbacks.
 
-It definitely can bring fruit, but it's not a robust solution. It's hard to make sure nothing has changed and all the factors that could possibly influence the performance are still under control. It's also not a robust solution in the long term. Hardware evolution history if teaches us anything, is that it become more and more complex and convoluted. Even if you can get away with this method today, it will be harder tomorrow.
+### Striving for tighter control
 
-### Run benchmark longer
+One approach involves exerting greater control over the system in which the benchmarks are executed. This includes measures such as disabling Turbo Boost and similar features, statically throttling the CPU to bypass dynamic power and thermal limitations, dedicating specific cores to the benchmark, and ensuring no other tasks are running concurrently.
 
-Another option is to run benchmarks longer. If the performance is varying with time, let's give the benchmark more time to settle down on a true performance of the algorithm. Surprisingly, sometimes this method makes things worse.
+While this approach can yield positive results, it is not foolproof. It is difficult to guarantee that all influencing factors remain constant, and it is not a sustainable solution in the long run. As hardware evolves, it becomes increasingly complex and intricate. Even if this method works today, it may become more challenging in the future.
 
-It is assumed that execution time follows some particular probability distribution with the most popular choices being normal and log-normal. Can you name the distribution of observations on the following graph?
+### Extending benchmark duration
+
+Another option is to run benchmarks for a longer duration. If performance fluctuates over time, providing the benchmark with more time may allow it to stabilize and reveal the true performance of the algorithm. Surprisingly, this approach can sometimes have adverse effects.
+
+It is commonly assumed that execution times follow specific probability distributions, with normal and log-normal distributions being the most popular choices. Can you identify the distribution of observations in the graph below?
 
 {{<image "graphs/multiple-modes.svg" >}}
 
-I see at least 7 different modes of execution here. Although each mode can be somewhat adequately modeled as a probability distribution, the system as a whole can't be. The basic assumption of almost all statistical methods – observation independence – is clearly violated.
+I observe the presence of at least 7 distinct execution modes in the graph. Although each mode can be reasonably modeled as a probability distribution, it is important to note that the system as a whole cannot be accurately described by any single distribution. This is due to the violation of a fundamental assumption in most statistical methods: the independence of observations.
 
-**Algorithm execution time does not follow any probability distribution**. Computers are stateful systems, which are frequently changing modes of operation. And the benchmark itself is one of the reasons why it happens. The longer your benchmark is running the more state transitions and outliers your algorithm will experience.
+It is crucial to understand that **algorithm execution time does not follow a specific probability distribution**. Computers are dynamic and stateful systems, constantly transitioning between different modes of operation. The benchmark itself contributes to these transitions and introduces outliers. The longer the benchmark runs, the more state transitions and outliers the algorithm will encounter.
 
 ### Ignoring outliers
 
-Speaking of outliers. Another popular option is to ignore outliers. It goes like this. If the performance is varying in a wide range it must be outliers found a way into the performance measurements. Outliers are thought of as some kind of measurement error that must be ignored because they're not conveying any useful information about the algorithm. In practice, we can't be sure about that. What if for whatever reason outliers are only registered when the new version of the algorithm is in place? Should we ignore them?
+Regarding the issue of outliers, it is a common approach to consider ignoring them. The rationale behind this is that if performance exhibits a wide range of variation, the outliers are likely measurement errors that do not provide meaningful insights into the algorithm. However, we should exercise caution in automatically dismissing outliers. What if, for some reason, outliers only occur when a new version of the algorithm is implemented? Should we disregard them?
 
-We must think of outliers not as measurement errors, but as an observation of the system in a rare state which may or may not be influenced by our algorithm. We need to provide some argument why we think they are not connected if we want to ignore them.
+Instead of regarding outliers as measurement errors, we should perceive them as observations of the system in rare states that may or may not be influenced by our algorithm. If we choose to ignore outliers, we need to provide compelling reasoning for why we believe they are unrelated.
 
-But usually, some simple form of filtrating extreme observations is employed, like removing 1% largest measurements.
+In practice, a simple approach often employed is to filter out extreme observations, such as removing the largest 1% of measurements[^rust-outliers].
 
-### Using a more robust metric
+### Utilizing a more robust metric
 
-Maybe we should take a chance with some metric other than mean execution time? Mean is not robust in the presence of the outliers, so let's use metric which is not influenced by them so much, like median or minimum value. Apart from what I've already said in the previous section about ignoring outliers, there is another problem with that.
+It may be worth considering the use of a different metric instead of the mean execution time. Since the mean is sensitive to outliers, we can explore metrics that are less influenced by them, such as the median[^rust-median] or the minimum value[^mean-misleads] [^accurate-benchmarks]. However, there are considerations to keep in mind when deciding which metric to report.
 
-Although median or min value can be used as a performance differential metric (more on that term in the following section), the numbers we are reporting to other people must be based on mean time. Mean time is very important in the system design and back-of-the-envelope calculations because it is directly connected to the algorithm's maximum possible throughput, which is what we optimize for in most cases. Not median nor minimum values can substitute the mean in that regard.
+While the median or minimum value can be employed as performance differential metrics (which will be further discussed in the following section), it is essential to note that the numbers we present to others should be based on the mean time. Mean time holds significant importance in system design and back-of-the-envelope calculations because it directly relates to the algorithm's maximum potential throughput, which is a key optimization goal in most cases. Neither the median nor the minimum value can substitute the mean in this context.
 
-## Two kinds of the performance metrics
+## Two types of performance metrics
 
-I believe, there should be two kinds of performance metrics: integral and differential. An integral metric is what we are reporting to others (the algorithm is able to decompress 30Gb/s). As I've already mentioned, this estimate is very important when discussing performance and designing with performance in mind. An integral metric should describe the performance of the algorithm as a whole. The most viable choice here is the mean.
+I propose the existence of two distinct types of performance metrics: integral and differential. An integral metric represents the performance that we report to others, indicating the overall capability of the algorithm (e.g., "the algorithm can decompress 8Gb/s"). As mentioned earlier, this estimate is crucial for discussions about performance and plays a significant role in design considerations. The most suitable choice for an integral metric is the mean.
 
-But in day-to-day work performance engineers and researchers need a metric to continuously check if changes are making the algorithm faster. I call this metric – differential. Usually, this metric is constructed by comparing candidate and baseline algorithms using an integral metric. The baseline algorithm is decompressing 30GB/s and the candidate is able to do 32Gb/s, thus the candidate is better.
+However, in the day-to-day work of performance engineers and researchers, there is a need for a metric that can continually assess whether changes are improving the algorithm's speed. I refer to this as the differential metric. Typically, the differential metric is constructed by comparing a candidate algorithm with a baseline using an integral metric. For instance, if the baseline algorithm achieves a decompression rate of 8GB/s and the candidate algorithm achieves 9Gb/s, we can conclude that the candidate is an improvement.
 
-One very important quality of the differential metric is sensitivity. Sometimes the new version of the algorithm is several percent faster, and still differential metric should indicate a change. The problem is mean just doesn't sensitive enough. As a result, we are aggressively removing non-convenient observations and flooring the pedal of a number of iterations in the hope that the mean will stabilize. It will not.
+One crucial characteristic of the differential metric is its sensitivity. Even if the new version of the algorithm is only a few percent faster, the differential metric should still indicate a change. The mean, unfortunately, lacks the necessary sensitivity. Consequently, we often resort to aggressively discarding inconvenient observations and repeatedly iterating in the hope that the mean will eventually stabilize. However, relying solely on comparing the pointwise means will not provide the desired outcome.
 
-Instead, we need to construct the stable differential metric from scratch.
+Instead, it is essential to construct a stable differential metric from scratch, designed to accurately capture and quantify performance changes between two algorithms.
 
-## Paired benchmarking
+## Paired benchmarking {#paired}
 
-The proposed solution is to execute baseline and candidate algorithms in randomized order and measure the difference in their execution time. This way both algorithms are subject to the same biases the system has at the moment. This way it's easier to highlight meaningful differences between algorithms. Consider the following benchmark run.
+The proposed solution is to conduct paired benchmarking by executing both the baseline and candidate algorithms in a randomized order and measuring the difference in their execution times. This approach ensures that both algorithms are subject to the same system biases at any given moment, making it easier to identify meaningful differences between them. Let's consider the following benchmark run as an example:
 
 {{< image "graphs/pair-test.svg" >}}
 
-If we look only at algorithm execution time independently (left graph red and green lines) it is hard to see if there is any difference it's too much "noise". But the variability of the difference between the candidate and test is much lower! Which means fewer iterations and faster feedback. Secondly, on the right plot, we see that execution time distribution has at least two peaks or two "modes". And it seems like in one mode the order in which functions are executed is not important (all points are on the symmetry line), while in the other it influences the function run time. But still, the points are placed symmetrically.
+If we solely look at the individual execution times of the algorithms (shown as the red and green lines in the left graph), it becomes challenging to discern any noticeable difference due to the high amount of "noise." However, the variability of the difference between the candidate and baseline (shown in the right graph and blue line in the left graph) is considerably lower. This indicates that fewer iterations are needed to obtain more precise feedback.
 
-The general algorithm for measuring is as follows:
+Additionally, we observe that the execution time distribution exhibits at least two peaks or "modes." Interestingly, in one mode, the order of function execution appears to have no significant influence on runtime (as indicated by points lying on the symmetry line). However, in the other mode, the execution order does affect runtime, although the points still exhibit a symmetrical distribution.
 
-1. the same input data for both algorithms is prepared;
-1. the baseline algorithm is called an execution time is measured;
-1. the candidate algorithm is called an execution time is measured;
-1. the difference in the run time of the baseline and candidate algorithm is recorded.
+The general algorithm for measuring performance using paired benchmarking is as follows:
 
-Those steps constitute the single run which is a distinct benchmark observation. Then several runs are performed each next one has a new payload and randomized order in which baseline and candidate functions are executed. Randomization is needed to compensate for different CPU states and cache effects.
+1. Prepare the same input data for both the baseline and candidate algorithms.
+2. Execute the baseline algorithm and measure its execution time.
+3. Execute the candidate algorithm and measure its execution time.
+4. Record the difference in runtime between the baseline and candidate algorithms.
 
-Advantages of such a way of testing:
+These steps constitute a single run, which serves as a distinct benchmark observation. Multiple runs are then performed, with each subsequent run employing a new payload and a randomized order in which the baseline and candidate functions are executed. Randomization is necessary to account for different CPU states and cache effects.
 
-- difference metric is less susceptible to the ephemeral biases of the system because common-mode biases are eliminated.
-- a difference in the means usually has a lower variance, because both algorithms are tested on the same input.
-- it is easier to identify outliers that are not caused by the changes in the algorithm and eliminate them, further improving test sensitivity.
+The advantages of using paired benchmarking include:
 
-The last point needs additional clarification.
+- The difference metric is less susceptible to ephemeral biases in the system, as common-mode biases are eliminated.
+- Differences in means typically have lower variance since both algorithms are tested on the same input.
+- It becomes easier to identify and eliminate outliers that are not caused by algorithm changes, thereby enhancing test sensitivity.
 
-As I said earlier we can only eliminate outliers if we can demonstrate they are not created by the algorithm itself. When testing the single algorithm we have no meaningful way of doing so. But when we test 2 algorithms agains each other we know that if the outliers are not caused by the candidate algorithm then both algorithms should experience the similar amount of outliers with similar severity. Now we can test this hypothesis and filter outliers only if observations doesn't contain data which rejects it.
+The last point requires further clarification.
 
-Suppose following benchmarking results of 2 algorithms.
+As mentioned earlier, outliers can only be eliminated if it can be demonstrated that they are not a result of the algorithm itself. When testing a single algorithm independently, it is challenging to determine this. However, when comparing two algorithms in a paired benchmark, we can establish that if outliers are not caused by the candidate algorithm, both algorithms should experience a similar number of outliers with comparable severity. We can now test this hypothesis and filter outliers only if the observations do not contain data that contradicts it.
+
+Suppose we have the benchmarking results for two algorithms as shown in the graph below:
 
 {{< image "graphs/outliers.svg" >}}
 
-On the diff. graph we can see some peaks. We can safely ignore 2 most prominent, because they are in opposite directions and have similar magnitude. Maybe we can ignore 5 of them. The likelihood those peaks are independently distributed can easily be computed using binomial distribution. In this this case it is 37.5%. This provides more conservative way of ignoring outliers.
+In the difference graph, we observe several peaks. To determine which peaks can be safely ignored, we can focus on the two most prominent ones. Since they are in opposite directions and have similar magnitudes, we can disregard them. Additionally, we may choose to ignore 3 other peaks. The likelihood of these peaks being independently distributed can be computed using a binomial distribution, resulting in a value of 37.5%. This approach provides a more conservative method for identifying and disregarding outliers.
 
+## Experimental Results {#results}
 
-## Empirical results
-
-I choose several variants of calculating the number of characters in UTF8 encoded string. Following functions were implemented using Rust standart library:
+I implemented several variants of functions to calculate the number of characters in a UTF8 encoded string using the Rust standard library. The following variants were selected:
 
 ```rust
 /// Idiomatic way of calculating length of the string in Rust
@@ -141,15 +147,15 @@ fn std_5000(s: &str) -> usize {
     s.chars().take(5000).count()
 }
 
-/// Counting only first 4925 characters (5000 - 0.5%)
+/// Counting only the first 4925 characters (5000 - 0.5%)
 fn std_4925(s: &str) -> usize {
     s.chars().take(4925).count()
 }
 ```
 
-First test program check some of the functions against themseves to control for any issues with benchmarking framework. Then functions compared to each other.
+Firstly, the program checks some of the functions against themselves to ensure the integrity of the benchmarking framework. This step helps control for any potential issues or biases that may arise within the benchmarking process.
 
-Here is the results from my machine:
+Here are the benchmarking results from my machine:
 
 ```
 name                          B min C min  min ∆     B mean C mean mean ∆ mean ∆ (%)
@@ -161,34 +167,44 @@ std_count / std_count_rev      1417  1417   0.0%     2484.6 2538.3   62.6       
 std / std_count                 260  1416 444.6%      450.7 2714.1 2199.5     488.0% CHANGE DETECTED
 ```
 
-For each comparison following data is reported:
+For each comparison, the following metrics are reported:
 
-- names of the tested function (eg. `std_5000 / std_4925`: `std_5000` is baseline, `std_4925` is candidate);
-- `B min`/`C min` – minimum execution time of baseline and candidate functions across all observaions;
-- `min ∆` - difference between candidate and baseline in percents (negative mean candidate is faster);
-- `B mean`/`C mean` - mean execution time of baseline and candidate functions;
-- `mean ∆` - paired difference mean in ns. and % (eg. mean of the difference of the individual observations);
-- `CHANGE DETECTED` indicator is printed where the difference between means are statistically significant based on z-test.
+- Names of the tested functions (e.g., `std_5000 / std_4925`: `std_5000` is the baseline, `std_4925` is the candidate).
+- `B min`/`C min`: Minimum execution time of the baseline and candidate functions across all observations.
+- `min ∆`: The difference between the candidate and baseline in percent (negative means the candidate is faster).
+- `B mean`/`C mean`: Mean execution time of the baseline and candidate functions.
+- `mean ∆`: Paired difference mean in ns and % (mean of the difference of the individual observations).
+- `CHANGE DETECTED` indicator is printed where the difference between means is statistically significant based on z-test.
 
-Several things should be noted
+A few observations can be made:
 
-1. minimum execution time is indeed quite robust metrics. When used with paired tests it converges so fast that 100 iterations is enough to provide stable results. Without paired testing it is close to 1000. This is mindblowing! It makes performance tests as fast as unit tests!
-1. with large number of iterations this method is able to detect changes with effect less than 1%;
-1. the results of paired benchmarks are very robust in the presense of the load in the system. I ran tests with dummy load in parallel (`m5sum /dev/random`) on each physical core and results are the same;
-1. sometime minimum time is not able to detect a change when it present. See: `std_count / std_count_rev`, reverse iteration is several percent slower according to the mean
+1. Minimum execution time is a robust metric. When used with paired tests, it converges much faster, providing stable results with just 100 iterations, compared to close to 1000 iterations without paired testing. This significantly speeds up performance tests, making them as fast as unit tests.
+2. With a relatively modest number of iterations (approximately 10^4 to 10^5), this method is capable of detecting changes with an effect size of less than 1%.
+3. The results of paired benchmarks are highly robust even in the presence of load in the system. Tests with a parallel dummy load (`m5sum /dev/random`) running on each physical core yield consistent results.
+4. Sometimes, the minimum time metric is unable to detect a change even when it is present. For example, in the case of `std_count / std_count_rev`, the reverse iteration is several percent slower according to the mean.
 
-Let's check last assumption. Maybe mean is lying to us, and there is no difference between forward and backward iteration? I wrote criterion benchmark which measures "classical" pointwise difference (eg. difference of means) – here is the results.
+To further investigate the assumption that there is a difference between forward and backward iteration, a criterion.rs benchmark was conducted to measure the "classical" pointwise difference (i.e., the difference of means). The results are as follows:
 
 ```
 utf8/std_count          time:   [2.7335 µs 2.8060 µs 2.8786 µs]
 utf8/std_count_rev      time:   [3.0029 µs 3.0804 µs 3.1495 µs]
 ```
 
-Nope, backward iteration is indeed slower.
+These results confirm that backward iteration is indeed slower.
 
 ## Conclusion
 
-Computers are complex system which we can not control fully. Sometimes it's very hard to get reproducible results when measuring algorithm performance. Paired testing is a known technique used in classical statistic. It allows to reduce the effects of confounders on observations thus reducing variance. This works also when measuring algorithm performance. Reduced variance can be spent on two improvements:
+Computers are intricate systems that we cannot fully control, making it challenging to achieve reproducible results when measuring algorithm performance. However, the technique of paired testing, commonly used in classical statistics, offers a solution to mitigate the influence of confounding factors on observations, thereby reducing variance. This approach is also applicable when assessing algorithm performance. By reducing variance, we can reap two key benefits:
 
-- reduce number of iterations to produce stable results. This allows to iterate quicker or, alternativley, test the algorithm more extensivly in the same amount of time.
-- improve test sensitivity to detect more nuanced changes.
+1. **Reduced iteration count**: With lower variance, we can achieve stable results with fewer iterations. This allows for quicker iteration cycles or more extensive testing of the algorithm within the same timeframe.
+2. **Improved sensitivity**: The reduced variance enhances the test's sensitivity, enabling the detection of more subtle changes in performance. This empowers us to identify and assess even nuanced improvements or deviations in the algorithm's behavior.
+
+Incorporating paired testing into performance measurement practices offers the potential to streamline iterative processes and enhance the ability to detect and analyze performance changes effectively.
+
+[mean-misleads]: 
+[BID23]: 
+
+[^rust-outliers]: Rust bench harness [ignores 10% of most extreme observations](https://github.com/rust-lang/rust/blob/e6e4f7ed1589e03bc2f6c5931c1a72e7947e8682/library/test/src/bench.rs#L150-L158)
+[^rust-median]: Rust bench harness uses [median as the main metric](https://github.com/rust-lang/rust/blob/e6e4f7ed1589e03bc2f6c5931c1a72e7947e8682/library/test/src/bench.rs#L71-L79)
+[^accurate-benchmarks]: [Accurate and efficient software microbenchmarks](https://www.youtube.com/watch?v=BFISG3LY9UQ) by Daniel Lemire
+[^mean-misleads]: [The mean misleads: why the minimum is the true measure of a function’s run time](https://betterprogramming.pub/the-mean-misleads-why-the-minimum-is-the-true-measure-of-a-functions-run-time-47fa079075b0) by David Gilbertson
