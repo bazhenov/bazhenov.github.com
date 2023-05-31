@@ -11,7 +11,7 @@ In this article, I discuss the [challenges](#challenges) associated with testing
 
 Subsequently, I introduce an alternative method of performance testing called [paired benchmarking](#paired), which effectively tackles some of these challenges. While paired benchmarking is a [well-known statistical technique](https://en.wikipedia.org/wiki/Paired_difference_test), as far as I am aware, it has not yet been implemented in any benchmarking tools.
 
-Finally, I present the [experimental results](#results) and [share the Rust source code](https://github.com/bazhenov/rust-pairwise-testing) for those interested in experimenting with this concept.
+Finally, I present the [experimental results](#results) and [share the Rust source code](https://github.com/bazhenov/rust-paired-benchmarks) for those interested in experimenting with this concept.
 
 ## Why is benchmarking challenging? {#challenges}
 
