@@ -179,7 +179,7 @@ A few observations can be made:
 
 1. Minimum execution time is a robust metric. When used with paired tests, it converges much faster, providing stable results with just 100 iterations, compared to close to 1000 iterations without paired testing. This significantly speeds up performance tests, making them as fast as unit tests.
 2. With a relatively modest number of iterations (approximately 10^4 to 10^5), this method is capable of detecting changes with an effect size of less than 1%.
-3. The results of paired benchmarks are highly robust even in the presence of load in the system. Tests with a parallel dummy load (`m5sum /dev/random`) running on each physical core yield consistent results.
+3. The results of paired benchmarks are highly robust even in the presence of load in the system. Tests with a parallel dummy load (`md5sum /dev/random`) running on each physical core yield consistent results.
 4. Sometimes, the minimum time metric is unable to detect a change even when it is present. For example, in the case of `std_count / std_count_rev`, the reverse iteration is several percent slower according to the mean.
 
 To further investigate the assumption that there is a difference between forward and backward iteration, a criterion.rs benchmark was conducted to measure the "classical" pointwise difference (i.e., the difference of means). The results are as follows:
