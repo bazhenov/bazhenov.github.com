@@ -73,7 +73,7 @@ $ nm target/release/same-code-different-performance | grep factorial | rustfilt
 0000000000009dd0 t same_code_different_performance::factorial_10
 ```
 
-Note that all odd functions have even addresses ((`9b00: factorial_1`, `9ba0: factorial_3`, ...).
+Note that all odd functions have even addresses (`9b00: factorial_1`, `9ba0: factorial_3`, ...).
 
 Then I wrote a simple function that measures the performance of those 10 duplicates and produces an output with the difference between the slowest and fastest function.
 
