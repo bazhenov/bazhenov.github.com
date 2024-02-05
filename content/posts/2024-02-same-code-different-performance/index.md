@@ -57,7 +57,7 @@ fn factorial(mut n: u64) -> u64 {
 }
 ```
 
-Now we need a way to produce 10 identical factorial functions. There are some shenanigans required to get the job done which are described in the sources, but in the end, we got an executable with 10 duplicates of the same function:
+Now we need a way to produce 10 identical factorial functions. There are some [shenanigans][shenanigans] required to get the job done, but in the end, we got an executable with 10 duplicates of the same function:
 
 ```console
 $ nm target/release/same-code-different-performance | grep factorial | rustfilt
@@ -73,7 +73,7 @@ $ nm target/release/same-code-different-performance | grep factorial | rustfilt
 0000000000009dd0 t same_code_different_performance::factorial_10
 ```
 
-Note that all odd functions have even addresses (`9b00: factorial_1`, `9ba0: factorial_3`, ...).
+Note that all odd `factorial_*()` functions have even addresses. It will become important later.
 
 Then I wrote a simple function that measures the performance of those 10 duplicates and produces an output with the difference between the slowest and fastest function.
 
@@ -81,7 +81,7 @@ In theory, there should be no difference in the performance of those functions. 
 
 ## Empirical data
 
-As a performance measure, I took the performance discrepancy between the slowest and fastest functions out of 10 duplicates (max - min). Here are the results from AWS `c1.medium` instance (`Xeon E5 2651`).
+As a performance measure, I took the performance discrepancy between the slowest and fastest functions out of 10 duplicates (max-min). Here are the results from AWS `c1.medium` instance (`Xeon E5 2651`).
 
 ```console
 $ ./run
@@ -139,7 +139,9 @@ NOP_COUNT=50 max-min difference = 46
 
 ![](./fig1.svg)
 
-Here we can see that for nop counts 14-28 and 44-50 there are about 50ns per invocation difference between the slowest and fastest function. Let's see what is the difference between individual functions (NOP_COUNT=14)
+Here we can see that usually discrepancy is under 5ns, but for nop counts 14-28 and 44-50 there are 30-50ns per invocation difference between the slowest and fastest function.
+
+Let's see what is the difference between individual functions for some particular value of NOP_COUNT=14.
 
 ```console
 $ NOP_COUNT=14 cargo run --release 2>&1 | sort
@@ -157,11 +159,7 @@ factorial_10 = 302
 
 ![](./fig2.svg)
 
-Basically all even functions are fast and all odd are slow. Those results are very stable and reproducible also with the criterion:
-
-> [!info]
-> 
-> Although results are reproducible with criterion, it might require different values of `NOP_COUNT`. This is because changing dependencies as well as code will change binary layout hence changing the number of nops required to reproduce the issue.
+Do yoy recognize the pattern? Basically all even functions are fast and all odd are slow. Those results are very stable and reproducible also with the criterion[^criterion]:
 
 ```console
 $ NOP_COUNT=14 cargo run --release --features=criterion -- --bench
@@ -179,47 +177,59 @@ factorials/10 time:   [295.17 ns 295.22 ns 295.26 ns]
 
 ## Why it happens?
 
-Short answer: machine code produced by the compiler has suboptimal aligning in terms of micro-op caching (more specifically – DSB utilization).
+Short answer: machine code produced by the compiler has suboptimal aligning in terms of micro-op caching (DSB thrashing).
 
 I have no intent or expertise to do a deep dive into Intel microarchitectures here, so I'll try to explain the issue in simple terms as I understand it. If you are interested in more information about the decoding pipeline of Intel CPUs I highly recommend reading [1, 5, 6, 7, 8]
 
-Almost all modern computing is based around von Neumann architecture where code is basically data in a RAM. So it is not so surprising that alignment issues also manifest themselves for code access. But the most important reason is that one of the factors modern CPUs are optimized for, as a means of improving overall performance, is instruction level parallelism (ILP). It puts a lot of pressure on the CPU frontend to be able to predict, prefetch, and decode instructions long before they need to be executed.
+~~Modern computing is based around von Neumann architecture where code is data in a RAM. So it is not so surprising that alignment issues also manifest themselves for code access. But the most important reason is that one of the factors modern CPUs are optimized for, as a means of improving overall performance, is instruction level parallelism (ILP). It puts a lot of pressure on the CPU frontend to be able to predict, prefetch, and decode instructions long before they need to be executed.~~
 
-Modern Intel CPUs have 3 components that are responsible for feeding a CPU backend with decoded instructions (uops):
+Modern CPUs doesn't execute instructions directly, but decode them to μops first (micro-ops). Intel mainstream CPUs in particular have 3 components that are responsible for decodding and handling μops: MITE[^mite], LSD[^lsd] and DSB[^dsb].
 
-- MITE – _Macro Instruction Translation Engine_
-- LSD – _Loop Stream Detector_ or _Loopback Buffer_
-- DSB – _Decoded ICache_ or _Decoded Stream Buffer_
+While MITE is a de-facto instruction decoder, LSD and DSB can collectively be called a μop-cache. It holds the results of decoding individual instructions into micro-operations that are executed by the CPU. When μop is delivered by LSD/DSB, the decoder engine (MITE) doesn't need to fetch and decode instructions again. This is very effective for hot loops and frequently called functions.
 
-While MITE is a de-facto instruction decoder, LSD and DSB can collectively be called a micro-op cache. Micro-op cache holds results of decoding individual instructions into micro-operations that are executed by the CPU backend. If the micro-op is fed by LSD/DSB, the decoder engine (MITE) doesn't need to fetch and decode instructions again. This is very effective in removing decoding bottlenecks for hot loops and frequently called functions.
+Both LSD and DSB have their limitations in terms of the number of μops being stored, the type of those μops, and also alignment of the instructions[^dsb-algo]. For example on Sandy Bridge DSB is organized as 32 sets of 8 ways, each way can store up to 6 μops summing up to 1536 μops total [5]. But, and here is important part, only 3 ways are allowed per each 32 bytes aligned window of instructions. Now lets see at the machine code of `factorial_1` and `factorial_2` functions
 
-Both LSD and DSB have their limitations in terms of the number of uops being stored, the type of those uops, and also alignment of the instructions. There are materials describing quite precise rules on how DSB caching works in the Sandy Bridge–Sky Lake microarchitecture span [5, 7, 8], but I'm unaware of any information regarding Ice Lake and later microarchitectures. The best we can get from [6] is that jump targets should be softly aligned with a cache line, but it's just a rule of thumb.
+![](./layout.png)
 
-> When executing code from the Decoded ICache, direct branches that are mostly taken should have all their instruction bytes in a 64B cache line and nearer the end of that cache line. Their targets should be at or near the beginning of a 64B cache line.
-> 
-> When executing code from the legacy decode pipeline, direct branches that are mostly taken should have all their instruction bytes in a 16B aligned chunk of memory and nearer the end of that 16B aligned chunk. Their targets should be at or near the beginning of a 16B aligned chunk of memory.
-> 
-> _Intel® 64 and IA-32 Architectures Optimization Reference Manual. Section 3.4.1.4_ 
+Here green instructions are part of a hot loop and red lines denotes 32 bytes boundaries. We can clearly see that in case of `factorial_1` all hot loop is fit inside single 32 byte window therefore on Sandy Bridge it only can use 3 ways in DSB which limits it to 18 cached uops. `factorial_2` hot loop on the other hand is crossing 32 byte window and is not subject to this limitation. By default compiler trying to align every function to a 16 bytes so both functions takes 5 32 byte windows. Consequently situation repeats for `factorial_3` and `factorial_4`.
 
 ## How to check if aligning is the issue?
 
 You can force the Rust compiler to align functions and code blocks on a given address boundary and check if the performance swing will go away.
 
-Run benchmarks with the following `RUSTFLAGS`:
+Compile benchmarks with the LLVM flags `-align-all-functions=6` and `-align-all-nofallthru-blocks=6`. It will force compiler to align all functions and code blocks to 64-byte boundary (2<sup>6</sup>) [4].
 
 ```console
 $ RUSTFLAGS="-C llvm-args=-align-all-functions=6 -C llvm-args=-align-all-nofallthru-blocks=6" cargo bench
 ```
 
-It will force LLVM to align all functions and code blocks to 64-byte boundary (2^6) [4]. If a difference in performance exists between different variants it is not the function alignment.
+If an alignment is the issue the difference in performance should dissappear.
 
 Alternatively, if you have a platform with access to the hardware performance counters you can check value of `DSB_MISS_PS` and `DSB2MITE_SWITCHES.PENALTY_CYCLES` counters for both variants [1].
+
+## Should I always align to get better performance?
+
+As a general rule – no. There is no guarantee of aligned code to be faster. It might in some cases, but most likely the other way around – code aligned on a larger boundaries will itself be larger therefore slower. Factorial-case is a demonstration of that[^factorial-reason] – aligned code is slower.
+
+Having said that – there are some recommendation in [6]:
+
+> When executing code from the Decoded ICache, direct branches that are mostly taken should have all their instruction bytes in a 64B cache line and nearer the end of that cache line. Their targets should be at or near the beginning of a 64B cache line.
+> 
+> When executing code from the legacy decode pipeline, direct branches that are mostly taken should have all their instruction bytes in a 16B aligned chunk of memory and nearer the end of that 16B aligned chunk. Their targets should be at or near the beginning of a 16B aligned chunk of memory.
+
+Not much if you ask me.
+
+## Should I always align to get stable results in CI?
+
+I have no experience using those flags in CI, so take my words with a grain of salt.
+
+Strictly speaking aligning should provide more stable performance, but only when the underlying code is the same. But if two benchmarked functions are different, compiler may generate different layout for each one of them and changing alignment requirements will be additional degree of freedom
 
 ## What to do with this kind of issue?
 
 Unfortunately, I don't have a simple answer for that. Even the languages considered system-level are providing rudimentary means of control of this behavior, if any. And if they would it wouldn't change a thing. The optimization target, in this case, is not a platform (eg. x86), but the microarchitecture (eg. Alder Lake), which is too much of a hassle for most of the software I believe.
 
-## Does it relevant to x86 only?
+## Is the problem limited to x86?
 
 I don't have a definitive answer for that yet. I have found some cases on the M3 Max chip that can be plausibly explained by inefficient micro-op caching. But I can not claim this is the real reason. I don't know of any alternatives to micro-op performance counters on the macOS/aarch64 platform that are required to confirm this hypothesis.
 
@@ -239,3 +249,12 @@ Code aligning can influence the performance of the software on the order of magn
 8. https://en.wikichip.org/wiki/intel/microarchitectures/sandy_bridge_(client)#Decoding
 
 [github]: https://github.com/bazhenov/same-code-different-performance
+[shenanigans]: https://github.com/bazhenov/same-code-different-performance/blob/6dba5f2bfad3c90f8cdc22d5c6855f1276b98011/src/main.rs#L14-L15
+
+[^dsb-algo]: There are materials describing quite precise rules on how DSB caching works in the Sandy Bridge–Sky Lake microarchitecture span [5, 7, 8], but I'm unaware of any information regarding Ice Lake and later microarchitectures.
+[^mite]: Macro Instruction Translation Engine
+
+[^lsd]: Loop Stream Detector or Loopback Buffer
+[^dsb]: Decoded ICache or Decoded Stream Buffer
+[^criterion]: Although results are reproducible with criterion, it might require different value of `NOP_COUNT`. This is because changing dependencies as well as code will change binary layout hence changing the number of nops required to reproduce the issue.
+[^factorial-reason]: although I should note that in this case aligned code is slower because I'm intentionally using single byte nops to generate a lot of μops in a loop. If you use multibyte nops the effect will goes away.
