@@ -41,7 +41,7 @@ Then we need a macro that will produce a given amount of `nop` instructions at t
 std::arch::asm! { "nop", "nop", "nop" }
 ```
 
-We will use this macro inside a loop in the `factorial()` function to be able to control the loop length precisely.
+We will use this macro inside a loop in the `factorial()` function. This way we can (1) control the loop length precisely and (2) alignment of the subsequent functions up to 16-byte boundary (default alignment for a functions on x86).
 
 ```rust
 fn factorial(mut n: u64) -> u64 {
@@ -159,7 +159,7 @@ factorial_10 = 302
 
 ![](./fig2.svg)
 
-Do yoy recognize the pattern? Basically all even functions are fast and all odd are slow. Those results are very stable and reproducible also with the criterion[^criterion]:
+Do you recognize the pattern? Basically all even functions are fast and all odd are slow. Those results are very stable and reproducible also with the criterion[^criterion]:
 
 ```console
 $ NOP_COUNT=14 cargo run --release --features=criterion -- --bench
@@ -223,11 +223,11 @@ Not much if you ask me.
 
 I have no experience using those flags in CI, so take my words with a grain of salt.
 
-Strictly speaking aligning should provide more stable performance, but only when the underlying code is the same. But if two benchmarked functions are different, compiler may generate different layout for each one of them and changing alignment requirements will be additional degree of freedom
+Strictly speaking aligning should provide more stable performance, but only when the underlying code is the same. If two benchmarked functions are different, compiler may generate different layout for each one of them and changing alignment requirements will create additional degree of freedom. Therefore, I would not use aligning flags by default, but only to double check when aligning is suspected to be the cause of performance swings.
 
 ## What to do with this kind of issue?
 
-Unfortunately, I don't have a simple answer for that. Even the languages considered system-level are providing rudimentary means of control of this behavior, if any. And if they would it wouldn't change a thing. The optimization target, in this case, is not a platform (eg. x86), but the microarchitecture (eg. Alder Lake), which is too much of a hassle for most of the software I believe.
+Unfortunately, I don't have a simple answer for that. Even the languages considered system-level are providing rudimentary means of control of this behavior, if any. And if they would it wouldn't change much. The optimization target, in this case, is not a platform (eg. x86), but the microarchitecture (eg. Alder Lake), which is too much of a hassle for most of the software I believe.
 
 ## Is the problem limited to x86?
 
