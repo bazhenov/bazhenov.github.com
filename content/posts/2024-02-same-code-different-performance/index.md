@@ -141,7 +141,7 @@ NOP_COUNT=50 max-min difference = 46
 
 These results indicate that typically, the discrepancy is under 5ns. However, for NOP counts 14-28 and 44-50, there exists a 30-50ns difference per invocation between the slowest and fastest function.
 
-Now, let's delve into the difference between individual functions for a specific value of NOP_COUNT=14.
+Now, let's delve into the difference between individual functions for a specific value of `NOP_COUNT=14`.
 
 ```console
 $ NOP_COUNT=14 cargo run --release 2>&1 | sort
@@ -179,13 +179,13 @@ factorials/10 time:   [295.17 ns 295.22 ns 295.26 ns]
 
 In short, the compiler's machine code often lacks optimal alignment for micro-op caching, resulting in a phenomenon known as DSB thrashing.
 
-I won't delve deeply into Intel microarchitectures here. Instead, I'll explain the issue as simply as possible. If you're interested in learning more about Intel CPU decoding pipelines, I recommend further reading [1, 5, 6, 7, 8].
+I won't delve deeply into Intel microarchitectures here. Instead, I'll explain the issue as simply as possible. If you're interested in learning more about Intel CPU decoding pipelines, I recommend further reading[^code-align] [^ansari] [^agner] [^sandy-bridge].
 
 CPU can be separated into two parts: frontend and backend. The backend is where the real work happens. The primary responsibility of the frontend is to decode the instruction stream and maintain a steady flow of micro-operations (μops) to ensure the backend remains fully utilized. Without a capable frontend, even the most powerful out-of-order execution CPUs would yield subpar performance. Intel mainstream CPUs rely on three components for this: MITE[^mite], LSD[^lsd], and DSB[^dsb].
 
 MITE serves as the instruction decoder, while LSD and DSB together act as a μop-cache. They store the results of decoding individual instructions into micro-operations for CPU execution. When a μop is delivered by LSD/DSB, the decoder engine (MITE) doesn't need to fetch and decode instructions again. This mechanism is particularly effective for frequently used code segments like hot loops and frequently called functions.
 
-However, both LSD and DSB have limitations regarding the number and type of μops they can store, as well as the alignment of instructions. For instance, on Sandy Bridge architecture, DSB is structured into 32 sets of 8 ways, with each way capable of storing up to 6 μops, totaling 1536 μops in all. However, there's a crucial restriction: only 3 ways are permitted per every 32-byte aligned window of instructions [5]. Let's examine the machine code of the `factorial_1` and `factorial_2` functions for clarification.
+Both LSD and DSB have limitations regarding the number and type of μops they can store, as well as the alignment of instructions[^dsb-algo]. However, for Sandy Bridge CPUs, there's one crucial restriction: only 18 μop can be cached for every 32-byte aligned window of instructions[^ansari]. Let's examine the machine code of the `factorial_1` and `factorial_2` functions to understand how it influencing the code.
 
 ![](./layout.png)
 
@@ -195,7 +195,7 @@ In the diagram, green instructions represent a hot loop, and red lines indicate 
 
 To determine if alignment is causing performance discrepancies, you can instruct the Rust compiler to align functions and code blocks to a specific address boundary.
 
-Compile your benchmarks with LLVM flags `-align-all-functions=6` and `-align-all-nofallthru-blocks=6`. These flags ensure that all functions and code blocks are aligned to a 64-byte boundary (2^6) [4].
+Compile your benchmarks with LLVM flags `-align-all-functions=6` and `-align-all-nofallthru-blocks=6`. These flags ensure that all functions and code blocks are aligned to a 64-byte boundary (2^6) [^llvm-options].
 
 ```console
 $ RUSTFLAGS="-C llvm-args=-align-all-functions=6 -C llvm-args=-align-all-nofallthru-blocks=6" cargo bench
@@ -203,13 +203,13 @@ $ RUSTFLAGS="-C llvm-args=-align-all-functions=6 -C llvm-args=-align-all-nofallt
 
 If alignment is indeed the cause, any performance differences should disappear.
 
-Alternatively, if you have access to hardware performance counters on your platform, you can analyze the values of the `DSB_MISS_PS` and `DSB2MITE_SWITCHES.PENALTY_CYCLES` counters for both variations [1].
+Alternatively, if you have access to hardware performance counters on your platform, you can analyze the values of the `DSB_MISS_PS` and `DSB2MITE_SWITCHES.PENALTY_CYCLES` counters for both variations[^code-align].
 
 ## Should I always align for better performance?
 
 As a general rule, no. There's no guarantee that aligned code will result in better performance. In fact, in many cases, aligning code on larger boundaries can make it larger and slower. A prime example of this is the factorial function from described earlier[^factorial-reason].
 
-That being said, there are some recommendations outlined in [6]:
+That being said, there are some recommendations in [Intel optimization manual][intel-opt-manual][^intel-opt-icache]:
 
 > When executing code from the Decoded ICache, direct branches that are mostly taken should have all their instruction bytes in a 64B cache line and nearer the end of that cache line. Their targets should be at or near the beginning of a 64B cache line.
 > 
@@ -237,23 +237,19 @@ I don't have a definitive answer for that yet. I have encountered some cases on 
 
 Code alignment can significantly impact software performance, potentially by up to 20%. However, as software developers, we don't have complete control over it. Even if we did, the wide diversity of microarchitectures makes these kinds of optimizations impractical. Nonetheless, being aware of this factor allows us to avoid chasing performance ghosts.
 
-## Links
-
-1. https://easyperf.net/blog/2018/01/18/Code_alignment_issues
-2. https://users.cs.northwestern.edu/~robby/courses/322-2013-spring/mytkowicz-wrong-data.pdf
-3. https://xuanwo.io/2023/04-rust-std-fs-slower-than-python/
-4. https://easyperf.net/blog/2018/01/25/Code_alignment_options_in_llvm
-5. https://www.youtube.com/watch?v=IX16gcX4vDQ
-6. Intel® 64 and IA-32 Architectures Optimization Reference Manual. Section 3.4.2.5: Optimization for Decoded ICache
-7. The microarchitecture of Intel, AMD, and VIA CPUs. Sections 11.2-11.4
-8. https://en.wikichip.org/wiki/intel/microarchitectures/sandy_bridge_(client)#Decoding
-
 [github]: https://github.com/bazhenov/same-code-different-performance
 [shenanigans]: https://github.com/bazhenov/same-code-different-performance/blob/6dba5f2bfad3c90f8cdc22d5c6855f1276b98011/src/main.rs#L14-L15
+[intel-opt-manual]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
-[^dsb-algo]: There are materials describing quite precise rules on how DSB caching works in the Sandy Bridge–Sky Lake microarchitecture span [5, 7, 8], but I'm unaware of any information regarding Ice Lake and later microarchitectures.
+[^intel-opt-icache]: see. Section 3.4.2.5: Optimization for Decoded ICache
+[^agner]: [The microarchitecture of Intel, AMD, and VIA CPUs](https://www.agner.org/optimize/microarchitecture.pdf). Sections 11.2-11.4
+[^sandy-bridge]: https://en.wikichip.org/wiki/intel/microarchitectures/sandy_bridge_(client)#Decoding
+[^code-align]: [Code alignment issues](https://easyperf.net/blog/2018/01/18/Code_alignment_issues)
+[^llvm-options]: https://easyperf.net/blog/2018/01/25/Code_alignment_options_in_llvm
+[^wrong-data]: https://users.cs.northwestern.edu/~robby/courses/322-2013-spring/mytkowicz-wrong-data.pdf
+[^ansari]: [Causes of Performance Instability due to Code Placement in x86](https://www.youtube.com/watch?v=IX16gcX4vDQ)
+[^dsb-algo]: There are materials describing quite precise rules on how DSB caching works in the Sandy Bridge–Sky Lake microarchitecture span. DSB is structured into 32 sets of 8 ways, with each way capable of storing up to 6 μops, totaling 1536 μops in all. But I'm unaware of any information regarding Ice Lake and later microarchitectures.
 [^mite]: Macro Instruction Translation Engine
-
 [^lsd]: Loop Stream Detector or Loopback Buffer
 [^dsb]: Decoded ICache or Decoded Stream Buffer
 [^criterion]: Although results are reproducible with criterion, it might require different value of `NOP_COUNT`. This is because changing dependencies as well as code will change binary layout hence changing the number of nops required to reproduce the issue.
