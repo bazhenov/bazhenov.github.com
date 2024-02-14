@@ -1,6 +1,5 @@
 ---
-date: 2024-02-02
-draft: true
+date: 2024-02-14
 title: "Performance Roulette: The Luck of Code Alignment"
 ---
 
@@ -274,9 +273,11 @@ There is also evidence that ARM Cortex A53/A57 microarchitectures are susceptibl
 
 ## Conclusion
 
-Code alignment can significantly impact software performance, potentially by up to 20%. However, as software developers, we don't have complete control over it. Even if we did, the wide diversity of microarchitectures makes these kinds of optimizations impractical.
+Code alignment can significantly impact software performance, potentially by up to 20% on Intel chips. However, as software developers, we don't have complete control over it. Even if we did, the wide diversity of microarchitectures makes these kinds of optimizations impractical.
 
-Nonetheless, being aware of this factor at least allows us to avoid unnecessary over-optimizations and chasing performance ghosts.
+Nonetheless, being aware of this factor at least allows us to avoid unnecessary over-optimizations and chasing performance ghosts. LLVM-based Rust compiler has some important options which allows us to check if performance swing is caused by aligning issues.
+
+I would love to thank [Jon Gjengset](https://www.youtube.com/@jonhoo) and [Xuanwo](https://xuanwo.io) for feedback on this article.
 
 [github]: https://github.com/bazhenov/same-code-different-performance
 [shenanigans]: https://github.com/bazhenov/same-code-different-performance/blob/6dba5f2bfad3c90f8cdc22d5c6855f1276b98011/src/main.rs#L14-L15
