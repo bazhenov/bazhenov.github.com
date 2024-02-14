@@ -1,6 +1,7 @@
 ---
 date: 2024-02-14
 title: "Performance Roulette: The Luck of Code Alignment"
+reddit: https://www.reddit.com/r/rust/comments/1aqq74j/performance_roulette_the_luck_of_code_alignment/
 ---
 
 ## Introduction
