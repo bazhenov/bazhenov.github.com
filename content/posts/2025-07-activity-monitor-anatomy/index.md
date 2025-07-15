@@ -82,7 +82,7 @@ The key functions are:
 - `sysmon_table_get_count()` - Tells you how many processes were found
 - `sysmon_row_get_value()` - Extracts specific values from the results
 
-You build a request by specifying which attributes you want for each process, execute it, and get back a table of results. By analyzing Activity Monitor, I discovered that our mysterious Memory and Real Memory metrics correspond to attribute codes `0x16` and `0x42`, respectively. The [full list of sysmond attributes](https://github.com/bazhenov/task_info_memexp/blob/master/sysmon.md) and corresponding library calls is available on GitHub.
+You build a request by specifying which attributes you want for each process, execute it, and get back a table of results. By analyzing Activity Monitor, I discovered that our mysterious Memory and Real Memory metrics correspond to attribute codes `0x42` and `0x16`, respectively. The [full list of sysmond attributes](https://github.com/bazhenov/task_info_memexp/blob/master/sysmon.md) and corresponding library calls is available on GitHub.
 
 My first thought was that I could use those functions to read memory metrics directly from sysmond and bypass Activity Monitor entirely. And this is possible... sort of. I wrote a simple [proof-of-concept](https://github.com/bazhenov/task_info_memexp/blob/master/sysmon.c) to validate my theory.
 
@@ -90,8 +90,8 @@ My first thought was that I could use those functions to read memory metrics dir
 $ ./sysmon
   PID comm    Memory   Real Memory
  [...]
- 1425 sshd      4.0M          2.8M
- 1423 sshd     15.1M          5.0M
+ 1425 sshd      2.8M          4.0M
+ 1423 sshd      5.0M         15.1M
  [...]
 ```
 
