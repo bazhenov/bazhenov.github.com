@@ -16,6 +16,10 @@ Imagine you opened Activity Monitor to check how much memory your application co
 
 But wait, which number should you actually look at? Suppose there's "Memory" showing 800 MB, and "Real Memory" showing 1 GB. What's the difference?
 
+{{< notice note >}}
+Activity Monitor doesn't display those two readings by default. To show them, you need to right-click on a table header and select them.
+{{</ notice >}}
+
 This exact scenario happened to me more times than I'd like to admit. As someone who keeps Activity Monitor perpetually open, I found myself constantly puzzled by these two memory metrics. Coming from a Linux background where RSS (Resident Set Size) tells a straightforward story, macOS's dual memory reporting felt like reading tea leaves.
 
 When building desktop applications, users inevitably notice high memory usage and start asking tough questions. "Why does your app use so much memory?" becomes a lot harder to answer when you're not entirely sure what the numbers mean yourself.
@@ -111,9 +115,13 @@ Error:
         }
 ```
 
-This was Apple's security model doing its job – preventing arbitrary code from accessing system monitoring data. You need to disable SIP (System Integrity Protection) and AMFI ([Apple Mobile File Integrity](https://theapplewiki.com/wiki/AppleMobileFileIntegrity)) to run this example, but that's not something I'd recommend outside of a virtual machine. The `libsysmond` route was effectively a dead-end.
+This was Apple's security model doing its job – preventing arbitrary code from accessing system monitoring data. You need to disable SIP (System Integrity Protection) and AMFI ([Apple Mobile File Integrity](https://theapplewiki.com/wiki/AppleMobileFileIntegrity)) to run this example.
 
-But there's always another way in. When I dug deeper into `sysmond` itself, I discovered something interesting: it wasn't performing any magical kernel-level operations. Instead, it was using two standard library functions that any process can call: `proc_pidinfo()` and `proc_pid_rusage()`.
+{{< notice warning >}}
+Disabling SPI and AMFI is not something I'd recommend outside of a virtual machine.
+{{</ notice >}}
+
+The `libsysmond` route was effectively a dead-end, but there's always another way in. When I dug deeper into `sysmond` itself, I discovered something interesting: it wasn't performing any magical kernel-level operations. Instead, it was using two standard library functions that any process can call: `proc_pidinfo()` and `proc_pid_rusage()`.
 
 |                     | Memory                              | Real Memory                     |
 | ------------------- | ----------------------------------- | ------------------------------- |
@@ -268,7 +276,7 @@ Some memory that appears in your process's RSS is actually shared with other pro
 
 **Problem 2: Not all your memory is resident**
 
-Some of your application's memory might be compressed or swapped to disk, but it's still your application's memory – you just don't see it in RSS.
+Some of your application's memory might be swapped to disk, but it's still your application's memory – you just don't see it in RSS.
 
 Memory accounting becomes especially confusing when you consider several categories of "sort of yours" memory:
 
@@ -311,9 +319,9 @@ __AUTH                      204220070-204220120    [   176    176    176     0K]
 
 ### The Swapped Memory Problem
 
-The other fundamental issue with `phys_mem` is that it completely ignores swapped and compressed memory. When the system runs low on RAM, it can compress or swap out your application's memory to disk. By definition, this memory is no longer resident, so it disappears from RSS-style metrics.
+The other fundamental issue with `phys_mem` is that it completely ignores swapped memory. When the system runs low on RAM, it can swap out your application's memory to disk. By definition, this memory is no longer resident, so it disappears from RSS-style metrics.
 
-But here's the thing: it's still your application's memory. As a developer, you should be aware of your total memory footprint, not just the portion that happens to be in RAM at any given moment. Under memory pressure, your seemingly "lightweight" application might actually be consuming significant resources through compressed or swapped memory.
+But here's the thing: it's still your application's memory. As a developer, you should be aware of your total memory footprint, not just the portion that happens to be in RAM at any given moment. Under memory pressure, your seemingly "lightweight" application might actually be consuming significant resources through swapped memory.
 
 This is why Apple developed the `phys_footprint` ledger – to give developers a more complete picture of their application's true memory impact.
 
@@ -366,4 +374,4 @@ The key insight: **Memory** represents your application's total memory footprint
 
 Both metrics are accessible programmatically using `proc_pid_rusage()` with the `ri_phys_footprint` and `ri_resident_size` fields – no special entitlements required.
 
-[^1]: Only present in Real Memory if it is not compressed or swapped out right now
+[^1]: Only present in Real Memory if it is not swapped out right now
