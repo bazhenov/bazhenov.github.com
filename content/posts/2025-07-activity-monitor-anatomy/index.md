@@ -129,7 +129,7 @@ The `libsysmond` route was effectively a dead-end, but there's always another wa
 | system library call | `proc_pid_rusage()`                 | `proc_pidinfo()`                |
 | data field          | `rusage_info_v2::ri_phys_footprint` | `proc_taskinfo::resident_size`  |
 
-These functions are available to any process for reading information about other processes running under the same user account – no special entitlements required. I could access the same memory data that Activity Monitor displays. Even better, `proc_pid_rusage()` alone provides both memory metrics:
+These functions are available to any process for reading information about other processes running under the same user account – no special entitlements required. I could access the same memory data that Activity Monitor displays. Even better, `proc_pid_rusage()` alone provides both memory metrics. The `footprint` command is a convenient tool that uses this same function internally to display detailed memory breakdowns for running processes. It provides an interactive way to explore memory usage without writing code.
 
 ```c
 #include <mach/task_info.h>
@@ -181,7 +181,7 @@ But what exactly are these "ledgers"?
 
 ## The Kernel's Accounting System
 
-Ledgers are the kernel's accounting system – every time your process allocates memory, maps a file, or performs certain operations, the kernel updates various ledgers using `ledger_debit()` and `ledger_credit()` functions. The [full list of ledgers](https://github.com/apple-oss-distributions/xnu/blob/e3723e1f17661b24996789d8afc084c0c3303b26/osfmk/kern/task.c#L305-L370) is available in the sources.
+Ledgers are the kernel's accounting system – every time your process allocates memory, maps a file, or performs certain operations, the kernel updates various ledgers using `ledger_debit()` and `ledger_credit()` functions. You can find some information about ledgers in a manual page of `footprint` command (`MEMORY ACCOUNTING` section). The [full list of ledgers](https://github.com/apple-oss-distributions/xnu/blob/e3723e1f17661b24996789d8afc084c0c3303b26/osfmk/kern/task.c#L305-L370) is available in the sources.
 
 This system allows the kernel to answer questions like "How much memory is this process using?" in constant time – no need to walk through complex data structures or perform expensive calculations.
 
