@@ -1,10 +1,9 @@
 ---
-date: 2025-07-11
-draft: true
+date: 2025-07-20
 url: /posts/activity-monitor-anatomy
 title: Activity Monitor Anatomy
 layout: post
-tags: [macos, reverse engineering]
+tags: [macos]
 ---
 
 ## Introduction
@@ -12,7 +11,6 @@ tags: [macos, reverse engineering]
 Imagine you opened Activity Monitor to check how much memory your application consumes.
 
 {{< image "activity-monitor.png" >}}
-![](./activity-monitor.png)
 
 But wait, which number should you actually look at? Suppose there's "Memory" showing 800 MB, and "Real Memory" showing 1 GB. What's the difference?
 
@@ -31,7 +29,6 @@ In this post, I'll describe my findings – how you can programmatically read Me
 I assumed Activity Monitor was this monolithic application doing all the heavy lifting of process monitoring. But when I started digging into its internals, it turns out Activity Monitor is just the tip of the iceberg. The real work happens in a background process called `sysmond` – the system monitor daemon. Activity Monitor simply uses a system library called `libsysmond.dylib` to communicate with this daemon through XPC (Inter-Process Communication). `sysmond` handles all the complex process introspection, while multiple clients can tap into that data stream.
 
 {{< image "activity-monitor-anatomy.svg" >}}
-![](./activity-monitor-anatomy.svg)
 
 There's a `libsysmon.dylib` system library that contains an API to communicate with `sysmond`. It has a fairly simple API surface:
 
@@ -90,17 +87,16 @@ You build a request by specifying which attributes you want for each process, ex
 
 My first thought was that I could use those functions to read memory metrics directly from sysmond and bypass Activity Monitor entirely. And this is possible... sort of. I wrote a simple [proof-of-concept](https://github.com/bazhenov/task_info_memexp/blob/master/sysmon.c) to validate my theory.
 
+{{< image "sshd.png" >}}
+
 ```console
 $ ./sysmon
-  PID comm    Memory   Real Memory
+  PID comm   Real Memory   Memory
  [...]
- 1425 sshd      2.8M          4.0M
- 1423 sshd      5.0M         15.1M
+  639 sshd         15.0M     5.0M
+  641 sshd          3.6M     2.4M
  [...]
 ```
-
-{{< image "sshd.png" >}}
-![](./sshd.png)
 
 The numbers matched Activity Monitor perfectly, but there is a catch. Only processes with the special `com.apple.sysmond.client` entitlement can connect to `sysmond`. Even if I tried to sign my executable with this entitlement, macOS would unceremoniously kill it during loading:
 
@@ -121,7 +117,7 @@ This was Apple's security model doing its job – preventing arbitrary code from
 Disabling SPI and AMFI is not something I'd recommend outside of a virtual machine.
 {{</ notice >}}
 
-The `libsysmond` route was effectively a dead-end, but there's always another way in. When I dug deeper into `sysmond` itself, I discovered something interesting: it wasn't performing any magical kernel-level operations. Instead, it was using two standard library functions that any process can call: `proc_pidinfo()` and `proc_pid_rusage()`.
+The `libsysmond` route was effectively a dead-end, but there's always another way in. First of all, if the only thing you need is a Memory value, you can use the `footprint` command. It reports exactly that, but may require `sudo` even if the process is running under the same user account. So I dug deeper into `sysmond` itself, and discovered something interesting: it wasn't performing any magical kernel-level operations. Instead, it was using two standard library functions that any process can call: `proc_pidinfo()` and `proc_pid_rusage()`.
 
 |                     | Memory                              | Real Memory                     |
 | ------------------- | ----------------------------------- | ------------------------------- |
@@ -129,7 +125,7 @@ The `libsysmond` route was effectively a dead-end, but there's always another wa
 | system library call | `proc_pid_rusage()`                 | `proc_pidinfo()`                |
 | data field          | `rusage_info_v2::ri_phys_footprint` | `proc_taskinfo::resident_size`  |
 
-These functions are available to any process for reading information about other processes running under the same user account – no special entitlements required. I could access the same memory data that Activity Monitor displays. Even better, `proc_pid_rusage()` alone provides both memory metrics:
+These functions are available to any process for reading information about other processes running under the same user account – no special entitlements required. I could access the same memory data that Activity Monitor displays. Even better, `proc_pid_rusage()` alone provides both memory metrics. The `footprint` command is a convenient tool that uses this same function internally to display detailed memory breakdowns for running processes. It provides an interactive way to explore memory usage without writing code.
 
 ```c
 #include <mach/task_info.h>
@@ -181,7 +177,7 @@ But what exactly are these "ledgers"?
 
 ## The Kernel's Accounting System
 
-Ledgers are the kernel's accounting system – every time your process allocates memory, maps a file, or performs certain operations, the kernel updates various ledgers using `ledger_debit()` and `ledger_credit()` functions. The [full list of ledgers](https://github.com/apple-oss-distributions/xnu/blob/e3723e1f17661b24996789d8afc084c0c3303b26/osfmk/kern/task.c#L305-L370) is available in the sources.
+Ledgers are the kernel's accounting system – every time your process allocates memory, maps a file, or performs certain operations, the kernel updates various ledgers using `ledger_debit()` and `ledger_credit()` functions. You can find some information about ledgers in a manual page of `footprint` command (`MEMORY ACCOUNTING` section). The [full list of ledgers](https://github.com/apple-oss-distributions/xnu/blob/e3723e1f17661b24996789d8afc084c0c3303b26/osfmk/kern/task.c#L305-L370) is available in the sources.
 
 This system allows the kernel to answer questions like "How much memory is this process using?" in constant time – no need to walk through complex data structures or perform expensive calculations.
 
@@ -281,7 +277,8 @@ Some of your application's memory might be swapped to disk, but it's still your 
 Memory accounting becomes especially confusing when you consider several categories of "sort of yours" memory:
 
 - **Memory-mapped files**: When you map a file with `MAP_SHARED`, that memory can be shared across multiple processes. The OS technically owns it, even though your process is the only one using it.
-- **Reclaimable memory**: When you free memory, macOS might not immediately return it to the kernel. It leaves it in your process space for potential reuse, similar to Linux's `madvise(MADV_FREE)`.
+- **Reusable memory**: When you free memory, macOS might not immediately return it to the kernel. It leaves it in your process space for potential reuse, similar to Linux's `madvise(MADV_FREE)`.
+- **Purgable memory**: macOS has a concept of purgable memory, which the OS can discard if it experiences memory pressure. It's resident in Real Memory but doesn't contribute to memory footprint because it's easily discardable. Applications can protect this memory from discarding temporarily (nonvolatile purgable memory). In this case, the OS will include it in a memory footprint until the nonvolatile mark is removed.
 - **System libraries (dyld cache)**: This is the big one, and it deserves special attention.
 
 ### The dyld Cache: macOS's Memory Optimization Trick
@@ -374,4 +371,8 @@ The key insight: **Memory** represents your application's total memory footprint
 
 Both metrics are accessible programmatically using `proc_pid_rusage()` with the `ri_phys_footprint` and `ri_resident_size` fields – no special entitlements required.
 
-[^1]: Only present in Real Memory if it is not swapped out right now
+---
+
+I'd like to express my deepest gratitude to [Luna Razzaghipour](https://xoria.org) and [matklad](https://matklad.github.io) for taking the time to review this article. Their feedback was invaluable!
+
+[^1]: Only present in Real Memory if it is not swapped out or compressed right now
