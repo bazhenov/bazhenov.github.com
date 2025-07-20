@@ -4,7 +4,9 @@
 {{ $image := .Page.Resources.Get $url }}
 {{ with $image }}
   {{ if eq .MediaType.SubType "svg" }}
-    <img class="transparent" src="{{ $image.RelPermalink }}" alt="{{ $alt }}">
+    <a href="{{ $image.RelPermalink }}">
+      <img class="transparent" src="{{ $image.RelPermalink }}" alt="{{ $alt }}">
+    </a>
   {{ else }}
     {{ $resized := $image.Fit "900x600 Lanczos" }}
     <a href="{{ $image.RelPermalink }}">
