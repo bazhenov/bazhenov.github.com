@@ -5,6 +5,9 @@ Here is the list of open source project I've developed through the years...
 ## [Tango](https://github.com/bazhenov/tango)
 Rust microbenchmarking harness based on [paired-testing methodology](/posts/paired-benchmarking/)
 
+## [safe-cargo](https://github.com/bazhenov/safe-cargo)
+
+A `cargo` wrapper that executes all commands within a sandboxed environment safeguards against supply chain attacks when executing untrusted code.
 
 ## [Groovysh Server](https://github.com/bazhenov/groovy-shell-server)  
 Groovy shell embedded in an application and exposed via secure SSH channel. Helps to monitor and diagnose JVM applications using interactive REPL shell.
