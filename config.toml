@@ -1,6 +1,6 @@
 baseurl = "https://bazhenov.me"
 defaultcontentlanguage = "en"
-languagecode = "ru"
+languagecode = "en"
 theme = "hugo-coder"
 title = "bazhenov.me"
 
