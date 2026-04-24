@@ -1,6 +1,5 @@
 ---
 date: 2026-04-24
-draft: true
 url: /posts/apple-silicon-measure-pe-usage
 title: "The Two Thread IDs of macOS: Measuring P/E Core Usage on Apple Silicon"
 layout: post
